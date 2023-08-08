@@ -20,7 +20,7 @@ resource "aws_lambda_function" "lambda_func" {
   description      = var.description
   filename         = data.archive_file.function_zip.output_path
   source_code_hash = data.archive_file.function_zip.output_base64sha256
-  role             = aws_iam_role.role.arn # TODO: use var.role
+  role             = var.role_arn != null ? var.role_arn : aws_iam_role.role.0.arn
   handler          = var.handler
   runtime          = var.runtime
   architectures    = var.architectures

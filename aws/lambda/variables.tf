@@ -37,8 +37,8 @@ variable "archive" {
   }
 }
 
-variable "role" {
-  description = "Role used for executing the lambda function."
+variable "role_arn" {
+  description = "ARN of the role used for executing the lambda function."
   type        = string
   default     = null
 }

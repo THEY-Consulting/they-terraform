@@ -1,4 +1,6 @@
 resource "aws_iam_role" "role" {
+  count = var.role_arn == null ? 1 : 0
+
   name = "tf-${var.name}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
