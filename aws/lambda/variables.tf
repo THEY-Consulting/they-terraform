@@ -13,10 +13,28 @@ variable "source_dir" {
   type        = string
 }
 
-variable "archive_excludes" {
-  description = "List of files/directories to exclude from the lambda function archive."
-  type        = list(string)
-  default     = []
+variable "build" {
+  description = "Build configuration."
+  type = object({
+    enabled = bool
+    command = optional(string)
+  })
+  default = {
+    enabled = true
+    command = "yarn run --top-level build"
+  }
+}
+
+variable "archive" {
+  description = "Archive configuration."
+  type = object({
+    output_path = optional(string)
+    excludes    = optional(list(string))
+  })
+  default = {
+    output_path = null
+    excludes    = []
+  }
 }
 
 variable "role" {

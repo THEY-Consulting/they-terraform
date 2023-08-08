@@ -2,15 +2,15 @@
 # this way terraform can decide during plan stage
 # if publishing is required or not
 data "external" "builder" {
-  program     = ["build.sh"]
-  working_dir = var.source_dir
+  count   = var.build.enabled ? 1 : 0
+  program = ["${path.module}/build.sh", var.source_dir, var.build.command]
 }
 
 data "archive_file" "function_zip" {
   type        = "zip"
-  output_path = "dist/${var.name}/lambda.zip"
+  output_path = coalesce(var.archive.output_path, "dist/${var.name}/lambda.zip")
   source_dir  = var.source_dir
-  excludes    = var.archive_excludes
+  excludes    = var.archive.excludes
 
   depends_on = [data.external.builder]
 }

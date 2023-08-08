@@ -3,8 +3,26 @@
 # fail on first error
 set -e
 
-# TODO: use variable for build command
-yarn run --top-level build > /dev/null 2>&1
-find dist/ -exec touch -m -d '1970-01-01T00:00:00Z' {} +
+SOURCE_PATH=$1
+BUILD_COMMAND=$2
+BUILD_DIR="dist"
 
-echo "{ \"build_dir\": \"dist\" }"
+# switch to source directory
+cd "$SOURCE_PATH"
+
+# build
+# TODO: use variable for build
+if ! BUILD_RESULT=$($BUILD_COMMAND);
+then
+  echo "$BUILD_RESULT" >&2
+  exit 1
+fi
+
+# avoid timestamps changing the hash on every build
+if ! STAMP_RESULT=$(find $BUILD_DIR/ -exec touch -m -d '1970-01-01T00:00:00Z' {} +);
+then
+  echo "$STAMP_RESULT" >&2
+  exit 1
+fi
+
+echo "{ \"source_path\": \"$SOURCE_PATH\", \"build_dir\": \"$BUILD_DIR\" }"
