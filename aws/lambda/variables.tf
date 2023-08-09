@@ -27,16 +27,6 @@ variable "build" {
   }
 }
 
-variable "cloudwatch" {
-  description = "CloudWatch configuration."
-  type = object({
-    retention_in_days = optional(number)
-  })
-  default = {
-    retention_in_days = 30
-  }
-}
-
 variable "archive" {
   description = "Archive configuration."
   type = object({
@@ -47,6 +37,40 @@ variable "archive" {
     output_path = null
     excludes    = []
   }
+}
+
+variable "cloudwatch" {
+  description = "CloudWatch configuration."
+  type = object({
+    retention_in_days = optional(number)
+  })
+  default = {
+    retention_in_days = 30
+  }
+}
+
+variable "cron_trigger" {
+  description = "Cron Trigger configuration."
+  type = object({
+    name        = string
+    description = optional(string)
+    schedule    = string
+    input       = optional(string) // Valid JSON text passed to the target.
+
+  })
+  default = null
+}
+
+variable "bucket_trigger" {
+  description = "Bucket Trigger configuration."
+  type = object({
+    name          = string
+    bucket        = string
+    events        = list(string)
+    filter_prefix = optional(string)
+    filter_suffix = optional(string)
+  })
+  default = null
 }
 
 variable "role_arn" {
