@@ -16,12 +16,24 @@ variable "source_dir" {
 variable "build" {
   description = "Build configuration."
   type = object({
-    enabled = bool
-    command = optional(string)
+    enabled   = bool
+    command   = optional(string)
+    build_dir = optional(string)
   })
   default = {
-    enabled = true
-    command = "yarn run --top-level build"
+    enabled   = true
+    command   = "yarn run --top-level build"
+    build_dir = "dist"
+  }
+}
+
+variable "cloudwatch" {
+  description = "CloudWatch configuration."
+  type = object({
+    retention_in_days = optional(number)
+  })
+  default = {
+    retention_in_days = 30
   }
 }
 

@@ -4,8 +4,8 @@
 set -e
 
 SOURCE_PATH=$1
-BUILD_COMMAND=$2
-BUILD_DIR="dist"
+BUILD_DIR=$2
+BUILD_COMMAND=$3
 
 # switch to source directory
 cd "$SOURCE_PATH"
