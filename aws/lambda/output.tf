@@ -1,5 +1,9 @@
-output "lambda_arn" {
+output "arn" {
   value = aws_lambda_function.lambda_func.arn
+}
+
+output "function_name" {
+  value = aws_lambda_function.lambda_func.function_name
 }
 
 output "build" {

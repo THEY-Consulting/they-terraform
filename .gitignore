@@ -5,6 +5,9 @@
 # Local .terraform directories
 **/.terraform/*
 
+# Normally included but we don't need this for our examples
+.terraform.lock.hcl
+
 # .tfstate files
 *.tfstate
 *.tfstate.*
@@ -36,3 +39,10 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+### Build files
+dist
+.yarn
+node_modules
+yarn.lock
+.yarnrc.yml

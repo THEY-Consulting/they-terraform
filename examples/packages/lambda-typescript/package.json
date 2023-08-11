@@ -1,0 +1,12 @@
+{
+  "name": "@they/example-typescript-lambda",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "packageManager": "yarn@3.5.1",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "5.0.4"
+  }
+}
