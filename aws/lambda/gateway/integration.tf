@@ -13,10 +13,17 @@ resource "aws_api_gateway_resource" "resource" {
 resource "aws_api_gateway_method" "method" {
   count = length(var.endpoints)
 
-  rest_api_id      = aws_api_gateway_rest_api.api.id
-  resource_id      = aws_api_gateway_resource.resource[count.index].id
-  http_method      = var.endpoints[count.index].method
-  authorization    = "NONE" // TODO var.api_authorization
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.resource[count.index].id
+  http_method = var.endpoints[count.index].method
+  authorization = coalesce(
+    var.endpoints[count.index].authorization,
+    var.authorizer != null ? "CUSTOM" : "NONE"
+  )
+  authorizer_id = try(coalesce(
+    var.endpoints[count.index].authorizer_id,
+    (var.authorizer != null && var.endpoints[count.index].authorization != "NONE") ? aws_api_gateway_authorizer.authorizer.0.id : null
+  ), null)
   api_key_required = var.api_key != null && var.endpoints[count.index].api_key_required != false
 }
 

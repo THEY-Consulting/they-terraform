@@ -1,0 +1,14 @@
+{
+  "name": "@they/example-authorizer-lambda",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "packageManager": "yarn@3.5.1",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "8.10.119",
+    "@types/node": "18.17.4",
+    "typescript": "5.0.4"
+  }
+}

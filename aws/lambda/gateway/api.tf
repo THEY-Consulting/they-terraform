@@ -8,13 +8,9 @@ resource "aws_api_gateway_deployment" "deployment" {
 
   triggers = {
     redeployment = coalesce(var.redeployment_trigger, sha1(jsonencode([
-      aws_api_gateway_resource.resource,
-      aws_api_gateway_method.method,
-      aws_api_gateway_integration.integration,
-      aws_api_gateway_method.options,
-      aws_api_gateway_integration.options,
-      aws_api_gateway_integration_response.options,
-      aws_api_gateway_method_response.options,
+      var.endpoints,
+      var.authorizer,
+      var.api_key,
     ])))
   }
 
