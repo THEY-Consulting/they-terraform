@@ -22,7 +22,7 @@ variable "build" {
   })
   default = {
     enabled   = true
-    command   = "yarn run --top-level build"
+    command   = "yarn run build"
     build_dir = "dist"
   }
 }

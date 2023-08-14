@@ -33,6 +33,6 @@ module "lambda_api_gateway_with_domain" {
 
 # --- OUTPUT ---
 
-output "domain_endpoint_urls" {
+output "endpoint_urls_with_domain" {
   value = module.lambda_api_gateway_with_domain.endpoint_urls
 }

@@ -4,10 +4,11 @@ module "lambda_without_build" {
   # source = "github.com/THEY-Consulting/they-terraform//aws/lambda"
   source = "../aws/lambda"
 
-  description = "Test lambda without build step"
   name        = "they-test-no-build"
-  runtime     = "nodejs18.x"
+  description = "Test lambda without build step"
   source_dir  = "packages/lambda-simple"
+  runtime     = "nodejs18.x"
+
   build = {
     enabled = false
   }

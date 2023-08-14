@@ -4,10 +4,11 @@ module "authorizer_lambda" {
   # source = "github.com/THEY-Consulting/they-terraform//aws/lambda"
   source = "../aws/lambda"
 
-  description = "Test typescript authorizer lambda"
   name        = "they-test-authorizer"
-  runtime     = "nodejs18.x"
+  description = "Test typescript authorizer lambda"
   source_dir  = "packages/lambda-authorizer"
+  runtime     = "nodejs18.x"
+
   environment = {
     AUTH_HASH = base64encode("they:secret-test-authorization-key"),
   }
@@ -45,6 +46,6 @@ module "lambda_api_gateway_with_authorizer" {
 
 # --- OUTPUT ---
 
-output "authorizer_endpoint_urls" {
+output "endpoint_urls_with_authorizer" {
   value = module.lambda_api_gateway_with_authorizer.endpoint_urls
 }

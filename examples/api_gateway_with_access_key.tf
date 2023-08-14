@@ -27,6 +27,6 @@ module "lambda_api_gateway_with_access_key" {
 
 # --- OUTPUT ---
 
-output "access_key_endpoint_urls" {
+output "endpoint_urls_with_access_key" {
   value = module.lambda_api_gateway_with_access_key.endpoint_urls
 }

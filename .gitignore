@@ -5,7 +5,7 @@
 # Local .terraform directories
 **/.terraform/*
 
-# Normally included but we don't need this for our examples
+# Normally included but we don't need this because our examples are not deployed directly
 .terraform.lock.hcl
 
 # .tfstate files
@@ -42,7 +42,10 @@ terraform.rc
 
 ### Build files
 dist
-.yarn
 node_modules
+
+# Normally included but we don't need this because our examples are not deployed directly
+.yarn
 yarn.lock
 .yarnrc.yml
+.pnp.cjs

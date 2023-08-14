@@ -4,10 +4,10 @@ module "lambda_with_build" {
   # source = "github.com/THEY-Consulting/they-terraform//aws/lambda"
   source = "../aws/lambda"
 
-  description = "Test typescript lambda with build step"
   name        = "they-test-build"
-  runtime     = "nodejs18.x"
+  description = "Test typescript lambda with build step"
   source_dir  = "packages/lambda-typescript"
+  runtime     = "nodejs18.x"
 }
 
 # --- OUTPUT ---
