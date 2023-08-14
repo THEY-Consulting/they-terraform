@@ -2,6 +2,20 @@
 
 Collection of modules to provide an easy way to create and deploy common infrastructure components.
 
+##### Table of Contents
+- [Use in your own project](#use-in-your-own-project)  
+  - [Prerequisites](#prerequisites)
+  - [Usage](#usage)
+- [Modules](#modules)
+  - [AWS](#aws)
+    - [Lambda](#lambda)
+    - [API Gateway (REST)](#api-gateway-rest)
+- [Contributing](#contributing)
+  - [Prerequisites](#prerequisites-1)
+  - [Environment Variables](#environment-variables)
+  - [Local Dev](#local-dev)
+  - [Deployment](#deployment)
+
 ## Use in your own project
 
 ### Prerequisites
