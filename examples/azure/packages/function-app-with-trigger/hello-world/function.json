@@ -1,0 +1,10 @@
+{
+  "bindings": [
+    {
+      "name": "event",
+      "type": "eventGridTrigger",
+      "direction": "in"
+    }
+  ],
+  "scriptFile": "../dist/hello-world/index.js"
+}

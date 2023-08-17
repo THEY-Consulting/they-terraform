@@ -2,7 +2,7 @@
 
 module "lambda_with_build" {
   # source = "github.com/THEY-Consulting/they-terraform//aws/lambda"
-  source = "../aws/lambda"
+  source = "../../aws/lambda"
 
   name        = "they-test-build"
   description = "Test typescript lambda with build step"

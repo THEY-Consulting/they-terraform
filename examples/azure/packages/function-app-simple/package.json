@@ -1,0 +1,5 @@
+{
+  "name": "@they/example-function-app-simple",
+  "version": "1.0.0",
+  "main": "hello-world/index.js"
+}

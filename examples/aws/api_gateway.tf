@@ -2,7 +2,7 @@
 
 module "lambda_api_gateway" {
   # source = "github.com/THEY-Consulting/they-terraform//aws/lambda/gateway"
-  source = "../aws/lambda/gateway"
+  source = "../../aws/lambda/gateway"
 
   name = "they-test-api-gateway"
   endpoints = [

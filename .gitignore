@@ -1,11 +1,12 @@
 ### IDE
 .idea
+.envrc
 
 ### Terraform template
 # Local .terraform directories
 **/.terraform/*
 
-# Normally included but we don't need this because our examples are not deployed directly
+# Normally included but we don't need this because our examples are not deployed directly/only during testing
 .terraform.lock.hcl
 
 # .tfstate files
@@ -44,8 +45,7 @@ terraform.rc
 dist
 node_modules
 
-# Normally included but we don't need this because our examples are not deployed directly
+# Normally included but we don't need this because our examples are not deployed directly/only during testing
 .yarn
 yarn.lock
-.yarnrc.yml
 .pnp.cjs

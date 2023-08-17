@@ -38,7 +38,5 @@ resource "aws_iam_role" "role" {
     }
   }
 
-  tags = {
-    Name = var.name
-  }
+  tags = var.tags
 }

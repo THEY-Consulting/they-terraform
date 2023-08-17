@@ -10,6 +10,8 @@ Collection of modules to provide an easy way to create and deploy common infrast
   - [AWS](#aws)
     - [Lambda](#lambda)
     - [API Gateway (REST)](#api-gateway-rest)
+  - [Azure](#azure)
+    - [Function app](#function-app)
 - [Contributing](#contributing)
   - [Prerequisites](#prerequisites-1)
   - [Environment Variables](#environment-variables)
@@ -73,7 +75,7 @@ module "lambda" {
   }
 
   archive = {
-    output_path = "dist"
+    output_path = "dist/lambda.zip"
     excludes    = ["test"]
   }
 
@@ -113,57 +115,63 @@ module "lambda" {
   }]
 
   environment = {
-    "ENV_VAR_1" = "value1"
-    "ENV_VAR_2" = "value2"
+    ENV_VAR_1 = "value1"
+    ENV_VAR_2 = "value2"
   }
 
   vpc_config = {
     subnet_ids         = ["subnet-12345678"]
     security_group_ids = ["sg-12345678"]
   }
+  
+  tags = {
+    createdBy = "terraform"
+    environment = "dev"
+  }
 }
 ```
 
-| Variable                      | Type         | Description                                                                                                                        | Required | Default            |
-|-------------------------------|--------------|------------------------------------------------------------------------------------------------------------------------------------|----------|--------------------|
-| name                          | string       | Name of the lambda function                                                                                                        | yes      |                    |
-| description                   | string       | Description of the lambda function                                                                                                 | yes      |                    |
-| source_dir                    | string       | Directory containing the lambda function                                                                                           | yes      |                    |
-| handler                       | string       | Function entrypoint                                                                                                                | no       | `"index.handler"`  |
-| runtime                       | string       | The runtime that the function is executed with, e.g. 'nodejs18.x'.                                                                 | yes      |                    |
-| architectures                 | list(string) | The instruction set architecture that the function supports                                                                        | no       | `["arm64"]`        |
-| publish                       | bool         | Whether to publish creation/change as new Lambda Function Version                                                                  | no       | `true`             |
-| memory_size                   | number       | Amount of memory in MB your Lambda Function can use at runtime                                                                     | no       | `128`              |
-| timeout                       | number       | Amount of time your Lambda Function has to run in seconds                                                                          | no       | `3`                |
-| layers                        | list(string) | List of Lambda Layer Version ARNs (maximum of 5) to attach to your Lambda Function                                                 | no       | `[]`               |
-| build                         | object       | Build configurations                                                                                                               | no       | see sub fields     |
-| build.enabled                 | bool         | Enabled/Disable running build command                                                                                              | no       | `true`             |
-| build.command                 | string       | Build command to use                                                                                                               | no       | `"yarn run build"` |
-| build.build_dir               | string       | Directory where the compiled lambda files are generated, relative to the lambda source directory                                   | no       | `"dist"`           |
-| archive                       | object       | Configure archive file generation                                                                                                  | no       | see sub fields     |
-| archive.output_path           | string       | Directory where the zipped file is generated, relative to the terraform file                                                       | no       | `"dist"`           |
-| archive.excludes              | list(string) | List of strings with files that are excluded from the zip file                                                                     | no       | `[]`               |
-| cloudwatch                    | object       | CloudWatch configuration                                                                                                           | no       | see sub fields     |
-| cloudwatch.retention_in_days  | number       | Retention for the CloudWatch log group                                                                                             | no       | `30`               |
-| cron_trigger                  | object       | Configuration to trigger the lambda through a cron schedule                                                                        | no       | `null`             |
-| cron_trigger.name             | string       | Name of the trigger                                                                                                                | (yes)    |                    |
-| cron_trigger.description      | string       | Description of the trigger                                                                                                         | no       | `null`             |
-| cron_trigger.schedule         | string       | Schedule expression for the trigger                                                                                                | (yes)    |                    |
-| cron_trigger.input            | string       | Valid JSON test passed to the trigger target                                                                                       | no       | `null`             |
-| bucket_trigger                | object       | Configuration to trigger the lambda through bucket events                                                                          | no       | `null`             |
-| bucket_trigger.name           | string       | Name of the trigger                                                                                                                | (yes)    |                    |
-| bucket_trigger.bucket         | string       | Name of the bucket                                                                                                                 | (yes)    |                    |
-| bucket_trigger.events         | list(string) | List of events that trigger the lambda                                                                                             | (yes)    |                    |
-| bucket_trigger.filter_prefix  | string       | Trigger lambda only for files starting with this prefix                                                                            | no       | `null`             |
-| bucket_trigger.filter_suffix  | string       | Trigger lambda only for files starting with this suffix                                                                            | no       | `null`             |
-| role_arn                      | string       | ARN of the role used for executing the lambda function, if no role is given a role with cloudwatch access is created automatically | no       | `null`             |
-| iam_policy                    | list(object) | IAM policies to attach to the lambda role, only works if no custom `role_arn` is set                                               | no       | `[]`               |
-| iam_policy.*.name             | string       | Name of the policy                                                                                                                 | (yes)    |                    |
-| iam_policy.*.policy           | string       | JSON encoded policy string                                                                                                         | (yes)    |                    |
-| environment                   | map(string)  | Map of environment variables that are accessible from the function code during execution                                           | no       | `null`             |
-| vpc_config                    | object       | For network connectivity to AWS resources in a VPC                                                                                 | no       | `null`             |
-| vpc_config.security_group_ids | list(string) | List of security groups to connect the lambda with                                                                                 | (yes)    |                    |
-| vpc_config.subnet_ids         | list(string) | List of subnets to attach to the lambda                                                                                            | (yes)    |                    |
+| Variable                      | Type         | Description                                                                                                                        | Required | Default                    |
+|-------------------------------|--------------|------------------------------------------------------------------------------------------------------------------------------------|----------|----------------------------|
+| name                          | string       | Name of the lambda function                                                                                                        | yes      |                            |
+| description                   | string       | Description of the lambda function                                                                                                 | yes      |                            |
+| source_dir                    | string       | Directory containing the lambda function                                                                                           | yes      |                            |
+| handler                       | string       | Function entrypoint                                                                                                                | no       | `"index.handler"`          |
+| runtime                       | string       | The runtime that the function is executed with, e.g. 'nodejs18.x'.                                                                 | yes      |                            |
+| architectures                 | list(string) | The instruction set architecture that the function supports                                                                        | no       | `["arm64"]`                |
+| publish                       | bool         | Whether to publish creation/change as new Lambda Function Version                                                                  | no       | `true`                     |
+| memory_size                   | number       | Amount of memory in MB your Lambda Function can use at runtime                                                                     | no       | `128`                      |
+| timeout                       | number       | Amount of time your Lambda Function has to run in seconds                                                                          | no       | `3`                        |
+| layers                        | list(string) | List of Lambda Layer Version ARNs (maximum of 5) to attach to your Lambda Function                                                 | no       | `[]`                       |
+| build                         | object       | Build configurations                                                                                                               | no       | see sub fields             |
+| build.enabled                 | bool         | Enabled/Disable running build command                                                                                              | no       | `true`                     |
+| build.command                 | string       | Build command to use                                                                                                               | no       | `"yarn run build"`         |
+| build.build_dir               | string       | Directory where the compiled lambda files are generated, relative to the lambda source directory                                   | no       | `"dist"`                   |
+| archive                       | object       | Configure archive file generation                                                                                                  | no       | see sub fields             |
+| archive.output_path           | string       | Directory where the zipped file is generated, relative to the terraform file                                                       | no       | `"dist/{name}/lambda.zip"` |
+| archive.excludes              | list(string) | List of strings with files that are excluded from the zip file                                                                     | no       | `[]`                       |
+| cloudwatch                    | object       | CloudWatch configuration                                                                                                           | no       | see sub fields             |
+| cloudwatch.retention_in_days  | number       | Retention for the CloudWatch log group                                                                                             | no       | `30`                       |
+| cron_trigger                  | object       | Configuration to trigger the lambda through a cron schedule                                                                        | no       | `null`                     |
+| cron_trigger.name             | string       | Name of the trigger                                                                                                                | (yes)    |                            |
+| cron_trigger.description      | string       | Description of the trigger                                                                                                         | no       | `null`                     |
+| cron_trigger.schedule         | string       | Schedule expression for the trigger                                                                                                | (yes)    |                            |
+| cron_trigger.input            | string       | Valid JSON test passed to the trigger target                                                                                       | no       | `null`                     |
+| bucket_trigger                | object       | Configuration to trigger the lambda through bucket events                                                                          | no       | `null`                     |
+| bucket_trigger.name           | string       | Name of the trigger                                                                                                                | (yes)    |                            |
+| bucket_trigger.bucket         | string       | Name of the bucket                                                                                                                 | (yes)    |                            |
+| bucket_trigger.events         | list(string) | List of events that trigger the lambda                                                                                             | (yes)    |                            |
+| bucket_trigger.filter_prefix  | string       | Trigger lambda only for files starting with this prefix                                                                            | no       | `null`                     |
+| bucket_trigger.filter_suffix  | string       | Trigger lambda only for files starting with this suffix                                                                            | no       | `null`                     |
+| role_arn                      | string       | ARN of the role used for executing the lambda function, if no role is given a role with cloudwatch access is created automatically | no       | `null`                     |
+| iam_policy                    | list(object) | IAM policies to attach to the lambda role, only works if no custom `role_arn` is set                                               | no       | `[]`                       |
+| iam_policy.*.name             | string       | Name of the policy                                                                                                                 | (yes)    |                            |
+| iam_policy.*.policy           | string       | JSON encoded policy string                                                                                                         | (yes)    |                            |
+| environment                   | map(string)  | Map of environment variables that are accessible from the function code during execution                                           | no       | `null`                     |
+| vpc_config                    | object       | For network connectivity to AWS resources in a VPC                                                                                 | no       | `null`                     |
+| vpc_config.security_group_ids | list(string) | List of security groups to connect the lambda with                                                                                 | (yes)    |                            |
+| vpc_config.subnet_ids         | list(string) | List of subnets to attach to the lambda                                                                                            | (yes)    |                            |
+| tags                          | map(string)  | Map of tags to assign to the Lambda Function and related resources                                                                 | no       | `{}`                       |
 
 #### API Gateway (REST)
 
@@ -208,6 +216,11 @@ module "api_gateway" {
   }
 
   redeployment_trigger = "v1.0.0"
+  
+  tags = {
+    createdBy = "terraform"
+    environment = "dev"
+  }
 }
 ```
 
@@ -243,6 +256,121 @@ module "api_gateway" {
 | domain.zone_name                          | string       | Domain zone name                                                                                                                                                                                            | (yes)    |                                                           |
 | domain.domain                             | string       | Domain                                                                                                                                                                                                      | (yes)    |                                                           |
 | redeployment_trigger                      | string       | A unique string to force a redeploy of the api gateway. If not set manually, the module will use the configurations for endpoints, api_key, and authorizer config to decide if a redeployment is necessary. | (yes)    |                                                           |
+| tags                                      | map(string)  | Map of tags to assign to the Lambda Function and related resources                                                                                                                                          | no       | `{}`                                                      |
+
+### Azure
+
+#### Function app
+
+```hcl
+module "function_app_without_build" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/function-app"
+
+  name                = "they-test"
+  source_dir          = "packages/function-app"
+  location            = "Germany West Central"
+  resource_group_name = "they-dev"
+
+  storage_account = {
+    name             = "theydev"
+    tier             = "Standard"
+    replication_type = "RAGRS"
+    min_tls_version  = "TLS1_2"
+  }
+
+  service_plan = {
+    name     = "they-test"
+    os_type  = "Windows"
+    sku_name = "Y1"
+  }
+
+  insights = {
+    enabled           = true
+    sku               = "PerGB2018"
+    retention_in_days = 30
+  }
+
+  environment = {
+    ENV_VAR_1 = "value1"
+    ENV_VAR_2 = "value2"
+  }
+
+  build = {
+    enabled   = true
+    command   = "yarn run build"
+    build_dir = "dist"
+  }
+
+  archive = {
+    output_path = "dist/function-app.zip"
+    excludes    = ["test"]
+  }
+
+  storage_trigger = {
+    function_name                = "they-test"
+    events                       = ["Microsoft.Storage.BlobCreated"]
+    trigger_storage_account_name = "theydevtrigger"
+    trigger_resource_group_name  = "they-dev"
+    subject_filter = {
+      subject_begins_with = "trigger/"
+      subject_ends_with   = ".zip"
+    }
+    retry_policy = {
+      event_time_to_live    = 360
+      max_delivery_attempts = 1
+    }
+  }
+
+  identity = {
+    name = "they-test-identity"
+  }
+
+  tags = {
+    createdBy   = "Terraform"
+    environment = "dev"
+  }
+}
+```
+
+| Variable                                           | Type         | Description                                                                                      | Required | Default                                |
+|----------------------------------------------------|--------------|--------------------------------------------------------------------------------------------------|----------|----------------------------------------|
+| name                                               | string       | Name of the function app                                                                         | yes      |                                        |
+| source_dir                                         | string       | Directory containing the function code                                                           | yes      |                                        |
+| location                                           | string       | The Azure region where the resources should be created                                           | yes      |                                        |
+| resource_group_name                                | string       | The name of the resource group in which to create the function app                               | yes      |                                        |
+| storage_account                                    | object       | The storage account                                                                              | no       | see sub fields                         |
+| storage_account.name                               | string       | Name of an existing storage account, if this is `null` a new storage account will be created     | no       | `null`                                 |
+| storage_account.tier                               | string       | Tier of the newly created storage account, ignored if `storage_account.name` is set              | no       | `"Standard"`                           |
+| storage_account.replication_type                   | string       | Replication type of the newly created storage account, ignored if `storage_account.name` is set  | no       | `"RAGRS"`                              |
+| storage_account.min_tls_version                    | string       | Min TLS version of the newly created storage account, ignored if `storage_account.name` is set   | no       | `"TLS1_2"`                             |
+| service_plan                                       | object       | The service plan                                                                                 | no       | see sub fields                         |
+| service_plan.name                                  | string       | Name of an existing service plan, if this is `null` a new service plan will be created           | no       | `null`                                 |
+| service_plan.os_type                               | string       | OS type of the service plan, ignored if `service_plan.name` is set                               | no       | `"Windows"`                            |
+| service_plan.sku_name                              | string       | SKU name of the service plan, ignored if `service_plan.name` is set                              | no       | `"Y1"`                                 |
+| insights                                           | object       | Application insights                                                                             | no       | see sub fields                         |
+| insights.enabled                                   | bool         | Enable/Disable application insights                                                              | no       | `true`                                 |
+| insights.sku                                       | string       | SKU for application insights                                                                     | no       | `"PerGB2018"`                          |
+| insights.retention_in_days                         | number       | Retention for application insights in days                                                       | no       | `30`                                   |
+| environment                                        | map(string)  | Map of environment variables that are accessible from the function code during execution         | no       | `{}`                                   |
+| build                                              | object       | Build configuration                                                                              | no       | see sub fields                         |
+| build.enabled                                      | bool         | Enable/Disable running build command                                                             | no       | `true`                                 |
+| build.command                                      | string       | Build command to use                                                                             | no       | `"yarn run build"`                     |
+| build.build_dir                                    | string       | Directory where the compiled lambda files are generated, relative to the lambda source directory | no       | `"dist"`                               |
+| archive                                            | object       | Archive configuration                                                                            | no       | see sub fields                         |
+| archive.output_path                                | string       | Directory where the zipped file is generated, relative to the terraform file                     | no       | `"dist/{name}/azure-function-app.zip"` |
+| archive.excludes                                   | list(string) | List of strings with files that are excluded from the zip file                                   | no       | `[]`                                   |
+| storage_trigger                                    | object       | Trigger the azure function through storage event grid subscription                               | no       | `null`                                 |
+| storage_trigger.function_name                      | string       | Name of the function that should be triggered                                                    | (yes)    |                                        |
+| storage_trigger.events                             | list(string) | List of event names that should trigger the function                                             | (yes)    |                                        |
+| storage_trigger.subject_filter                     | object       | filter events for the event subscription                                                         | no       | `null`                                 |
+| storage_trigger.subject_filter.subject_begins_with | string       | A string to filter events for an event subscription based on a resource path prefix              | no       | `null`                                 |
+| storage_trigger.subject_filter.subject_ends_with   | string       | A string to filter events for an event subscription based on a resource path suffix              | no       | `null`                                 |
+| storage_trigger.retry_policy                       | object       | Retry policy                                                                                     | no       | see sub fields                         |
+| storage_trigger.retry_policy.event_time_to_live    | number       | Specifies the time to live (in minutes) for events                                               | no       | `360`                                  |
+| storage_trigger.retry_policy.max_delivery_attempts | number       | Specifies the maximum number of delivery retry attempts for events                               | no       | `1`                                    |
+| identity                                           | object       | Identity to use                                                                                  | no       | `null`                                 |
+| identity.name                                      | string       | Name of the identity                                                                             | (yes)    |                                        |
+| tags                                               | map(string)  | Map of tags to assign to the function app and related resources                                  | no       | `{}`                                   |
 
 ## Contributing
 
@@ -261,6 +389,9 @@ module "api_gateway" {
 - set up your environment variables (create and put them in `.envrc` in the project's root dir):
 ```txt
 export AWS_PROFILE=nameOfProfile
+export AZURE_TENANT_ID=<see https://portal.azure.com/#settings/directory for the correct Directory ID>
+export TF_VAR_tenant_id=$AZURE_TENANT_ID
+
 ```
 - remember to add the aws profile info to `~/.aws/config`
 - and the key and secret for said profile to `~/.aws/credentials`
@@ -269,16 +400,22 @@ export AWS_PROFILE=nameOfProfile
 
 install dependencies 
 ```
-cd examples/packages 
+cd examples/aws/packages 
+yarn install
+
+cd examples/azure/packages 
 yarn install
 ```
 
 ### Deployment
 
-Currently, we only use a single workspace. To deploy all examples temporarily use:
+Currently, we only use a single workspace within each cloud provider. To deploy all examples temporarily use:
 
 ```
-cd examples
+cd examples/aws
+terraform apply
+
+cd examples/azure
 terraform apply
 ```
 

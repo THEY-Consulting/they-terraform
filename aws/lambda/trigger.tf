@@ -6,6 +6,8 @@ resource "aws_cloudwatch_event_rule" "cw_event_rule" {
   name                = var.cron_trigger.name
   description         = var.cron_trigger.description
   schedule_expression = var.cron_trigger.schedule
+
+  tags = var.tags
 }
 
 resource "aws_cloudwatch_event_target" "cw_event_target" {

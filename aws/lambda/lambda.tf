@@ -2,7 +2,8 @@
 # this way terraform can decide during plan stage
 # if publishing is required or not
 data "external" "builder" {
-  count   = var.build.enabled ? 1 : 0
+  count = var.build.enabled ? 1 : 0
+
   program = ["${path.module}/build.sh", var.source_dir, var.build.build_dir, var.build.command]
 }
 
@@ -43,4 +44,6 @@ resource "aws_lambda_function" "lambda_func" {
       subnet_ids         = vpc_config.value.subnet_ids
     }
   }
+
+  tags = var.tags
 }
