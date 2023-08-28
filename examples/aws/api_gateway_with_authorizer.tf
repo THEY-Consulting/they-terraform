@@ -2,7 +2,7 @@
 
 module "authorizer_lambda" {
   # source = "github.com/THEY-Consulting/they-terraform//aws/lambda"
-  source = "../aws/lambda"
+  source = "../../aws/lambda"
 
   name        = "they-test-authorizer"
   description = "Test typescript authorizer lambda"
@@ -16,7 +16,7 @@ module "authorizer_lambda" {
 
 module "lambda_api_gateway_with_authorizer" {
   # source = "github.com/THEY-Consulting/they-terraform//aws/lambda/gateway"
-  source = "../aws/lambda/gateway"
+  source = "../../aws/lambda/gateway"
 
   name = "they-test-api-gateway-with-authorizer"
   endpoints = [

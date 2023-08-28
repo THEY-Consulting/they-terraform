@@ -16,53 +16,43 @@ variable "source_dir" {
 variable "build" {
   description = "Build configuration."
   type = object({
-    enabled   = bool
-    command   = optional(string)
-    build_dir = optional(string)
+    enabled   = optional(bool, true)
+    command   = optional(string, "yarn run build")
+    build_dir = optional(string, "dist")
   })
-  default = {
-    enabled   = true
-    command   = "yarn run build"
-    build_dir = "dist"
-  }
+  default = {}
 }
 
 variable "archive" {
   description = "Archive configuration."
   type = object({
-    output_path = optional(string)
-    excludes    = optional(list(string))
+    output_path = optional(string, null)
+    excludes    = optional(list(string), [])
   })
-  default = {
-    output_path = null
-    excludes    = []
-  }
+  default = {}
 }
 
 variable "cloudwatch" {
   description = "CloudWatch configuration."
   type = object({
-    retention_in_days = optional(number)
+    retention_in_days = optional(number, 30)
   })
-  default = {
-    retention_in_days = 30
-  }
+  default = {}
 }
 
 variable "cron_trigger" {
-  description = "Cron Trigger configuration."
+  description = "Cron trigger configuration."
   type = object({
     name        = string
     description = optional(string)
     schedule    = string
     input       = optional(string) // Valid JSON text passed to the target.
-
   })
   default = null
 }
 
 variable "bucket_trigger" {
-  description = "Bucket Trigger configuration."
+  description = "Bucket trigger configuration."
   type = object({
     name          = string
     bucket        = string
@@ -142,4 +132,10 @@ variable "layers" {
   description = "List of Lambda Layer Version ARNs (maximum of 5) to attach to your Lambda Function."
   type        = list(string)
   default     = []
+}
+
+variable "tags" {
+  description = "Map of tags to assign to the Lambda Function and related resources."
+  type        = map(string)
+  default     = {}
 }
