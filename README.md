@@ -10,6 +10,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
   - [AWS](#aws)
     - [Lambda](#lambda)
     - [API Gateway (REST)](#api-gateway-rest)
+    - [setup-tfstate](#setup-tfstate)
   - [Azure](#azure)
     - [Function app](#function-app)
 - [Contributing](#contributing)
@@ -50,6 +51,8 @@ For more examples see the [examples](./examples) directory.
 ## Modules
 
 ### AWS
+
+The location of all resources is always determined by the `region` of your aws provider.
 
 #### Lambda
 
@@ -258,6 +261,20 @@ module "api_gateway" {
 | redeployment_trigger                      | string       | A unique string to force a redeploy of the api gateway. If not set manually, the module will use the configurations for endpoints, api_key, and authorizer config to decide if a redeployment is necessary. | (yes)    |                                                           |
 | tags                                      | map(string)  | Map of tags to assign to the Lambda Function and related resources                                                                                                                                          | no       | `{}`                                                      |
 
+#### setup-tfstate
+
+```hcl
+module "setup_tfstate" {
+  source = "github.com/THEY-Consulting/they-terraform//aws/setup-tfstate"
+
+  name = "they-test"
+}
+```
+
+| Variable | Type   | Description                                                     | Required | Default |
+|----------|--------|-----------------------------------------------------------------|----------|---------|
+| name     | string | Name of the app, used for the s3 bucket and dynamoDB table name | yes      |         |
+
 ### Azure
 
 #### Function app
@@ -420,3 +437,9 @@ terraform apply
 ```
 
 When you are done testing, please destroy the resources with `terraform destroy`.
+
+_examples/setup-tfstate_ can be deployed the same way, but it is a bit more complicated to clean up. 
+`terraform destroy` can not remove the s3 bucket (due to `prevent_destroy = true`). 
+Therefore, you need to delete the bucket manually.
+After that you can remove the remaining resources with `terraform destroy`. 
+Keep in mind that after destroying a bucket it can take up to 24 hours until the name is available again.
