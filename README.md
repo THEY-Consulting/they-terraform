@@ -10,6 +10,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
   - [AWS](#aws)
     - [Lambda](#lambda)
     - [API Gateway (REST)](#api-gateway-rest)
+    - [GitHub OpenID role](#github-openid-role)
     - [setup-tfstate](#setup-tfstate)
   - [Azure](#azure)
     - [Function app](#function-app)
@@ -134,6 +135,8 @@ module "lambda" {
 }
 ```
 
+##### Inputs
+
 | Variable                      | Type         | Description                                                                                                                        | Required | Default                    |
 |-------------------------------|--------------|------------------------------------------------------------------------------------------------------------------------------------|----------|----------------------------|
 | name                          | string       | Name of the lambda function                                                                                                        | yes      |                            |
@@ -175,6 +178,16 @@ module "lambda" {
 | vpc_config.security_group_ids | list(string) | List of security groups to connect the lambda with                                                                                 | (yes)    |                            |
 | vpc_config.subnet_ids         | list(string) | List of subnets to attach to the lambda                                                                                            | (yes)    |                            |
 | tags                          | map(string)  | Map of tags to assign to the Lambda Function and related resources                                                                 | no       | `{}`                       |
+
+##### Outputs
+
+| Output            | Type   | Description                                                      |
+|-------------------|--------|------------------------------------------------------------------|
+| arn               | string | The Amazon Resource Name (ARN) identifying your Lambda Function  |
+| function_name     | string | The name of the Lambda Function                                  |
+| invoke_arn        | string | The ARN to be used for invoking Lambda Function from API Gateway |
+| build             | object | Build output                                                     |
+| archive_file_path | string | Path to the generated archive file                               |
 
 #### API Gateway (REST)
 
@@ -227,6 +240,8 @@ module "api_gateway" {
 }
 ```
 
+##### Inputs
+
 | Variable                                  | Type         | Description                                                                                                                                                                                                 | Required | Default                                                   |
 |-------------------------------------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|-----------------------------------------------------------|
 | name                                      | string       | Name of the api gateway                                                                                                                                                                                     | yes      |                                                           |
@@ -261,6 +276,62 @@ module "api_gateway" {
 | redeployment_trigger                      | string       | A unique string to force a redeploy of the api gateway. If not set manually, the module will use the configurations for endpoints, api_key, and authorizer config to decide if a redeployment is necessary. | (yes)    |                                                           |
 | tags                                      | map(string)  | Map of tags to assign to the Lambda Function and related resources                                                                                                                                          | no       | `{}`                                                      |
 
+##### Outputs
+
+| Output            | Type         | Description                       |
+|-------------------|--------------|-----------------------------------|
+| invoke_url        | string       | The invoke URL of the api gateway |
+| endpoint_urls     | list(string) | List of all endpoint URLs         |
+
+#### GitHub OpenID role
+
+```hcl
+module "github_action_role" {
+  source = "github.com/THEY-Consulting/they-terraform//aws/openid/github"
+
+  name = "they-test"
+  repo = "THEY-Consulting/they-terraform"
+  policies = [
+    {
+      name = "they-test-policy"
+      policy = jsonencode({
+        Version : "2012-10-17",
+        Statement : [
+          {
+            Effect : "Allow",
+            Action : [
+              "s3:ListBucket",
+            ],
+            Resource : [
+              "arn:aws:s3:::they-test-bucket",
+            ]
+          }
+        ]
+      })
+    },
+  ],
+  s3StateBackend = true
+}
+```
+
+##### Inputs
+
+| Variable          | Type         | Description                                                                                                                                                                                              | Required | Default |
+|-------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
+| name              | string       | Name of the role                                                                                                                                                                                         | yes      |         |
+| repo              | string       | Repository that is authorized to assume this role                                                                                                                                                        | yes      |         |
+| policies          | list(object) | List of additional inline policies to attach to the app                                                                                                                                                  | no       | `[]`    |
+| policies.*.name   | string       | Name of the inline policy                                                                                                                                                                                | yes      |         |
+| policies.*.policy | string       | Policy document as a JSON formatted string                                                                                                                                                               | yes      |         |
+| s3StateBackend    | bool         | Set to true if a s3 state backend was setup with the setup-tfstate module (or uses the same naming scheme for the s3 bucket and dynamoDB table). This will set the required s3 and dynamoDB permissions. | no       | `true`  |
+
+##### Outputs
+
+| Output            | Type   | Description          |
+|-------------------|--------|----------------------|
+| role_name         | string | The name of the role |
+| role_arn          | string | The ARN of the role  |
+
 #### setup-tfstate
 
 ```hcl
@@ -271,9 +342,18 @@ module "setup_tfstate" {
 }
 ```
 
+##### Inputs
+
 | Variable | Type   | Description                                                     | Required | Default |
 |----------|--------|-----------------------------------------------------------------|----------|---------|
 | name     | string | Name of the app, used for the s3 bucket and dynamoDB table name | yes      |         |
+
+##### Outputs
+
+| Output         | Type   | Description               |
+|----------------|--------|---------------------------|
+| s3_bucket_arn  | string | The ARN of the s3 bucket  |
+| s3_bucket_name | string | The name of the s3 bucket |
 
 ### Azure
 
@@ -349,6 +429,8 @@ module "function_app_without_build" {
 }
 ```
 
+##### Inputs
+
 | Variable                                           | Type         | Description                                                                                      | Required | Default                                |
 |----------------------------------------------------|--------------|--------------------------------------------------------------------------------------------------|----------|----------------------------------------|
 | name                                               | string       | Name of the function app                                                                         | yes      |                                        |
@@ -388,6 +470,15 @@ module "function_app_without_build" {
 | identity                                           | object       | Identity to use                                                                                  | no       | `null`                                 |
 | identity.name                                      | string       | Name of the identity                                                                             | (yes)    |                                        |
 | tags                                               | map(string)  | Map of tags to assign to the function app and related resources                                  | no       | `{}`                                   |
+
+##### Outputs
+
+| Output            | Type   | Description                        |
+|-------------------|--------|------------------------------------|
+| id                | string | The ID of the Function App         |
+| build             | string | Build output                       |
+| archive_file_path | string | Path to the generated archive file |
+| endpoint_url      | string | Endpoint URL                       |
 
 ## Contributing
 
