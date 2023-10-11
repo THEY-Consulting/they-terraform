@@ -523,13 +523,13 @@ yarn install
 
 ### Deployment
 
-Currently, we only use a single workspace within each cloud provider. To deploy all examples temporarily use:
+Currently, we only use a single workspace within each cloud provider. To deploy each examples (temporarily) use:
 
 ```
-cd examples/aws
+cd examples/aws/<example>
 terraform apply
 
-cd examples/azure
+cd examples/azure/<example>
 terraform apply
 ```
 

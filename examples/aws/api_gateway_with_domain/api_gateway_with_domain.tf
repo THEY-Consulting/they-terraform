@@ -12,7 +12,7 @@ data "aws_acm_certificate" "acm_certificate" {
 
 module "lambda_api_gateway_with_domain" {
   # source = "github.com/THEY-Consulting/they-terraform//aws/lambda/gateway"
-  source = "../../aws/lambda/gateway"
+  source = "../../../aws/lambda/gateway"
 
   name = "they-test-api-gateway-with-domain"
   endpoints = [

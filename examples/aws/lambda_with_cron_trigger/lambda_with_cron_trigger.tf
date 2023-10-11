@@ -2,11 +2,11 @@
 
 module "lambda_with_cron_trigger" {
   # source = "github.com/THEY-Consulting/they-terraform//aws/lambda"
-  source = "../../aws/lambda"
+  source = "../../../aws/lambda"
 
   name        = "they-test-cron"
   description = "Test lambda with cron trigger"
-  source_dir  = "packages/lambda-typescript"
+  source_dir  = "../packages/lambda-typescript"
   runtime     = "nodejs18.x"
 
   cron_trigger = {

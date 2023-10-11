@@ -2,10 +2,10 @@
 
 module "function_app_with_bundle" {
   # source = "github.com/THEY-Consulting/they-terraform//azure/function-app"
-  source = "../../azure/function-app"
+  source = "../../../azure/function-app"
 
   name                = "they-test-with-bundle"
-  source_dir          = "packages/function-app-bundle"
+  source_dir          = "../packages/function-app-bundle"
   location            = "Germany West Central"
   resource_group_name = "they-dev"
 }
