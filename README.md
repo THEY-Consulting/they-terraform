@@ -61,7 +61,7 @@ The location of all resources is always determined by the `region` of your aws p
 module "lambda" {
   source = "github.com/THEY-Consulting/they-terraform//aws/lambda"
 
-  name          = "they-test-no-build"
+  name          = "they-test"
   description   = "Test lambda without build step"
   source_dir    = "packages/lambda-simple"
   handler       = "index.handler"
@@ -77,6 +77,8 @@ module "lambda" {
     command   = "yarn run build"
     build_dir = "dist"
   }
+  
+  is_bundle = false
 
   archive = {
     output_path = "dist/lambda.zip"
@@ -153,6 +155,7 @@ module "lambda" {
 | build.enabled                 | bool         | Enabled/Disable running build command                                                                                              | no       | `true`                     |
 | build.command                 | string       | Build command to use                                                                                                               | no       | `"yarn run build"`         |
 | build.build_dir               | string       | Directory where the compiled lambda files are generated, relative to the lambda source directory                                   | no       | `"dist"`                   |
+| is_bundle                     | bool         | If true, node_modules and .yarn directories will be excluded from the archive.                                                     | no       | `false`                    |
 | archive                       | object       | Configure archive file generation                                                                                                  | no       | see sub fields             |
 | archive.output_path           | string       | Directory where the zipped file is generated, relative to the terraform file                                                       | no       | `"dist/{name}/lambda.zip"` |
 | archive.excludes              | list(string) | List of strings with files that are excluded from the zip file                                                                     | no       | `[]`                       |
@@ -397,6 +400,8 @@ module "function_app_without_build" {
     command   = "yarn run build"
     build_dir = "dist"
   }
+  
+  is_bundle = false
 
   archive = {
     output_path = "dist/function-app.zip"
@@ -455,6 +460,7 @@ module "function_app_without_build" {
 | build.enabled                                      | bool         | Enable/Disable running build command                                                             | no       | `true`                                 |
 | build.command                                      | string       | Build command to use                                                                             | no       | `"yarn run build"`                     |
 | build.build_dir                                    | string       | Directory where the compiled lambda files are generated, relative to the lambda source directory | no       | `"dist"`                               |
+| is_bundle                                          | bool         | If true, node_modules and .yarn directories will be excluded from the archive.                   | no       | `false`                                |
 | archive                                            | object       | Archive configuration                                                                            | no       | see sub fields                         |
 | archive.output_path                                | string       | Directory where the zipped file is generated, relative to the terraform file                     | no       | `"dist/{name}/azure-function-app.zip"` |
 | archive.excludes                                   | list(string) | List of strings with files that are excluded from the zip file                                   | no       | `[]`                                   |
@@ -517,13 +523,13 @@ yarn install
 
 ### Deployment
 
-Currently, we only use a single workspace within each cloud provider. To deploy all examples temporarily use:
+Currently, we only use a single workspace within each cloud provider. To deploy each example (temporarily) use:
 
 ```
-cd examples/aws
+cd examples/aws/<example>
 terraform apply
 
-cd examples/azure
+cd examples/azure/<example>
 terraform apply
 ```
 

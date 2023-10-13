@@ -1,0 +1,13 @@
+{
+  "name": "@they/example-bundle-lambda",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "packageManager": "yarn@3.5.1",
+  "scripts": {
+    "build": "tsc --noemit && esbuild index.ts --bundle --platform=node --outdir=dist"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.4",
+    "typescript": "5.0.4"
+  }
+}

@@ -23,6 +23,11 @@ variable "build" {
   default = {}
 }
 
+variable "is_bundle" {
+  description = "If true, node_modules and .yarn directories will be excluded from the archive."
+  default     = false
+}
+
 variable "archive" {
   description = "Archive configuration."
   type = object({

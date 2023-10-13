@@ -11,7 +11,7 @@ data "archive_file" "function_zip" {
   type        = "zip"
   output_path = coalesce(var.archive.output_path, "dist/${var.name}/lambda.zip")
   source_dir  = var.source_dir
-  excludes    = var.archive.excludes
+  excludes    = var.is_bundle ? concat(var.archive.excludes, ["**/node_modules/**", "**/.yarn/**"]) : var.archive.excludes
 
   depends_on = [data.external.builder]
 }

@@ -2,10 +2,10 @@
 
 module "function_app_with_build" {
   # source = "github.com/THEY-Consulting/they-terraform//azure/function-app"
-  source = "../../azure/function-app"
+  source = "../../../azure/function-app"
 
   name                = "they-test-with-build"
-  source_dir          = "packages/function-app-typescript"
+  source_dir          = "../packages/function-app-typescript"
   location            = "Germany West Central"
   resource_group_name = "they-dev"
 }

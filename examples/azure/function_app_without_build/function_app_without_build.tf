@@ -2,10 +2,10 @@
 
 module "function_app_without_build" {
   # source = "github.com/THEY-Consulting/they-terraform//azure/function-app"
-  source = "../../azure/function-app"
+  source = "../../../azure/function-app"
 
   name                = "they-test-no-build"
-  source_dir          = "packages/function-app-simple"
+  source_dir          = "../packages/function-app-simple"
   location            = "Germany West Central"
   resource_group_name = "they-dev"
 
