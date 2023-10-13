@@ -523,7 +523,7 @@ yarn install
 
 ### Deployment
 
-Currently, we only use a single workspace within each cloud provider. To deploy each examples (temporarily) use:
+Currently, we only use a single workspace within each cloud provider. To deploy each example (temporarily) use:
 
 ```
 cd examples/aws/<example>
