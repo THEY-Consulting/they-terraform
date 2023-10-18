@@ -1,5 +1,5 @@
 resource "azurerm_storage_account" "managed_storage_account" {
-  count = var.storage_account.name == null ? 1 : 0
+  count = var.storage_account.name == null ? 0 : 1
 
   name                     = replace(var.name, "-", "")
   resource_group_name      = var.resource_group_name
