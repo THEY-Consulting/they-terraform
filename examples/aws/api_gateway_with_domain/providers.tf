@@ -25,7 +25,7 @@ provider "aws" {
 // provider where domain certificates are stored
 provider "aws" {
   alias  = "acm_region"
-  region = "us-east-1"
+  region = "eu-west-1"
 
   default_tags {
     tags = {
