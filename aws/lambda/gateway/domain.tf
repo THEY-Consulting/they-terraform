@@ -7,12 +7,8 @@ data "aws_route53_zone" "zone" {
 resource "aws_api_gateway_domain_name" "api_gateway_domain_name" {
   count = var.domain != null ? 1 : 0
 
-  regional_certificate_arn = var.domain.certificate_arn
+  certificate_arn = var.domain.certificate_arn
   domain_name     = var.domain.domain
-
-  endpoint_configuration {
-    types = ["REGIONAL"]
-  }
 }
 
 resource "aws_api_gateway_base_path_mapping" "base_path_mapping" {
@@ -30,8 +26,8 @@ resource "aws_route53_record" "api_gateway_domain_name_record" {
   type    = "A"
   zone_id = data.aws_route53_zone.zone.0.id
   alias {
-    name                   = aws_api_gateway_domain_name.api_gateway_domain_name.0.regional_domain_name
-    zone_id                = aws_api_gateway_domain_name.api_gateway_domain_name.0.regional_zone_id
+    name                   = aws_api_gateway_domain_name.api_gateway_domain_name.0.cloudfront_domain_name
+    zone_id                = aws_api_gateway_domain_name.api_gateway_domain_name.0.cloudfront_zone_id
     evaluate_target_health = false
   }
 }
