@@ -4,6 +4,8 @@ data "aws_acm_certificate" "acm_certificate" {
   domain      = "they-code.de"
   statuses    = ["ISSUED"]
   most_recent = true
+
+  provider = aws.acm_region
 }
 
 # --- RESOURCES / MODULES ---
