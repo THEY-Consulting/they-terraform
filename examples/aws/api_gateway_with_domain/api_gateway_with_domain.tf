@@ -1,13 +1,5 @@
 # --- DATA ---
 
-data "aws_acm_certificate" "acm_certificate" {
-  domain      = "they-code.de"
-  statuses    = ["ISSUED"]
-  most_recent = true
-
-  provider = aws.acm_region
-}
-
 # --- RESOURCES / MODULES ---
 
 module "lambda_api_gateway_with_domain" {
@@ -25,7 +17,6 @@ module "lambda_api_gateway_with_domain" {
   ]
 
   domain = {
-    certificate_arn = data.aws_acm_certificate.acm_certificate.arn
     zone_name       = "they-code.de."
     domain          = "they-test-lambda.they-code.de"
   }

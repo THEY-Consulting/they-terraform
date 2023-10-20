@@ -57,7 +57,6 @@ variable "authorizer" {
 variable "domain" {
   description = "The domain configuration to use for the api gateway."
   type = object({
-    certificate_arn = string
     zone_name       = string
     domain          = string
   })
@@ -68,4 +67,10 @@ variable "redeployment_trigger" {
   description = "A unique string to force a redeploy of the api gateway. If not set manually, the module will use the configurations for endpoints, api_key, and authorizer config to decide if a redeployment is necessary."
   type        = string
   default     = null
+}
+
+variable "tags" {
+  description = "Tags for the resources."
+  type        = map(string)
+  default     = {}
 }
