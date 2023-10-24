@@ -7,6 +7,7 @@ module "lambda_api_gateway_with_domain" {
   source = "../../../aws/lambda/gateway"
 
   name = "they-test-api-gateway-with-domain"
+  trustStoreUri = "s3://they-test-api-gateway-with-domain-assets/certificates/truststore.pem"
   endpoints = [
     {
       path          = "simple"

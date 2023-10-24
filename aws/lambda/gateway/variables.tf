@@ -74,3 +74,9 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "trustStoreUri" {
+  description = "Uri to where the s3 truststore.pem for mTLS authorization is to be found."
+  type        = string
+  default     = null
+}
