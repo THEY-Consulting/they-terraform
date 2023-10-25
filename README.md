@@ -516,9 +516,9 @@ export TF_VAR_tenant_id=$AZURE_TENANT_ID
 
 ### Local Dev
 
-install dependencies
+Install dependencies:
 
-```
+```bash
 cd examples/aws/packages
 yarn install
 
@@ -528,9 +528,10 @@ yarn install
 
 ### Deployment
 
-Currently, we only use a single workspace within each cloud provider. To deploy each example (temporarily) use:
+Currently, we only use a single workspace within each cloud provider.
+To deploy each example (temporarily) use:
 
-```
+```bash
 cd examples/aws/<example>
 terraform apply
 
