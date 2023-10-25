@@ -72,3 +72,7 @@ variable "redeployment_trigger" {
   type        = string
   default     = null
 }
+
+locals {
+  use_mtls = var.domain == null ? false : var.domain.s3_trust_store_uri == null ? false : true
+}

@@ -1,7 +1,3 @@
-locals {
-  use_mtls = var.domain == null ? false : var.domain.s3_trust_store_uri == null ? false : true
-}
-
 # only used when we use mtls
 resource "aws_acm_certificate" "cert" {
   count = local.use_mtls ? 1 : 0
