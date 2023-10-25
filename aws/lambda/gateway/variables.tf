@@ -74,5 +74,6 @@ variable "redeployment_trigger" {
 }
 
 locals {
-  use_mtls = var.domain == null ? false : var.domain.s3_trust_store_uri == null ? false : true
+  use_domain = var.domain == null ? false : true
+  use_mtls   = local.use_domain ? (var.domain.s3_trust_store_uri == null ? false : true) : false
 }

@@ -1,11 +1,11 @@
 data "aws_route53_zone" "zone" {
-  count = var.domain != null ? 1 : 0
+  count = local.use_domain ? 1 : 0
 
   name = var.domain.zone_name
 }
 
 resource "aws_api_gateway_domain_name" "api_gateway_domain_name" {
-  count = var.domain != null ? local.use_mtls ? 0 : 1 : 0
+  count = local.use_domain && !local.use_mtls ? 1 : 0
 
   security_policy = "TLS_1_2"
   certificate_arn = var.domain.certificate_arn
@@ -13,7 +13,7 @@ resource "aws_api_gateway_domain_name" "api_gateway_domain_name" {
 }
 
 resource "aws_api_gateway_domain_name" "api_gateway_domain_name_mtls" {
-  count = var.domain != null ? local.use_mtls ? 1 : 0 : 0
+  count = local.use_domain && local.use_mtls ? 1 : 0
 
   security_policy          = "TLS_1_2"
   regional_certificate_arn = aws_acm_certificate_validation.cert_validate[0].certificate_arn
@@ -30,7 +30,7 @@ resource "aws_api_gateway_domain_name" "api_gateway_domain_name_mtls" {
 }
 
 resource "aws_api_gateway_base_path_mapping" "base_path_mapping" {
-  count = var.domain != null ? 1 : 0
+  count = local.use_domain ? 1 : 0
 
   api_id      = aws_api_gateway_rest_api.api.id
   stage_name  = aws_api_gateway_stage.stage.stage_name
@@ -38,7 +38,7 @@ resource "aws_api_gateway_base_path_mapping" "base_path_mapping" {
 }
 
 resource "aws_route53_record" "api_gateway_domain_name_record" {
-  count = var.domain != null ? 1 : 0
+  count = local.use_domain ? 1 : 0
 
   name    = local.use_mtls ? aws_api_gateway_domain_name.api_gateway_domain_name_mtls[0].domain_name : aws_api_gateway_domain_name.api_gateway_domain_name[0].domain_name
   type    = "A"
