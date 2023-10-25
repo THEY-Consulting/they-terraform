@@ -5,7 +5,7 @@ data "aws_route53_zone" "zone" {
 }
 
 resource "aws_api_gateway_domain_name" "api_gateway_domain_name" {
-  count = local.use_mtls ? 0 : 1
+  count = var.domain != null ? local.use_mtls ? 0 : 1 : 0
 
   security_policy = "TLS_1_2"
   certificate_arn = var.domain.certificate_arn
@@ -13,7 +13,7 @@ resource "aws_api_gateway_domain_name" "api_gateway_domain_name" {
 }
 
 resource "aws_api_gateway_domain_name" "api_gateway_domain_name_mtls" {
-  count = local.use_mtls ? 1 : 0
+  count = var.domain != null ? local.use_mtls ? 1 : 0 : 0
 
   security_policy          = "TLS_1_2"
   regional_certificate_arn = aws_acm_certificate_validation.cert_validate[0].certificate_arn
