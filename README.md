@@ -3,7 +3,8 @@
 Collection of modules to provide an easy way to create and deploy common infrastructure components.
 
 ##### Table of Contents
-- [Use in your own project](#use-in-your-own-project)  
+
+- [Use in your own project](#use-in-your-own-project)
   - [Prerequisites](#prerequisites)
   - [Usage](#usage)
 - [Modules](#modules)
@@ -27,6 +28,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
 - [terraform](https://www.terraform.io/downloads.html) >= 1.5.0
 
 Depending on the modules you want to use, you will need to have installed and configured:
+
 - [aws cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 - [az cli](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
 
@@ -77,7 +79,7 @@ module "lambda" {
     command   = "yarn run build"
     build_dir = "dist"
   }
-  
+
   is_bundle = false
 
   archive = {
@@ -129,7 +131,7 @@ module "lambda" {
     subnet_ids         = ["subnet-12345678"]
     security_group_ids = ["sg-12345678"]
   }
-  
+
   tags = {
     createdBy = "terraform"
     environment = "dev"
@@ -140,7 +142,7 @@ module "lambda" {
 ##### Inputs
 
 | Variable                      | Type         | Description                                                                                                                        | Required | Default                    |
-|-------------------------------|--------------|------------------------------------------------------------------------------------------------------------------------------------|----------|----------------------------|
+| ----------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------- |
 | name                          | string       | Name of the lambda function                                                                                                        | yes      |                            |
 | description                   | string       | Description of the lambda function                                                                                                 | yes      |                            |
 | source_dir                    | string       | Directory containing the lambda function                                                                                           | yes      |                            |
@@ -152,7 +154,7 @@ module "lambda" {
 | timeout                       | number       | Amount of time your Lambda Function has to run in seconds                                                                          | no       | `3`                        |
 | layers                        | list(string) | List of Lambda Layer Version ARNs (maximum of 5) to attach to your Lambda Function                                                 | no       | `[]`                       |
 | build                         | object       | Build configurations                                                                                                               | no       | see sub fields             |
-| build.enabled                 | bool         | Enabled/Disable running build command                                                                                              | no       | `true`                     |
+| build.enabled                 | bool         | Enable/Disable running build command                                                                                               | no       | `true`                     |
 | build.command                 | string       | Build command to use                                                                                                               | no       | `"yarn run build"`         |
 | build.build_dir               | string       | Directory where the compiled lambda files are generated, relative to the lambda source directory                                   | no       | `"dist"`                   |
 | is_bundle                     | bool         | If true, node_modules and .yarn directories will be excluded from the archive.                                                     | no       | `false`                    |
@@ -174,8 +176,8 @@ module "lambda" {
 | bucket_trigger.filter_suffix  | string       | Trigger lambda only for files starting with this suffix                                                                            | no       | `null`                     |
 | role_arn                      | string       | ARN of the role used for executing the lambda function, if no role is given a role with cloudwatch access is created automatically | no       | `null`                     |
 | iam_policy                    | list(object) | IAM policies to attach to the lambda role, only works if no custom `role_arn` is set                                               | no       | `[]`                       |
-| iam_policy.*.name             | string       | Name of the policy                                                                                                                 | (yes)    |                            |
-| iam_policy.*.policy           | string       | JSON encoded policy string                                                                                                         | (yes)    |                            |
+| iam_policy.\*.name            | string       | Name of the policy                                                                                                                 | (yes)    |                            |
+| iam_policy.\*.policy          | string       | JSON encoded policy string                                                                                                         | (yes)    |                            |
 | environment                   | map(string)  | Map of environment variables that are accessible from the function code during execution                                           | no       | `null`                     |
 | vpc_config                    | object       | For network connectivity to AWS resources in a VPC                                                                                 | no       | `null`                     |
 | vpc_config.security_group_ids | list(string) | List of security groups to connect the lambda with                                                                                 | (yes)    |                            |
@@ -185,7 +187,7 @@ module "lambda" {
 ##### Outputs
 
 | Output            | Type   | Description                                                      |
-|-------------------|--------|------------------------------------------------------------------|
+| ----------------- | ------ | ---------------------------------------------------------------- |
 | arn               | string | The Amazon Resource Name (ARN) identifying your Lambda Function  |
 | function_name     | string | The name of the Lambda Function                                  |
 | invoke_arn        | string | The ARN to be used for invoking Lambda Function from API Gateway |
@@ -235,7 +237,7 @@ module "api_gateway" {
   }
 
   redeployment_trigger = "v1.0.0"
-  
+
   tags = {
     createdBy = "terraform"
     environment = "dev"
@@ -246,18 +248,18 @@ module "api_gateway" {
 ##### Inputs
 
 | Variable                                  | Type         | Description                                                                                                                                                                                                 | Required | Default                                                   |
-|-------------------------------------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|-----------------------------------------------------------|
+| ----------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------- |
 | name                                      | string       | Name of the api gateway                                                                                                                                                                                     | yes      |                                                           |
 | description                               | string       | Description of the api gateway                                                                                                                                                                              | no       | `""`                                                      |
 | stage_name                                | string       | Stage to use for the api gateway                                                                                                                                                                            | no       | `"dev"`                                                   |
 | endpoints                                 | list(object) | The endpoints to create for the api gateway                                                                                                                                                                 | yes      |                                                           |
-| endpoints.*.path                          | string       | Path segment where the lambda function is reachable                                                                                                                                                         | yes      |                                                           |
-| endpoints.*.method                        | string       | HTTP Method (`GET`, `POST`, `PUT`, `DELETE`, `HEAD`, `OPTIONS`, `ANY`)                                                                                                                                      | yes      |                                                           |
-| endpoints.*.function_name                 | string       | Name of the lambda function                                                                                                                                                                                 | yes      |                                                           |
-| endpoints.*.function_arn                  | string       | ARN of the lambda function                                                                                                                                                                                  | yes      |                                                           |
-| endpoints.*.authorization                 | string       | Type of authorization used for the method (`NONE`, `CUSTOM`, `AWS_IAM`, `COGNITO_USER_POOLS`)                                                                                                               | no       | `"None"` or `"CUSTOM"` if `authorizer` is set             |
-| endpoints.*.authorizer_id                 | string       | Authorizer id to be used when the authorization is `CUSTOM` or `COGNITO_USER_POOLS`                                                                                                                         | no       | `null` or authorizer id if `authorizer` is set            |
-| endpoints.*.api_key_required              | bool         | Specify if the method requires an API key                                                                                                                                                                   | no       | `true` if `api_key` is set, otherwise `false`             |
+| endpoints.\*.path                         | string       | Path segment where the lambda function is reachable                                                                                                                                                         | yes      |                                                           |
+| endpoints.\*.method                       | string       | HTTP Method (`GET`, `POST`, `PUT`, `DELETE`, `HEAD`, `OPTIONS`, `ANY`)                                                                                                                                      | yes      |                                                           |
+| endpoints.\*.function_name                | string       | Name of the lambda function                                                                                                                                                                                 | yes      |                                                           |
+| endpoints.\*.function_arn                 | string       | ARN of the lambda function                                                                                                                                                                                  | yes      |                                                           |
+| endpoints.\*.authorization                | string       | Type of authorization used for the method (`NONE`, `CUSTOM`, `AWS_IAM`, `COGNITO_USER_POOLS`)                                                                                                               | no       | `"None"` or `"CUSTOM"` if `authorizer` is set             |
+| endpoints.\*.authorizer_id                | string       | Authorizer id to be used when the authorization is `CUSTOM` or `COGNITO_USER_POOLS`                                                                                                                         | no       | `null` or authorizer id if `authorizer` is set            |
+| endpoints.\*.api_key_required             | bool         | Specify if the method requires an API key                                                                                                                                                                   | no       | `true` if `api_key` is set, otherwise `false`             |
 | api_key                                   | object       | Api key configuration to use for the api gateway                                                                                                                                                            | no       | `null`                                                    |
 | api_key.name                              | string       | Specify if the method requires an API key                                                                                                                                                                   | no       | `"${var.name}-api-key"`                                   |
 | api_key.value                             | string       | API key                                                                                                                                                                                                     | (yes)    |                                                           |
@@ -281,10 +283,10 @@ module "api_gateway" {
 
 ##### Outputs
 
-| Output            | Type         | Description                       |
-|-------------------|--------------|-----------------------------------|
-| invoke_url        | string       | The invoke URL of the api gateway |
-| endpoint_urls     | list(string) | List of all endpoint URLs         |
+| Output        | Type         | Description                       |
+| ------------- | ------------ | --------------------------------- |
+| invoke_url    | string       | The invoke URL of the api gateway |
+| endpoint_urls | list(string) | List of all endpoint URLs         |
 
 #### GitHub OpenID role
 
@@ -319,21 +321,21 @@ module "github_action_role" {
 
 ##### Inputs
 
-| Variable          | Type         | Description                                                                                                                                                                                              | Required | Default |
-|-------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
-| name              | string       | Name of the role                                                                                                                                                                                         | yes      |         |
-| repo              | string       | Repository that is authorized to assume this role                                                                                                                                                        | yes      |         |
-| policies          | list(object) | List of additional inline policies to attach to the app                                                                                                                                                  | no       | `[]`    |
-| policies.*.name   | string       | Name of the inline policy                                                                                                                                                                                | yes      |         |
-| policies.*.policy | string       | Policy document as a JSON formatted string                                                                                                                                                               | yes      |         |
-| s3StateBackend    | bool         | Set to true if a s3 state backend was setup with the setup-tfstate module (or uses the same naming scheme for the s3 bucket and dynamoDB table). This will set the required s3 and dynamoDB permissions. | no       | `true`  |
+| Variable           | Type         | Description                                                                                                                                                                                              | Required | Default |
+| ------------------ | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
+| name               | string       | Name of the role                                                                                                                                                                                         | yes      |         |
+| repo               | string       | Repository that is authorized to assume this role                                                                                                                                                        | yes      |         |
+| policies           | list(object) | List of additional inline policies to attach to the app                                                                                                                                                  | no       | `[]`    |
+| policies.\*.name   | string       | Name of the inline policy                                                                                                                                                                                | yes      |         |
+| policies.\*.policy | string       | Policy document as a JSON formatted string                                                                                                                                                               | yes      |         |
+| s3StateBackend     | bool         | Set to true if a s3 state backend was setup with the setup-tfstate module (or uses the same naming scheme for the s3 bucket and dynamoDB table). This will set the required s3 and dynamoDB permissions. | no       | `true`  |
 
 ##### Outputs
 
-| Output            | Type   | Description          |
-|-------------------|--------|----------------------|
-| role_name         | string | The name of the role |
-| role_arn          | string | The ARN of the role  |
+| Output    | Type   | Description          |
+| --------- | ------ | -------------------- |
+| role_name | string | The name of the role |
+| role_arn  | string | The ARN of the role  |
 
 #### setup-tfstate
 
@@ -348,13 +350,13 @@ module "setup_tfstate" {
 ##### Inputs
 
 | Variable | Type   | Description                                                     | Required | Default |
-|----------|--------|-----------------------------------------------------------------|----------|---------|
+| -------- | ------ | --------------------------------------------------------------- | -------- | ------- |
 | name     | string | Name of the app, used for the s3 bucket and dynamoDB table name | yes      |         |
 
 ##### Outputs
 
 | Output         | Type   | Description               |
-|----------------|--------|---------------------------|
+| -------------- | ------ | ------------------------- |
 | s3_bucket_arn  | string | The ARN of the s3 bucket  |
 | s3_bucket_name | string | The name of the s3 bucket |
 
@@ -400,7 +402,7 @@ module "function_app_without_build" {
     command   = "yarn run build"
     build_dir = "dist"
   }
-  
+
   is_bundle = false
 
   archive = {
@@ -437,7 +439,7 @@ module "function_app_without_build" {
 ##### Inputs
 
 | Variable                                           | Type         | Description                                                                                      | Required | Default                                |
-|----------------------------------------------------|--------------|--------------------------------------------------------------------------------------------------|----------|----------------------------------------|
+| -------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------ | -------- | -------------------------------------- |
 | name                                               | string       | Name of the function app                                                                         | yes      |                                        |
 | source_dir                                         | string       | Directory containing the function code                                                           | yes      |                                        |
 | location                                           | string       | The Azure region where the resources should be created                                           | yes      |                                        |
@@ -480,7 +482,7 @@ module "function_app_without_build" {
 ##### Outputs
 
 | Output            | Type   | Description                        |
-|-------------------|--------|------------------------------------|
+| ----------------- | ------ | ---------------------------------- |
 | id                | string | The ID of the Function App         |
 | build             | string | Build output                       |
 | archive_file_path | string | Path to the generated archive file |
@@ -501,31 +503,35 @@ module "function_app_without_build" {
 ### Environment Variables
 
 - set up your environment variables (create and put them in `.envrc` in the project's root dir):
+
 ```txt
 export AWS_PROFILE=nameOfProfile
 export AZURE_TENANT_ID=<see https://portal.azure.com/#settings/directory for the correct Directory ID>
 export TF_VAR_tenant_id=$AZURE_TENANT_ID
 
 ```
+
 - remember to add the aws profile info to `~/.aws/config`
 - and the key and secret for said profile to `~/.aws/credentials`
 
 ### Local Dev
 
-install dependencies 
-```
-cd examples/aws/packages 
+Install dependencies:
+
+```bash
+cd examples/aws/packages
 yarn install
 
-cd examples/azure/packages 
+cd examples/azure/packages
 yarn install
 ```
 
 ### Deployment
 
-Currently, we only use a single workspace within each cloud provider. To deploy each example (temporarily) use:
+Currently, we only use a single workspace within each cloud provider.
+To deploy each example (temporarily) use:
 
-```
+```bash
 cd examples/aws/<example>
 terraform apply
 
@@ -535,8 +541,8 @@ terraform apply
 
 When you are done testing, please destroy the resources with `terraform destroy`.
 
-_examples/setup-tfstate_ can be deployed the same way, but it is a bit more complicated to clean up. 
-`terraform destroy` can not remove the s3 bucket (due to `prevent_destroy = true`). 
+_examples/setup-tfstate_ can be deployed the same way, but it is a bit more complicated to clean up.
+`terraform destroy` can not remove the s3 bucket (due to `prevent_destroy = true`).
 Therefore, you need to delete the bucket manually.
-After that you can remove the remaining resources with `terraform destroy`. 
+After that you can remove the remaining resources with `terraform destroy`.
 Keep in mind that after destroying a bucket it can take up to 24 hours until the name is available again.
