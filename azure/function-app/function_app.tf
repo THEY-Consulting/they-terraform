@@ -21,8 +21,8 @@ resource "azurerm_windows_function_app" "function_app" {
   resource_group_name = var.resource_group_name
   location            = var.location
 
-  storage_account_name       = data.azurerm_storage_account.storage_account.name
-  storage_account_access_key = data.azurerm_storage_account.storage_account.primary_access_key
+  storage_account_name       = data.azurerm_storage_account.main.name
+  storage_account_access_key = data.azurerm_storage_account.main.primary_access_key
   service_plan_id            = data.azurerm_service_plan.service_plan.id
 
   app_settings = merge(
@@ -34,7 +34,8 @@ resource "azurerm_windows_function_app" "function_app" {
       "languageWorkers:node:arguments"          = "--max-old-space-size=1024"
     },
     var.storage_trigger != null ? {
-      TriggerStorageConnection = data.azurerm_storage_account.trigger_storage_account.0.primary_connection_string
+      # TODO: maybe use SCREAMING_SNAKE_CASE
+      TriggerStorageConnection = data.azurerm_storage_account.main.primary_connection_string
     } : {},
     var.identity != null ? {
       AZURE_CLIENT_ID = data.azurerm_user_assigned_identity.identity.0.client_id

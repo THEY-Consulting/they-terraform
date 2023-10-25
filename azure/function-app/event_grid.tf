@@ -1,19 +1,8 @@
-data "azurerm_storage_account" "trigger_storage_account" {
-  count = var.storage_trigger != null ? 1 : 0
-
-  name                = coalesce(var.storage_trigger.trigger_storage_account_name, data.azurerm_storage_account.storage_account.name)
-  resource_group_name = coalesce(var.storage_trigger.trigger_resource_group_name, data.azurerm_storage_account.storage_account.resource_group_name)
-
-  depends_on = [
-    azurerm_storage_account.managed_storage_account,
-  ]
-}
-
 resource "azurerm_eventgrid_event_subscription" "eventgrid_subscription" {
-  count = var.storage_trigger != null ? 1 : 0
+  count = var.storage_trigger == null ? 0 : 1
 
   name                 = "${var.name}-subscription"
-  scope                = data.azurerm_storage_account.trigger_storage_account.0.id
+  scope                = data.azurerm_storage_account.main.id
   included_event_types = var.storage_trigger.events
 
   azure_function_endpoint {

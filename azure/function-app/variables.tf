@@ -18,10 +18,10 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "storage_account" {
-  description = "The storage account."
+variable "storage_account_options" {
+  description = "Options for the to be created storage account. These only get applied if a storage account will be created."
   type = object({
-    name             = optional(string, null)
+    is_hns_enabled   = optional(bool, false) # This makes the storage account "data lake storage"
     tier             = optional(string, "Standard")
     replication_type = optional(string, "RAGRS") # Read-access geo-redundant storage (RA-GRS)
     min_tls_version  = optional(string, "TLS1_2")
@@ -82,10 +82,14 @@ variable "archive" {
 variable "storage_trigger" {
   description = "Storage trigger configuration."
   type = object({
-    function_name                = string
-    events                       = list(string)
-    trigger_storage_account_name = optional(string) # defaults to the storage account of the function app
+    function_name = string
+    events        = list(string)
+    # TODO: document change
+    trigger_storage_account_name = string           # defaults to the storage account of the function app
     trigger_resource_group_name  = optional(string) # defaults to the resource group of the function app
+    # new. Whether we want to create a storage account or use an already
+    # existing one. TODO: document this.
+    create_storage_account = bool
     subject_filter = optional(object({
       subject_begins_with = optional(string)
       subject_ends_with   = optional(string)
