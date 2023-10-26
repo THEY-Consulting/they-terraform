@@ -65,6 +65,15 @@ variable "domain" {
     domain             = string
   })
   default = null
+
+  validation {
+    # if domain is set, than we need to run a xor validation for either certificate_arn or s3_trust_store_uri to be set
+    condition     = (var.domain != null ?
+    ((var.domain.certificate_arn != null && var.domain.s3_trust_store_uri== null) ||
+    (var.domain.certificate_arn == null && var.domain.s3_trust_store_uri!= null)) : true
+    )
+    error_message = "Either 'certificate_arn' or 's3_trust_store_uri' must be set. They cannot both be set or both be null"
+  }
 }
 
 variable "redeployment_trigger" {
