@@ -16,7 +16,6 @@ provider "aws" {
 
   default_tags {
     tags = {
-      DummyTag  = "pda-euwest1"
       Project   = "they-terraform-examples"
       CreatedBy = "terraform"
     }
@@ -30,7 +29,6 @@ provider "aws" {
 
   default_tags {
     tags = {
-      DummyTag  = "pda-useast1"
       Project   = "they-terraform-examples"
       CreatedBy = "terraform"
     }
