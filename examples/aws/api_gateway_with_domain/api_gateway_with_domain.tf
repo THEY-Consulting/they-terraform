@@ -27,7 +27,8 @@ module "lambda_api_gateway_with_domain" {
   domain = {
     certificate_arn = data.aws_acm_certificate.acm_certificate.arn
     zone_name       = "they-code.de."
-    domain          = "they-test-lambda.they-code.de"
+    # while developing the mtls implementation, domain below without timestamp was used, which now causes host of lambda to only resolve after waiting substantial amount of time (up to a day)
+    domain          = "${formatdate("YYYY-MM-YY-hh-mm-ss", timestamp())}-they-test-lambda.they-code.de"
   }
 }
 
