@@ -15,9 +15,9 @@ module "lambda_api_gateway_with_domain_mtls" {
   ]
 
   domain = {
-    # not required if s3_trust_store_uri was set
+    # not required if s3_truststore_uri was set
     # certificate_arn = data.aws_acm_certificate.acm_certificate.arn
-    s3_trust_store_uri = "s3://they-test-api-gateway-with-domain-assets/certificates/truststore.pem"
+    s3_truststore_uri = "s3://they-test-api-gateway-with-domain-assets/certificates/truststore.pem"
     zone_name          = "they-code.de."
     domain             = "they-test-gateway-with-mtls.they-code.de"
   }

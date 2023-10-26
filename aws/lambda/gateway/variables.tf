@@ -60,19 +60,19 @@ variable "domain" {
     # use this without mtls
     certificate_arn = optional(string)
     # use this with mtls
-    s3_trust_store_uri = optional(string)
+    s3_truststore_uri = optional(string)
     zone_name          = string
     domain             = string
   })
   default = null
 
   validation {
-    # if domain is set, than we need to run a xor validation for either certificate_arn or s3_trust_store_uri to be set
+    # if domain is set, than we need to run a xor validation for either certificate_arn or s3_truststore_uri to be set
     condition     = (var.domain != null ?
-    ((var.domain.certificate_arn != null && var.domain.s3_trust_store_uri== null) ||
-    (var.domain.certificate_arn == null && var.domain.s3_trust_store_uri!= null)) : true
+    ((var.domain.certificate_arn != null && var.domain.s3_truststore_uri== null) ||
+    (var.domain.certificate_arn == null && var.domain.s3_truststore_uri!= null)) : true
     )
-    error_message = "Either 'certificate_arn' or 's3_trust_store_uri' must be set. They cannot both be set or both be null"
+    error_message = "Either 'certificate_arn' or 's3_truststore_uri' must be set. They cannot both be set or both be null"
   }
 }
 
@@ -84,5 +84,5 @@ variable "redeployment_trigger" {
 
 locals {
   use_domain = var.domain == null ? false : true
-  use_mtls   = local.use_domain ? (var.domain.s3_trust_store_uri == null ? false : true) : false
+  use_mtls   = local.use_domain ? (var.domain.s3_truststore_uri == null ? false : true) : false
 }
