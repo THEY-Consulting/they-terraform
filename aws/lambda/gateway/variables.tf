@@ -1,3 +1,8 @@
+locals {
+  use_domain = var.domain == null ? false : true
+  use_mtls   = local.use_domain ? (var.domain.s3_truststore_uri == null ? false : true) : false
+}
+
 variable "name" {
   description = "The name of the api gateway."
   type        = string
@@ -78,9 +83,4 @@ variable "redeployment_trigger" {
   description = "A unique string to force a redeploy of the api gateway. If not set manually, the module will use the configurations for endpoints, api_key, and authorizer config to decide if a redeployment is necessary."
   type        = string
   default     = null
-}
-
-locals {
-  use_domain = var.domain == null ? false : true
-  use_mtls   = local.use_domain ? (var.domain.s3_truststore_uri == null ? false : true) : false
 }
