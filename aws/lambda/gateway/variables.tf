@@ -65,7 +65,7 @@ variable "domain" {
   default = null
 
   validation {
-    # if domain is set, than we need to run an xor validation for either certificate_arn or s3_truststore_uri to be set
+    # if domain is set, then we need to run an xor validation for either certificate_arn or s3_truststore_uri to be set
     condition     = (var.domain != null ?
     ((var.domain.certificate_arn != null && var.domain.s3_truststore_uri== null) ||
     (var.domain.certificate_arn == null && var.domain.s3_truststore_uri!= null)) : true
