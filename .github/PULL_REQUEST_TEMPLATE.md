@@ -39,4 +39,3 @@
 ✔ I checked the requirements for the ticket, and they are matching the PR.
 
 ✔ I am satisfied with the code and left annotations if I had some ideas.
-

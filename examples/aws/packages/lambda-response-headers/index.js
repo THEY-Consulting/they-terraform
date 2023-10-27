@@ -4,11 +4,11 @@ const handler = async () => {
   return {
     statusCode: 200,
     headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Credentials": true,
-      "Custom-Header": "Custom-Value",
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true,
+      'Custom-Header': 'Custom-Value',
     },
-    body: "Hello World!"
+    body: 'Hello World!',
   };
 };
 

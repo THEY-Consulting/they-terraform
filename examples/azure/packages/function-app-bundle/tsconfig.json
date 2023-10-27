@@ -6,8 +6,6 @@
     "inlineSources": true,
     "sourceRoot": "/"
   },
-  "include": [
-    "hello-world"
-  ],
+  "include": ["hello-world"],
   "exclude": ["dist", "node_modules"]
 }
