@@ -57,7 +57,6 @@ variable "authorizer" {
 variable "domain" {
   description = "The domain configuration to use for the api gateway."
   type = object({
-    # use this without mtls
     certificate_arn = optional(string)
     # use this with mtls
     s3_truststore_uri = optional(string)
