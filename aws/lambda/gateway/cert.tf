@@ -1,4 +1,3 @@
-# only used when we use mtls
 resource "aws_acm_certificate" "cert" {
   count = local.use_mtls ? 1 : 0
 
