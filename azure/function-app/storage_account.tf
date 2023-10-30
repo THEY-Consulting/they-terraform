@@ -1,6 +1,4 @@
 resource "azurerm_storage_account" "created_storage_account" {
-  # TODO: perhaps add the containers we want to use here as optioanl variables
-  # to have them automatically created
   count = var.storage_trigger.create_storage_account == true ? 1 : 0
 
   name                     = local.storage_account_name

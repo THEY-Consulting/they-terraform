@@ -34,7 +34,6 @@ resource "azurerm_windows_function_app" "function_app" {
       "languageWorkers:node:arguments"          = "--max-old-space-size=1024"
     },
     var.storage_trigger != null ? {
-      # TODO: maybe use SCREAMING_SNAKE_CASE
       TriggerStorageConnection = data.azurerm_storage_account.main.primary_connection_string
     } : {},
     var.identity != null ? {

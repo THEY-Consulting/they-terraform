@@ -82,14 +82,11 @@ variable "archive" {
 variable "storage_trigger" {
   description = "Storage trigger configuration."
   type = object({
-    function_name = string
-    events        = list(string)
-    # TODO: document change
-    trigger_storage_account_name = string           # defaults to the storage account of the function app
+    function_name                = string
+    events                       = list(string)
+    trigger_storage_account_name = string
     trigger_resource_group_name  = optional(string) # defaults to the resource group of the function app
-    # new. Whether we want to create a storage account or use an already
-    # existing one. TODO: document this.
-    create_storage_account = bool
+    create_storage_account       = bool
     subject_filter = optional(object({
       subject_begins_with = optional(string)
       subject_ends_with   = optional(string)
