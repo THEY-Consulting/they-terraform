@@ -1,20 +1,10 @@
-# --- DATA ---
-
-data "aws_acm_certificate" "acm_certificate" {
-  domain      = "they-code.de"
-  statuses    = ["ISSUED"]
-  most_recent = true
-
-  provider = aws.acm_region
-}
-
 # --- RESOURCES / MODULES ---
 
-module "lambda_api_gateway_with_domain" {
+module "lambda_api_gateway_with_domain_mtls" {
   # source = "github.com/THEY-Consulting/they-terraform//aws/lambda/gateway"
   source = "../../../aws/lambda/gateway"
 
-  name = "they-test-api-gateway-with-domain"
+  name = "they-test-api-gateway-with-domain_mtls"
   endpoints = [
     {
       path          = "simple"
@@ -25,8 +15,8 @@ module "lambda_api_gateway_with_domain" {
   ]
 
   domain = {
-    certificate_arn = data.aws_acm_certificate.acm_certificate.arn
-    zone_name       = "they-code.de."
+    s3_truststore_uri = "s3://they-test-api-gateway-with-domain-assets/certificates/truststore.pem"
+    zone_name          = "they-code.de."
     # used domain without timestamp during mtls development, which now delays lambda host resolution (approx. 1hr).
     domain          = "${formatdate("YYYY-MM-YY-hh-mm-ss", timestamp())}-they-test-lambda.they-code.de"
   }
@@ -34,6 +24,7 @@ module "lambda_api_gateway_with_domain" {
 
 # --- OUTPUT ---
 
-output "endpoint_urls_with_domain" {
-  value = module.lambda_api_gateway_with_domain.endpoint_urls
+output "endpoint_urls_with_domain_mtls" {
+  value = module.lambda_api_gateway_with_domain_mtls.endpoint_urls
 }
+

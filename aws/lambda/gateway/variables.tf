@@ -1,3 +1,8 @@
+locals {
+  use_domain = var.domain == null ? false : true
+  use_mtls   = local.use_domain ? (var.domain.s3_truststore_uri == null ? false : true) : false
+}
+
 variable "name" {
   description = "The name of the api gateway."
   type        = string
@@ -57,11 +62,21 @@ variable "authorizer" {
 variable "domain" {
   description = "The domain configuration to use for the api gateway."
   type = object({
-    certificate_arn = string
-    zone_name       = string
-    domain          = string
+    certificate_arn = optional(string)
+    s3_truststore_uri = optional(string)
+    zone_name          = string
+    domain             = string
   })
   default = null
+
+  validation {
+    # if domain is set, then we need to run an xor validation for either certificate_arn or s3_truststore_uri to be set
+    condition     = (var.domain != null ?
+    ((var.domain.certificate_arn != null && var.domain.s3_truststore_uri== null) ||
+    (var.domain.certificate_arn == null && var.domain.s3_truststore_uri!= null)) : true
+    )
+    error_message = "Either 'certificate_arn' or 's3_truststore_uri' must be set. They cannot both be set or both be null"
+  }
 }
 
 variable "redeployment_trigger" {
