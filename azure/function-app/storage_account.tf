@@ -1,5 +1,6 @@
 resource "azurerm_storage_account" "managed_storage_account" {
-  count = var.storage_account.name != null ? 1 : 0
+  # when preexisting_name is null, create a new storage account
+  count = var.storage_account.preexisting_name == null ? 1 : 0
 
   name                     = replace(var.name, "-", "")
   resource_group_name      = var.resource_group_name
@@ -12,6 +13,6 @@ resource "azurerm_storage_account" "managed_storage_account" {
 }
 
 data "azurerm_storage_account" "storage_account" {
-  name                = coalesce(var.storage_account.name, azurerm_storage_account.managed_storage_account.0.name)
+  name                = coalesce(var.storage_account.preexisting_name, azurerm_storage_account.managed_storage_account.0.name)
   resource_group_name = var.resource_group_name
 }
