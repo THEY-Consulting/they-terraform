@@ -2,7 +2,7 @@
 
 module "github_action_role_with_custom_policy" {
   # source = "github.com/THEY-Consulting/they-terraform//aws/openid/github"
-  source = "../../aws/openid/github"
+  source = "../../../aws/openid/github"
 
   name = "they-test-with-custom-policy"
   repo = "THEY-Consulting/they-terraform"
