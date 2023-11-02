@@ -5,6 +5,7 @@ resource "azurerm_storage_account" "managed_storage_account" {
   name                     = replace(var.name, "-", "")
   resource_group_name      = var.resource_group_name
   location                 = var.location
+  is_hns_enabled           = var.storage_account.is_hns_enabled
   account_tier             = var.storage_account.tier
   account_replication_type = var.storage_account.replication_type
   min_tls_version          = var.storage_account.min_tls_version
