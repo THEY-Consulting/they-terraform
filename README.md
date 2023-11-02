@@ -51,6 +51,21 @@ and run `terraform init`.
 
 For more examples see the [examples](./examples) directory.
 
+If you want to use a specific version of the module, 
+you can specify the version or commit in the source url:
+
+```hcl
+module "lambda_with_build" {
+  source = "github.com/THEY-Consulting/they-terraform//aws/lambda?ref=v0.1.0"
+}
+
+module "lambda_with_build" {
+  source = "github.com/THEY-Consulting/they-terraform//aws/lambda?ref=ee423515"
+}
+```
+
+See https://developer.hashicorp.com/terraform/language/modules/sources#selecting-a-revision for more details.
+
 ## Modules
 
 ### AWS
@@ -525,6 +540,17 @@ yarn install
 
 cd examples/azure/packages
 yarn install
+```
+
+If you want to import and test changes you made without merging them first into main, 
+you can use the git commit hash as the version in the source url 
+when importing the module within other projects.
+Dont forget to remove the hash when you are done ;)
+
+```hcl
+module "module_with_unmerged_changes" {
+  source = "github.com/THEY-Consulting/they-terraform//aws/lambda?ref=ee423515"
+}
 ```
 
 ### Deployment
