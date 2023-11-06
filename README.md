@@ -66,6 +66,23 @@ module "lambda_with_build" {
 
 See https://developer.hashicorp.com/terraform/language/modules/sources#selecting-a-revision for more details.
 
+Specific providers can be set for modules by using the `providers` argument:
+
+```hcl
+provider "aws" {
+  region = "eu-west-1"
+  alias  = "specific"
+}
+
+module "lambda_with_specific_provider" {
+  source = "github.com/THEY-Consulting/they-terraform//aws/lambda"
+
+  providers = {
+    aws = aws.specific
+  }
+}
+```
+
 ## Modules
 
 ### AWS
