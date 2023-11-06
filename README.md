@@ -391,6 +391,7 @@ module "function_app_without_build" {
 
   storage_account = {
     preexisting_name = "theydev"
+    is_hns_enabled   = true
     tier             = "Standard"
     replication_type = "RAGRS"
     min_tls_version  = "TLS1_2"
@@ -455,13 +456,14 @@ module "function_app_without_build" {
 ##### Inputs
 
 | Variable                                           | Type         | Description                                                                                                 | Required | Default                                |
-|----------------------------------------------------| ------------ |-------------------------------------------------------------------------------------------------------------| -------- | -------------------------------------- |
+|----------------------------------------------------|--------------|-------------------------------------------------------------------------------------------------------------| -------- |----------------------------------------|
 | name                                               | string       | Name of the function app                                                                                    | yes      |                                        |
 | source_dir                                         | string       | Directory containing the function code                                                                      | yes      |                                        |
 | location                                           | string       | The Azure region where the resources should be created                                                      | yes      |                                        |
 | resource_group_name                                | string       | The name of the resource group in which to create the function app                                          | yes      |                                        |
 | storage_account                                    | object       | The storage account                                                                                         | no       | see sub fields                         |
 | storage_account.preexisting_name                   | string       | Name of an existing storage account, if this is `null` a new storage account will be created                | no       | `null`                                 |
+| storage_account.is_hns_enabled                     | bool         | Makes the storage account a "data lake storage" if enabled.                                                 | no       | `false`                                |
 | storage_account.tier                               | string       | Tier of the newly created storage account, ignored if `storage_account.preexisting_name` is set             | no       | `"Standard"`                           |
 | storage_account.replication_type                   | string       | Replication type of the newly created storage account, ignored if `storage_account.preexisting_name` is set | no       | `"RAGRS"`                              |
 | storage_account.min_tls_version                    | string       | Min TLS version of the newly created storage account, ignored if `storage_account.preexisting_name` is set  | no       | `"TLS1_2"`                             |
