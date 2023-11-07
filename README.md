@@ -51,6 +51,21 @@ and run `terraform init`.
 
 For more examples see the [examples](./examples) directory.
 
+If you want to use a specific version of the module, 
+you can specify the version or commit in the source url:
+
+```hcl
+module "lambda_with_build" {
+  source = "github.com/THEY-Consulting/they-terraform//aws/lambda?ref=v0.1.0"
+}
+
+module "lambda_with_build" {
+  source = "github.com/THEY-Consulting/they-terraform//aws/lambda?ref=ee423515"
+}
+```
+
+See https://developer.hashicorp.com/terraform/language/modules/sources#selecting-a-revision for more details.
+
 ## Modules
 
 ### AWS
@@ -375,7 +390,8 @@ module "function_app_without_build" {
   resource_group_name = "they-dev"
 
   storage_account = {
-    name             = "theydev"
+    preexisting_name = "theydev"
+    is_hns_enabled   = true
     tier             = "Standard"
     replication_type = "RAGRS"
     min_tls_version  = "TLS1_2"
@@ -439,46 +455,47 @@ module "function_app_without_build" {
 
 ##### Inputs
 
-| Variable                                           | Type         | Description                                                                                      | Required | Default                                |
-| -------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------ | -------- | -------------------------------------- |
-| name                                               | string       | Name of the function app                                                                         | yes      |                                        |
-| source_dir                                         | string       | Directory containing the function code                                                           | yes      |                                        |
-| location                                           | string       | The Azure region where the resources should be created                                           | yes      |                                        |
-| resource_group_name                                | string       | The name of the resource group in which to create the function app                               | yes      |                                        |
-| storage_account                                    | object       | The storage account                                                                              | no       | see sub fields                         |
-| storage_account.name                               | string       | Name of an existing storage account, if this is `null` a new storage account will be created     | no       | `null`                                 |
-| storage_account.tier                               | string       | Tier of the newly created storage account, ignored if `storage_account.name` is set              | no       | `"Standard"`                           |
-| storage_account.replication_type                   | string       | Replication type of the newly created storage account, ignored if `storage_account.name` is set  | no       | `"RAGRS"`                              |
-| storage_account.min_tls_version                    | string       | Min TLS version of the newly created storage account, ignored if `storage_account.name` is set   | no       | `"TLS1_2"`                             |
-| service_plan                                       | object       | The service plan                                                                                 | no       | see sub fields                         |
-| service_plan.name                                  | string       | Name of an existing service plan, if this is `null` a new service plan will be created           | no       | `null`                                 |
-| service_plan.os_type                               | string       | OS type of the service plan, ignored if `service_plan.name` is set                               | no       | `"Windows"`                            |
-| service_plan.sku_name                              | string       | SKU name of the service plan, ignored if `service_plan.name` is set                              | no       | `"Y1"`                                 |
-| insights                                           | object       | Application insights                                                                             | no       | see sub fields                         |
-| insights.enabled                                   | bool         | Enable/Disable application insights                                                              | no       | `true`                                 |
-| insights.sku                                       | string       | SKU for application insights                                                                     | no       | `"PerGB2018"`                          |
-| insights.retention_in_days                         | number       | Retention for application insights in days                                                       | no       | `30`                                   |
-| environment                                        | map(string)  | Map of environment variables that are accessible from the function code during execution         | no       | `{}`                                   |
-| build                                              | object       | Build configuration                                                                              | no       | see sub fields                         |
-| build.enabled                                      | bool         | Enable/Disable running build command                                                             | no       | `true`                                 |
-| build.command                                      | string       | Build command to use                                                                             | no       | `"yarn run build"`                     |
-| build.build_dir                                    | string       | Directory where the compiled lambda files are generated, relative to the lambda source directory | no       | `"dist"`                               |
-| is_bundle                                          | bool         | If true, node_modules and .yarn directories will be excluded from the archive.                   | no       | `false`                                |
-| archive                                            | object       | Archive configuration                                                                            | no       | see sub fields                         |
-| archive.output_path                                | string       | Directory where the zipped file is generated, relative to the terraform file                     | no       | `"dist/{name}/azure-function-app.zip"` |
-| archive.excludes                                   | list(string) | List of strings with files that are excluded from the zip file                                   | no       | `[]`                                   |
-| storage_trigger                                    | object       | Trigger the azure function through storage event grid subscription                               | no       | `null`                                 |
-| storage_trigger.function_name                      | string       | Name of the function that should be triggered                                                    | (yes)    |                                        |
-| storage_trigger.events                             | list(string) | List of event names that should trigger the function                                             | (yes)    |                                        |
-| storage_trigger.subject_filter                     | object       | filter events for the event subscription                                                         | no       | `null`                                 |
-| storage_trigger.subject_filter.subject_begins_with | string       | A string to filter events for an event subscription based on a resource path prefix              | no       | `null`                                 |
-| storage_trigger.subject_filter.subject_ends_with   | string       | A string to filter events for an event subscription based on a resource path suffix              | no       | `null`                                 |
-| storage_trigger.retry_policy                       | object       | Retry policy                                                                                     | no       | see sub fields                         |
-| storage_trigger.retry_policy.event_time_to_live    | number       | Specifies the time to live (in minutes) for events                                               | no       | `360`                                  |
-| storage_trigger.retry_policy.max_delivery_attempts | number       | Specifies the maximum number of delivery retry attempts for events                               | no       | `1`                                    |
-| identity                                           | object       | Identity to use                                                                                  | no       | `null`                                 |
-| identity.name                                      | string       | Name of the identity                                                                             | (yes)    |                                        |
-| tags                                               | map(string)  | Map of tags to assign to the function app and related resources                                  | no       | `{}`                                   |
+| Variable                                           | Type         | Description                                                                                                 | Required | Default                                |
+|----------------------------------------------------|--------------|-------------------------------------------------------------------------------------------------------------| -------- |----------------------------------------|
+| name                                               | string       | Name of the function app                                                                                    | yes      |                                        |
+| source_dir                                         | string       | Directory containing the function code                                                                      | yes      |                                        |
+| location                                           | string       | The Azure region where the resources should be created                                                      | yes      |                                        |
+| resource_group_name                                | string       | The name of the resource group in which to create the function app                                          | yes      |                                        |
+| storage_account                                    | object       | The storage account                                                                                         | no       | see sub fields                         |
+| storage_account.preexisting_name                   | string       | Name of an existing storage account, if this is `null` a new storage account will be created                | no       | `null`                                 |
+| storage_account.is_hns_enabled                     | bool         | Makes the storage account a "data lake storage" if enabled.                                                 | no       | `false`                                |
+| storage_account.tier                               | string       | Tier of the newly created storage account, ignored if `storage_account.preexisting_name` is set             | no       | `"Standard"`                           |
+| storage_account.replication_type                   | string       | Replication type of the newly created storage account, ignored if `storage_account.preexisting_name` is set | no       | `"RAGRS"`                              |
+| storage_account.min_tls_version                    | string       | Min TLS version of the newly created storage account, ignored if `storage_account.preexisting_name` is set  | no       | `"TLS1_2"`                             |
+| service_plan                                       | object       | The service plan                                                                                            | no       | see sub fields                         |
+| service_plan.name                                  | string       | Name of an existing service plan, if this is `null` a new service plan will be created                      | no       | `null`                                 |
+| service_plan.os_type                               | string       | OS type of the service plan, ignored if `service_plan.name` is set                                          | no       | `"Windows"`                            |
+| service_plan.sku_name                              | string       | SKU name of the service plan, ignored if `service_plan.name` is set                                         | no       | `"Y1"`                                 |
+| insights                                           | object       | Application insights                                                                                        | no       | see sub fields                         |
+| insights.enabled                                   | bool         | Enable/Disable application insights                                                                         | no       | `true`                                 |
+| insights.sku                                       | string       | SKU for application insights                                                                                | no       | `"PerGB2018"`                          |
+| insights.retention_in_days                         | number       | Retention for application insights in days                                                                  | no       | `30`                                   |
+| environment                                        | map(string)  | Map of environment variables that are accessible from the function code during execution                    | no       | `{}`                                   |
+| build                                              | object       | Build configuration                                                                                         | no       | see sub fields                         |
+| build.enabled                                      | bool         | Enable/Disable running build command                                                                        | no       | `true`                                 |
+| build.command                                      | string       | Build command to use                                                                                        | no       | `"yarn run build"`                     |
+| build.build_dir                                    | string       | Directory where the compiled lambda files are generated, relative to the lambda source directory            | no       | `"dist"`                               |
+| is_bundle                                          | bool         | If true, node_modules and .yarn directories will be excluded from the archive.                              | no       | `false`                                |
+| archive                                            | object       | Archive configuration                                                                                       | no       | see sub fields                         |
+| archive.output_path                                | string       | Directory where the zipped file is generated, relative to the terraform file                                | no       | `"dist/{name}/azure-function-app.zip"` |
+| archive.excludes                                   | list(string) | List of strings with files that are excluded from the zip file                                              | no       | `[]`                                   |
+| storage_trigger                                    | object       | Trigger the azure function through storage event grid subscription                                          | no       | `null`                                 |
+| storage_trigger.function_name                      | string       | Name of the function that should be triggered                                                               | (yes)    |                                        |
+| storage_trigger.events                             | list(string) | List of event names that should trigger the function                                                        | (yes)    |                                        |
+| storage_trigger.subject_filter                     | object       | filter events for the event subscription                                                                    | no       | `null`                                 |
+| storage_trigger.subject_filter.subject_begins_with | string       | A string to filter events for an event subscription based on a resource path prefix                         | no       | `null`                                 |
+| storage_trigger.subject_filter.subject_ends_with   | string       | A string to filter events for an event subscription based on a resource path suffix                         | no       | `null`                                 |
+| storage_trigger.retry_policy                       | object       | Retry policy                                                                                                | no       | see sub fields                         |
+| storage_trigger.retry_policy.event_time_to_live    | number       | Specifies the time to live (in minutes) for events                                                          | no       | `360`                                  |
+| storage_trigger.retry_policy.max_delivery_attempts | number       | Specifies the maximum number of delivery retry attempts for events                                          | no       | `1`                                    |
+| identity                                           | object       | Identity to use                                                                                             | no       | `null`                                 |
+| identity.name                                      | string       | Name of the identity                                                                                        | (yes)    |                                        |
+| tags                                               | map(string)  | Map of tags to assign to the function app and related resources                                             | no       | `{}`                                   |
 
 ##### Outputs
 
@@ -525,6 +542,17 @@ yarn install
 
 cd examples/azure/packages
 yarn install
+```
+
+If you want to import and test changes you made without merging them first into main, 
+you can use the git commit hash as the version in the source url 
+when importing the module within other projects.
+Dont forget to remove the hash when you are done ;)
+
+```hcl
+module "module_with_unmerged_changes" {
+  source = "github.com/THEY-Consulting/they-terraform//aws/lambda?ref=ee423515"
+}
 ```
 
 ### Deployment

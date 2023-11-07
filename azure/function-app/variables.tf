@@ -21,7 +21,8 @@ variable "resource_group_name" {
 variable "storage_account" {
   description = "The storage account."
   type = object({
-    name             = optional(string, null)
+    preexisting_name = optional(string, null)
+    is_hns_enabled   = optional(bool, false)
     tier             = optional(string, "Standard")
     replication_type = optional(string, "RAGRS") # Read-access geo-redundant storage (RA-GRS)
     min_tls_version  = optional(string, "TLS1_2")
