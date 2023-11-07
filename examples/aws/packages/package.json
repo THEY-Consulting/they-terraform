@@ -12,6 +12,6 @@
     "hoistingLimits": "dependencies"
   },
   "devDependencies": {
-    "prettier": "2.8.8"
+    "prettier": "^3.0.3"
   }
 }

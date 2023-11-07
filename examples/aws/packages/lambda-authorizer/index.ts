@@ -2,22 +2,25 @@ import { APIGatewayRequestAuthorizerEvent, APIGatewayAuthorizerResult } from 'aw
 
 const key = process.env.AUTH_HASH;
 
-export const handler = async ({ headers, methodArn } : APIGatewayRequestAuthorizerEvent): Promise<APIGatewayAuthorizerResult> => {
+export const handler = async ({
+  headers,
+  methodArn,
+}: APIGatewayRequestAuthorizerEvent): Promise<APIGatewayAuthorizerResult> => {
   const valid = checkToken(headers.Authorization || '');
 
   return {
-    principalId: "basic-auth-user",
+    principalId: 'basic-auth-user',
     policyDocument: {
-      Version: "2012-10-17",
+      Version: '2012-10-17',
       Statement: [
         {
-          Action: "execute-api:Invoke",
-          Effect: valid ? "Allow" : "Deny",
+          Action: 'execute-api:Invoke',
+          Effect: valid ? 'Allow' : 'Deny',
           Resource: methodArn,
-        }
-      ]
+        },
+      ],
     },
-  }
+  };
 };
 
 const checkToken = (token: string) => {
