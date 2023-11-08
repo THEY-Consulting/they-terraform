@@ -10,8 +10,8 @@ data "external" "builder" {
 data "archive_file" "function_zip" {
   type        = "zip"
   output_path = coalesce(var.archive.output_path, "dist/${var.name}/lambda.zip")
-  source_dir  = var.is_bundle ? "${var.source_dir}/dist" : "${var.source_dir}"
-  excludes    = is_bundle ? null : var.archive.excludes
+  source_dir  = var.is_bundle ? "${var.source_dir}/dist" : var.source_dir
+  excludes    = var.is_bundle ? null : var.archive.excludes
 
   depends_on = [data.external.builder]
 }
