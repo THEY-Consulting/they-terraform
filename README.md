@@ -51,7 +51,7 @@ and run `terraform init`.
 
 For more examples see the [examples](./examples) directory.
 
-If you want to use a specific version of the module, 
+If you want to use a specific version of the module,
 you can specify the version or commit in the source url:
 
 ```hcl
@@ -192,7 +192,7 @@ module "lambda" {
 | is_bundle                     | bool         | If true, node_modules and .yarn directories will be excluded from the archive.                                                     | no       | `false`                    |
 | archive                       | object       | Configure archive file generation                                                                                                  | no       | see sub fields             |
 | archive.output_path           | string       | Directory where the zipped file is generated, relative to the terraform file                                                       | no       | `"dist/{name}/lambda.zip"` |
-| archive.excludes              | list(string) | List of strings with files that are excluded from the zip file                                                                     | no       | `[]`                       |
+| archive.excludes              | list(string) | List of strings with files that are excluded from the zip file. Only applied when is_bundle is false.                              | no       | `[]`                       |
 | cloudwatch                    | object       | CloudWatch configuration                                                                                                           | no       | see sub fields             |
 | cloudwatch.retention_in_days  | number       | Retention for the CloudWatch log group                                                                                             | no       | `30`                       |
 | cron_trigger                  | object       | Configuration to trigger the lambda through a cron schedule                                                                        | no       | `null`                     |
@@ -561,8 +561,8 @@ cd examples/azure/packages
 yarn install
 ```
 
-If you want to import and test changes you made without merging them first into main, 
-you can use the git commit hash as the version in the source url 
+If you want to import and test changes you made without merging them first into main,
+you can use the git commit hash as the version in the source url
 when importing the module within other projects.
 Dont forget to remove the hash when you are done ;)
 
