@@ -7,7 +7,7 @@ module "lambda_with_bundle" {
   name        = "${terraform.workspace}-they-test-with-bundle"
   description = "Test lambda with bundle"
   source_dir  = "../packages/lambda-bundle"
-  runtime     = "nodejs18.x"
+  runtime     = "nodejs20.x"
 
   is_bundle = true
 }

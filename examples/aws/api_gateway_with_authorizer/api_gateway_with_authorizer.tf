@@ -7,7 +7,7 @@ module "authorizer_lambda" {
   name        = "they-test-authorizer"
   description = "Test typescript authorizer lambda"
   source_dir  = "../packages/lambda-authorizer"
-  runtime     = "nodejs18.x"
+  runtime     = "nodejs20.x"
 
   environment = {
     AUTH_HASH = base64encode("they:secret-test-authorization-key"),

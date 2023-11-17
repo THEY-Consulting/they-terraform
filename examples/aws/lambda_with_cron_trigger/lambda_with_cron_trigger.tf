@@ -7,7 +7,7 @@ module "lambda_with_cron_trigger" {
   name        = "they-test-cron"
   description = "Test lambda with cron trigger"
   source_dir  = "../packages/lambda-typescript"
-  runtime     = "nodejs18.x"
+  runtime     = "nodejs20.x"
 
   cron_trigger = {
     name     = "trigger-they-test-cron-lambda"
