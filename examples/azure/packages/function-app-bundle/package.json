@@ -8,8 +8,8 @@
   },
   "devDependencies": {
     "@azure/functions": "3.5.1",
-    "@types/node": "^20.5.2",
-    "esbuild": "^0.19.4",
-    "typescript": "5.0.4"
+    "@types/node": "^20.9.2",
+    "esbuild": "^0.19.6",
+    "typescript": "5.2.2"
   }
 }

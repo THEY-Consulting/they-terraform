@@ -7,10 +7,10 @@
     "build": "tsc"
   },
   "devDependencies": {
-    "@types/node": "^20.5.2",
-    "typescript": "5.0.4"
+    "@types/node": "^20.9.2",
+    "typescript": "5.2.2"
   },
   "dependencies": {
-    "@azure/functions": "preview"
+    "@azure/functions": "^4.1.0"
   }
 }
