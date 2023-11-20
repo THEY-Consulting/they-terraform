@@ -49,3 +49,4 @@ node_modules
 .yarn
 yarn.lock
 .pnp.cjs
+.yarnrc.yml
