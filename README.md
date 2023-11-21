@@ -42,7 +42,7 @@ module "lambda_with_build" {
 
   description = "Test typescript lambda with build step"
   name        = "they-test-build"
-  runtime     = "nodejs18.x"
+  runtime     = "nodejs20.x"
   source_dir  = "packages/lambda-typescript"
 }
 ```
@@ -99,7 +99,7 @@ module "lambda" {
   description   = "Test lambda without build step"
   source_dir    = "packages/lambda-simple"
   handler       = "index.handler"
-  runtime       = "nodejs18.x"
+  runtime       = "nodejs20.x"
   architectures = ["arm64"]
   publish       = true
   memory_size   = 128
@@ -179,7 +179,7 @@ module "lambda" {
 | description                   | string       | Description of the lambda function                                                                                                 | yes      |                            |
 | source_dir                    | string       | Directory containing the lambda function                                                                                           | yes      |                            |
 | handler                       | string       | Function entrypoint                                                                                                                | no       | `"index.handler"`          |
-| runtime                       | string       | The runtime that the function is executed with, e.g. 'nodejs18.x'.                                                                 | yes      |                            |
+| runtime                       | string       | The runtime that the function is executed with, e.g. 'nodejs20.x'.                                                                 | yes      |                            |
 | architectures                 | list(string) | The instruction set architecture that the function supports                                                                        | no       | `["arm64"]`                |
 | publish                       | bool         | Whether to publish creation/change as new Lambda Function Version                                                                  | no       | `true`                     |
 | memory_size                   | number       | Amount of memory in MB your Lambda Function can use at runtime                                                                     | no       | `128`                      |

@@ -90,7 +90,7 @@ variable "handler" {
 }
 
 variable "runtime" {
-  description = "The runtime that the function is executed with, e.g. 'nodejs18.x'."
+  description = "The runtime that the function is executed with, e.g. 'nodejs20.x'."
   type        = string
 }
 

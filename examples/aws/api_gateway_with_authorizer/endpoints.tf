@@ -7,7 +7,7 @@ module "lambda_without_build" {
   name        = "they-test-api-gateway-with-authorizer-simple"
   description = "Test lambda without build step"
   source_dir  = "../packages/lambda-simple"
-  runtime     = "nodejs18.x"
+  runtime     = "nodejs20.x"
 
   build = {
     enabled = false
