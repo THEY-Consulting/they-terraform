@@ -18,7 +18,7 @@ module "lambda_api_gateway_with_domain_mtls" {
     s3_truststore_uri = "s3://they-test-api-gateway-with-domain-assets/certificates/truststore.pem"
     zone_name         = "they-code.de."
     # used domain without timestamp during mtls development, which now delays lambda host resolution (approx. 1hr).
-    domain = "${formatdate("YYYY-MM-YY-hh-mm-ss", timestamp())}-they-test-lambda.they-code.de"
+    domain = "${formatdate("YYYY-MM-YY-hh-mm-ss", timestamp())}-they-test-api-gateway-with-domain-mtls.they-code.de"
   }
 }
 
