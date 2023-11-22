@@ -1,0 +1,44 @@
+on:
+  # comment in below for final version
+  #pull_request:
+  # remove line 5-7 before creating a PR
+  push:
+    branches:
+      - feature/31-add-tests
+
+name: Test examples
+
+jobs:
+  deploy:
+    name: Run Terraform Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Variables
+        run: |
+          TF_VERSION=$(grep -vP '^[\s]?#' .terraform-version)
+          echo "TF_VERSION=$TF_VERSION" >> $GITHUB_ENV
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Configure they AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.DEPLOY_AWS_ROLE }}
+          role-session-name: github-deploy-test
+          aws-region: eu-west-1
+
+      - name: Configure Azure credentials
+        uses: azure/login@v1
+        with:
+          client-id: ${{ vars.DEPLOY_AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.DEPLOY_AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.DEPLOY_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Run tests
+        run: echo "here we'll run tests in the future"
