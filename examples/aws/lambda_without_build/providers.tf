@@ -6,6 +6,14 @@ terraform {
     }
   }
 
+  backend "s3" {
+    bucket         = "they-terraform-examples-tfstate"
+    encrypt        = true
+    dynamodb_table = "they-terraform-examples-tfstate-lock"
+    key            = "lambda-without-build/terraform.tfstate"
+    region         = "eu-central-1"
+  }
+
   required_version = "1.6.4"
 }
 

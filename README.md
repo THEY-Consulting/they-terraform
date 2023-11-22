@@ -27,14 +27,14 @@ Collection of modules to provide an easy way to create and deploy common infrast
 
 - [terraform](https://www.terraform.io/downloads.html) >= 1.5.0
 
-Depending on the modules you want to use, you will need to have installed and configured:
+Depending on the modules that you want to use, you will need to have installed and configured the following command line tools:
 
 - [aws cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 - [az cli](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
 
 ### Usage
 
-Include the modules you want to use in your terraform files:
+Include the modules that you want to use in your terraform files:
 
 ```hcl
 module "lambda_with_build" {
@@ -473,7 +473,7 @@ module "function_app_without_build" {
 ##### Inputs
 
 | Variable                                           | Type         | Description                                                                                                 | Required | Default                                |
-|----------------------------------------------------|--------------|-------------------------------------------------------------------------------------------------------------| -------- |----------------------------------------|
+| -------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------- |
 | name                                               | string       | Name of the function app                                                                                    | yes      |                                        |
 | source_dir                                         | string       | Directory containing the function code                                                                      | yes      |                                        |
 | location                                           | string       | The Azure region where the resources should be created                                                      | yes      |                                        |
