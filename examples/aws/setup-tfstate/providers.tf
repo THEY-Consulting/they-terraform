@@ -10,15 +10,13 @@ terraform {
     bucket         = "they-terraform-examples-tfstate"
     encrypt        = true
     dynamodb_table = "they-terraform-examples-tfstate-lock"
-    key            = "lambda-with-build/terraform.tfstate"
+    key            = "setup-tfstate-example/terraform.tfstate"
     region         = "eu-central-1"
   }
 
   required_version = "1.6.4"
 }
 
-// default provider that is used when no other provider
-// is specified explicitly
 provider "aws" {
   region = "eu-west-1"
 

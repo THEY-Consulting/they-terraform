@@ -8,6 +8,8 @@
 
 # Normally included but we don't need this because our examples are not deployed directly/only during testing
 .terraform.lock.hcl
+# Track these files only within the examples directory and its subdirectories.
+!**/examples/**/.terraform.lock.hcl
 
 # .tfstate files
 *.tfstate

@@ -25,16 +25,16 @@ Collection of modules to provide an easy way to create and deploy common infrast
 
 ### Prerequisites
 
-- [terraform](https://www.terraform.io/downloads.html) >= 1.5.0
+- [Terraform](https://www.terraform.io/downloads.html) >= 1.6.4
 
-Depending on the modules you want to use, you will need to have installed and configured:
+Depending on the modules that you want to use, you need to have installed and configured the following command line tools:
 
 - [aws cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 - [az cli](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
 
 ### Usage
 
-Include the modules you want to use in your terraform files:
+Include the modules that you want to use in your terraform files:
 
 ```hcl
 module "lambda_with_build" {
@@ -51,8 +51,7 @@ and run `terraform init`.
 
 For more examples see the [examples](./examples) directory.
 
-If you want to use a specific version of the module,
-you can specify the version or commit in the source url:
+If you want to use a specific version of the module, you can specify the version or commit in the source url:
 
 ```hcl
 module "lambda_with_build" {
@@ -64,7 +63,7 @@ module "lambda_with_build" {
 }
 ```
 
-See https://developer.hashicorp.com/terraform/language/modules/sources#selecting-a-revision for more details.
+See [the official terraform documentation](https://developer.hashicorp.com/terraform/language/modules/sources#selecting-a-revision) for more details on using a specific version.
 
 Specific providers can be set for modules by using the `providers` argument:
 
@@ -87,7 +86,7 @@ module "lambda_with_specific_provider" {
 
 ### AWS
 
-The location of all resources is always determined by the `region` of your aws provider.
+The location of all resources is always determined by the `region` of your aws `provider`.
 
 #### Lambda
 
@@ -473,7 +472,7 @@ module "function_app_without_build" {
 ##### Inputs
 
 | Variable                                           | Type         | Description                                                                                                 | Required | Default                                |
-|----------------------------------------------------|--------------|-------------------------------------------------------------------------------------------------------------| -------- |----------------------------------------|
+| -------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------- |
 | name                                               | string       | Name of the function app                                                                                    | yes      |                                        |
 | source_dir                                         | string       | Directory containing the function code                                                                      | yes      |                                        |
 | location                                           | string       | The Azure region where the resources should be created                                                      | yes      |                                        |
@@ -527,7 +526,7 @@ module "function_app_without_build" {
 
 ### Prerequisites
 
-- [terraform](https://www.terraform.io/downloads.html) version 1.5.0
+- [Terraform](https://www.terraform.io/downloads.html) version 1.6.4
 - [tfenv](https://github.com/tfutils/tfenv) optional, recommended
 - [nodejs](https://nodejs.org/en) version 18.X
 - [yarn](https://classic.yarnpkg.com/lang/en/docs/) `npm i -g yarn`
@@ -537,17 +536,17 @@ module "function_app_without_build" {
 
 ### Environment Variables
 
-- set up your environment variables (create and put them in `.envrc` in the project's root dir):
+- Configure your environment variables (create and put them in `.envrc` in the project's root dir):
 
-```txt
+```bash
 export AWS_PROFILE=nameOfProfile
-export AZURE_TENANT_ID=<see https://portal.azure.com/#settings/directory for the correct Directory ID>
+export AZURE_TENANT_ID=tenantId #<see https://portal.azure.com/#settings/directory for the correct Directory ID>
 export TF_VAR_tenant_id=$AZURE_TENANT_ID
 
 ```
 
-- remember to add the aws profile info to `~/.aws/config`
-- and the key and secret for said profile to `~/.aws/credentials`
+- Remember to add the aws profile info to `~/.aws/config`
+- And the key and secret for said profile to `~/.aws/credentials`
 
 ### Local Dev
 
@@ -562,9 +561,9 @@ yarn install
 ```
 
 If you want to import and test changes you made without merging them first into main,
-you can use the git commit hash as the version in the source url
+you can use the git commit hash as the version in the source URL
 when importing the module within other projects.
-Dont forget to remove the hash when you are done ;)
+Don't forget to remove the hash when you are done ;)
 
 ```hcl
 module "module_with_unmerged_changes" {
@@ -575,7 +574,7 @@ module "module_with_unmerged_changes" {
 ### Deployment
 
 Currently, we only use a single workspace within each cloud provider.
-To deploy each example (temporarily) use:
+To deploy each example execute:
 
 ```bash
 cd examples/aws/<example>
@@ -585,10 +584,16 @@ cd examples/azure/<example>
 terraform apply
 ```
 
+The resources used to manage the state of the resources deployed within the `examples` folder can be found at `examples/.setup-tfstate`.
+If you want to setup your own Terraform state management system, remove any `.terraform.lock.hcl` files within the `examples` folder, and deploy the resources at `examples/.setup-tfstate/` in your own AWS account.
+
+#### Clean-up
+
 When you are done testing, please destroy the resources with `terraform destroy`.
 
-_examples/setup-tfstate_ can be deployed the same way, but it is a bit more complicated to clean up.
-`terraform destroy` can not remove the s3 bucket (due to `prevent_destroy = true`).
-Therefore, you need to delete the bucket manually.
+`examples/aws/setup-tfstate` is a bit more complicated to clean up.
+`terraform destroy` can not remove the S3 bucket (due to `prevent_destroy = true`).
+
+Therefore, you need to delete the bucket manually in the AWS console.
 After that you can remove the remaining resources with `terraform destroy`.
 Keep in mind that after destroying a bucket it can take up to 24 hours until the name is available again.
