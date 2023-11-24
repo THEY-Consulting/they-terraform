@@ -25,7 +25,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
 
 ### Prerequisites
 
-- [Terraform](https://www.terraform.io/downloads.html) >= 1.5.0
+- [Terraform](https://www.terraform.io/downloads.html) >= 1.6.4
 
 Depending on the modules that you want to use, you need to have installed and configured the following command line tools:
 
