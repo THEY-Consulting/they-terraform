@@ -526,7 +526,7 @@ module "function_app_without_build" {
 
 ### Prerequisites
 
-- [Terraform](https://www.terraform.io/downloads.html) version 1.5.0
+- [Terraform](https://www.terraform.io/downloads.html) version 1.6.4
 - [tfenv](https://github.com/tfutils/tfenv) optional, recommended
 - [nodejs](https://nodejs.org/en) version 18.X
 - [yarn](https://classic.yarnpkg.com/lang/en/docs/) `npm i -g yarn`
