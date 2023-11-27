@@ -10,6 +10,12 @@ data "aws_acm_certificate" "acm_certificate" {
 
 # --- RESOURCES / MODULES ---
 
+resource "random_string" "suffix" {
+  length  = 4
+  upper   = false
+  special = false
+}
+
 module "lambda_api_gateway_with_domain" {
   # source = "github.com/THEY-Consulting/they-terraform//aws/lambda/gateway"
   source = "../../../aws/lambda/gateway"
@@ -27,8 +33,8 @@ module "lambda_api_gateway_with_domain" {
   domain = {
     certificate_arn = data.aws_acm_certificate.acm_certificate.arn
     zone_name       = "they-code.de."
-    # used domain without timestamp during mtls development, which now delays lambda host resolution (approx. 1hr).
-    domain = "${formatdate("YYYY-MM-YY-hh-mm-ss", timestamp())}-they-test-lambda.they-code.de"
+    # reusing domains leads to long host resolution delays (approx. 1hr), therefore use a suffix to create unique domains
+    domain = "they-test-lambda-${random_string.suffix.id}.they-code.de"
   }
 }
 
