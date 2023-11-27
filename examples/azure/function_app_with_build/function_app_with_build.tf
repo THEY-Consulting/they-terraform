@@ -8,6 +8,11 @@ module "function_app_with_build" {
   source_dir          = "../packages/function-app-typescript"
   location            = "Germany West Central"
   resource_group_name = "they-dev"
+
+  tags = {
+    Project   = "they-terraform-examples"
+    CreatedBy = "terraform"
+  }
 }
 
 # --- OUTPUT ---

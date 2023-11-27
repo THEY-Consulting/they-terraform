@@ -12,6 +12,11 @@ module "function_app_without_build" {
   build = {
     enabled = false
   }
+
+  tags = {
+    Project   = "they-terraform-examples"
+    CreatedBy = "terraform"
+  }
 }
 
 # --- OUTPUT ---

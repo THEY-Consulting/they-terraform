@@ -11,6 +11,11 @@ module "function_app_v4" {
   environment = {
     AzureWebJobsFeatureFlags = "EnableWorkerIndexing"
   }
+
+  tags = {
+    Project   = "they-terraform-examples"
+    CreatedBy = "terraform"
+  }
 }
 
 # --- OUTPUT ---
