@@ -10,6 +10,7 @@
 .terraform.lock.hcl
 # Track these files only within the examples directory and its subdirectories.
 !**/examples/**/.terraform.lock.hcl
+!**/examples/.setup-tfstate/*.tfstate
 
 # .tfstate files
 *.tfstate
