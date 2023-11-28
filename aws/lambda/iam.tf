@@ -38,5 +38,22 @@ resource "aws_iam_role" "role" {
     }
   }
 
+  dynamic "inline_policy" {
+    # required to attach to vpc, src: https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html#vpc-permissions
+    for_each = var.vpc_config != null ? [var.vpc_config] : []
+    content {
+      name = "attach-to-vpc"
+      policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [{
+          Effect   = "Allow"
+          Action   = ["ec2:CreateNetworkInterface", "ec2:DescribeNetworkInterfaces", "ec2:DeleteNetworkInterface", "ec2:AssignPrivateIpAddresses", "ec2:UnassignPrivateIpAddresses"]
+          Resource = "*"
+        }]
+      })
+    }
+  }
+
+
   tags = var.tags
 }
