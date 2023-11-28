@@ -11,6 +11,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
   - [AWS](#aws)
     - [Lambda](#lambda)
     - [API Gateway (REST)](#api-gateway-rest)
+    - [S3 Bucket](#s3-bucket)
     - [GitHub OpenID role](#github-openid-role)
     - [setup-tfstate](#setup-tfstate)
   - [Azure](#azure)
@@ -320,6 +321,59 @@ module "api_gateway" {
 | ------------- | ------------ | --------------------------------- |
 | invoke_url    | string       | The invoke URL of the api gateway |
 | endpoint_urls | list(string) | List of all endpoint URLs         |
+
+#### S3 Bucket
+
+```hcl
+module "s3_bucket" {
+  source = "github.com/THEY-Consulting/they-terraform//aws/s3-bucket"
+
+  name       = "my-bucket"
+  versioning = true
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AWSLogDeliveryAclCheck",
+        Effect = "Allow",
+        Principal = {
+          Service = "delivery.logs.amazonaws.com"
+        },
+        Action   = "s3:GetBucketAcl",
+        Resource = "arn:aws:s3:::my-bucket",
+        Condition = {
+          StringEquals = {
+            "aws:SourceAccount" = ["arn:aws:iam::0123456789:*"]
+          },
+          ArnLike = {
+            "aws:SourceArn" = ["arn:aws:logs::0123456789:*"]
+          }
+        }
+      }
+    ]
+  })
+
+  prevent_destroy = true
+}
+```
+
+##### Inputs
+
+| Variable        | Type   | Description                                                                                                                                   | Required | Default |
+|-----------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
+| name            | string | Name of the bucket                                                                                                                            | yes      |         |
+| versioning      | bool   | Enable versioning of s3 bucket                                                                                                                | yes      |         |
+| policy          | string | Policy of s3 bucket                                                                                                                           | no       | `null`  |
+| prevent_destroy | bool   | Prevent destroy of s3 bucket. To bypass this protection even if this is enabled, remove the module from your code and run `terraform apply`.  | no       | `true`  |
+
+##### Outputs
+
+| Output     | Type   | Description                    |
+|------------|--------|--------------------------------|
+| id         | string | ID of the s3 bucket            |
+| arn        | string | ARN of the s3 bucket           |
+| versioning | string | ID of the s3 bucket versioning |
 
 #### GitHub OpenID role
 
