@@ -43,3 +43,7 @@ output "server_administrator_login" {
 output "ODBC_connection_string" {
   value = module.mssql_database.ODBC_connection_string
 }
+
+output "ADONET_connection_string" {
+  value = module.mssql_database.ADONET_connection_string
+}

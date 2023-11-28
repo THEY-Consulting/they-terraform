@@ -48,3 +48,7 @@ output "database_name" {
 output "ODBC_connection_string" {
   value = module.mssql_database_with_existing_server.ODBC_connection_string
 }
+
+output "ADONET_connection_string" {
+  value = module.mssql_database_with_existing_server.ADONET_connection_string
+}

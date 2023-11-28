@@ -48,3 +48,7 @@ output "server_administrator_login" {
 output "ODBC_connection_string" {
   value = module.mssql_database_dtu.ODBC_connection_string
 }
+
+output "ADONET_connection_string" {
+  value = module.mssql_database_dtu.ADONET_connection_string
+}

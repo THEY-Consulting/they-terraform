@@ -6,7 +6,7 @@ resource "random_string" "suffix" {
   special = false
 }
 
-module "mssql_database" {
+module "mssql_database_with_user" {
   # source = "github.com/THEY-Consulting/they-terraform//azure/database/mssql"
   source = "../../../azure/database/mssql"
 
@@ -37,17 +37,21 @@ module "mssql_database" {
 # --- OUTPUT ---
 
 output "database_name" {
-  value = module.mssql_database.database_name
+  value = module.mssql_database_with_user.database_name
 }
 
 output "server_domain_name" {
-  value = module.mssql_database.server_domain_name
+  value = module.mssql_database_with_user.server_domain_name
 }
 
 output "server_administrator_login" {
-  value = module.mssql_database.server_administrator_login
+  value = module.mssql_database_with_user.server_administrator_login
 }
 
 output "ODBC_connection_string" {
-  value = module.mssql_database.ODBC_connection_string
+  value = module.mssql_database_with_user.ODBC_connection_string
+}
+
+output "ADONET_connection_string" {
+  value = module.mssql_database_with_user.ADONET_connection_string
 }

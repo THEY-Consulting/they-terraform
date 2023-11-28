@@ -15,6 +15,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [setup-tfstate](#setup-tfstate)
   - [Azure](#azure)
     - [Function app](#function-app)
+    - [MSSQL Database](#mssql-database)
 - [Contributing](#contributing)
   - [Prerequisites](#prerequisites-1)
   - [Environment Variables](#environment-variables)

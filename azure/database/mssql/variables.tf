@@ -28,6 +28,14 @@ variable "server" {
       end_ip_address   = string
     })), [])
   })
+
+  validation {
+    condition = (
+      # if preexisting_name is not set a new server will be created. In this case, the admin password must be set.
+      (var.server.preexisting_name != null || var.server.administrator_login_password != null)
+    )
+    error_message = "'administrator_login_password' is required when creating a new database server."
+  }
 }
 
 variable "users" {
