@@ -1,5 +1,11 @@
 # --- RESOURCES / MODULES ---
 
+resource "random_string" "suffix" {
+  length  = 4
+  upper   = false
+  special = false
+}
+
 module "lambda_api_gateway_with_domain_mtls" {
   # source = "github.com/THEY-Consulting/they-terraform//aws/lambda/gateway"
   source = "../../../aws/lambda/gateway"
@@ -17,8 +23,8 @@ module "lambda_api_gateway_with_domain_mtls" {
   domain = {
     s3_truststore_uri = "s3://they-test-api-gateway-with-domain-assets/certificates/truststore.pem"
     zone_name         = "they-code.de."
-    # reusing domains leads to long host resolution delays (approx. 1hr), therefore use a timestamp to create unique domains
-    domain = "${formatdate("YYYY-MM-YY-hh-mm-ss", timestamp())}-they-test-api-gateway-with-domain-mtls.they-code.de"
+    # reusing domains leads to long host resolution delays (approx. 1hr), therefore use a suffix to create unique domains
+    domain = "they-test-api-gateway-with-domain-mtls-${random_string.suffix.id}.they-code.de"
   }
 }
 
@@ -27,4 +33,3 @@ module "lambda_api_gateway_with_domain_mtls" {
 output "endpoint_urls_with_domain_mtls" {
   value = module.lambda_api_gateway_with_domain_mtls.endpoint_urls
 }
-

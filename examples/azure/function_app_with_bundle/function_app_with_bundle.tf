@@ -8,6 +8,11 @@ module "function_app_with_bundle" {
   source_dir          = "../packages/function-app-bundle"
   location            = "Germany West Central"
   resource_group_name = "they-dev"
+
+  tags = {
+    Project   = "they-terraform-examples"
+    CreatedBy = "terraform"
+  }
 }
 
 # --- OUTPUT ---

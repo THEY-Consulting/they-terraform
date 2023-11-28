@@ -15,6 +15,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [setup-tfstate](#setup-tfstate)
   - [Azure](#azure)
     - [Function app](#function-app)
+    - [MSSQL Database](#mssql-database)
 - [Contributing](#contributing)
   - [Prerequisites](#prerequisites-1)
   - [Environment Variables](#environment-variables)
@@ -397,7 +398,7 @@ module "setup_tfstate" {
 #### Function app
 
 ```hcl
-module "function_app_without_build" {
+module "function_app" {
   source = "github.com/THEY-Consulting/they-terraform//azure/function-app"
 
   name                = "they-test"
@@ -521,6 +522,98 @@ module "function_app_without_build" {
 | build             | string | Build output                       |
 | archive_file_path | string | Path to the generated archive file |
 | endpoint_url      | string | Endpoint URL                       |
+
+#### MSSQL Database
+
+```hcl
+module "mssql_database" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/database/mssql"
+
+  name                = "they-test-database"
+  location            = "Germany West Central"
+  resource_group_name = "they-dev"
+
+  server = {
+    preexisting_name             = "some-existing-server"
+    version                      = "12.0"
+    administrator_login          = "AdminUser"
+    administrator_login_password = "P@ssw0rd123!"
+    allow_azure_resources        = true
+    allow_all                    = true
+    firewall_rules = [
+      {
+        name             = "AllowAll"
+        start_ip_address = "0.0.0.0"
+        end_ip_address   = "255.255.255.255"
+      }
+    ]
+  }
+
+  users = [
+    {
+      username = "they-test-user"
+      password = sensitive("P@ssw0rd123!")
+      roles    = ["db_owner"]
+    },
+    {
+      username = "they-test-user-read"
+      password = sensitive("P@ssw0rd123!")
+      roles    = ["db_datareader"]
+    }
+  ]
+
+  collation                   = "SQL_Latin1_General_CP1_CI_AS"
+  sku_name                    = "GP_S_Gen5_1"
+  max_size_gb                 = 16
+  min_capacity                = 0.5
+  storage_account_type        = "Local"
+  auto_pause_delay_in_minutes = 60
+
+  tags = {
+    createdBy   = "Terraform"
+    environment = "dev"
+  }
+}
+```
+
+##### Inputs
+
+| Variable                               | Type         | Description                                                                                                                                                                                              | Required | Default                          |
+|----------------------------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|----------------------------------|
+| name                                   | string       | Name of the database                                                                                                                                                                                     | yes      |                                  |
+| location                               | string       | The Azure region where the resources should be created                                                                                                                                                   | yes      |                                  |
+| resource_group_name                    | string       | The name of the resource group in which to create the resources                                                                                                                                          | yes      |                                  |
+| server                                 | object       | The database server                                                                                                                                                                                      | yes      |                                  |
+| server.preexisting_name                | string       | Name of an existing database server, if this is `null` a new database server will be created                                                                                                             | no       | `null`                           |
+| server.version                         | string       | Version of the MSSQL database, ignored if `server.preexisting_name` is set                                                                                                                               | no       | `12.0`                           |
+| server.administrator_login             | string       | Name of the administrator login, ignored if `server.preexisting_name` is set                                                                                                                             | no       | `"AdminUser"`                    |
+| server.administrator_login_password    | string       | Password of the administrator login, ignored if `server.preexisting_name` is set, required otherwise                                                                                                     | yes*     |                                  |
+| server.allow_azure_resources           | bool         | Adds a database server firewall rule to grant database access to azure resources, ignored if `server.preexisting_name` is set                                                                            | no       | `true`                           |
+| server.allow_all                       | bool         | Adds a database server firewall rule to grant database access to everyone, ignored if `server.preexisting_name` is set                                                                                   | no       | `false`                          |
+| server.firewall_rules                  | list(object) | Adds server firewall rules, ignored if `server.preexisting_name` is set                                                                                                                                  | no       | `[]`                             |
+| server.firewall_rules.name             | string       | Name of the firewall rule                                                                                                                                                                                | yes      |                                  |
+| server.firewall_rules.start_ip_address | string       | Start ip address of the firewall rule                                                                                                                                                                    | yes      |                                  |
+| server.firewall_rules.end_ip_address   | string       | End ip address of the firewall rule                                                                                                                                                                      | yes      |                                  |
+| users                                  | list(object) | List of users (with logins) to create in the database                                                                                                                                                    | no       | `[]`                             |
+| users.username                         | string       | Name for the user and login                                                                                                                                                                              | yes      |                                  |
+| users.password                         | string       | Password for the user login                                                                                                                                                                              | yes      |                                  |
+| users.roles                            | list(string) | List of roles to attach to the user                                                                                                                                                                      | yes      |                                  |
+| collation                              | string       | The collation of the database                                                                                                                                                                            | no       | `"SQL_Latin1_General_CP1_CI_AS"` |
+| sku_name                               | string       | The sku for the database. For vCores, this also sets the maximum capacity                                                                                                                                | no       | `"GP_S_Gen5_1"`                  |
+| max_size_gb                            | number       | The maximum size of the database in gigabytes                                                                                                                                                            | no       | `16`                             |
+| min_capacity                           | number       | The minimum vCore of the database. The maximum is set by the sku tier. Only relevant when using a serverless vCore based database. Set this to 0 otherwise.                                              | no       | `0.5`                            |
+| storage_account_type                   | string       | The storage account type used to store backups for this database. Possible values are Geo, Local and Zone                                                                                                | no       | `"Local"`                        |
+| auto_pause_delay_in_minutes            | number       | Time in minutes after which database is automatically paused. A value of -1 means that automatic pause is disabled. Only relevant when using a serverless vCore based database. Set this to 0 otherwise. | no       | `60`                             |
+| tags                                   | map(string)  | Map of tags to assign to the resources                                                                                                                                                                   | no       | `{}`                             |
+
+##### Outputs
+
+| Output                     | Type   | Description                                                |
+|----------------------------| ------ |------------------------------------------------------------|
+| database_name              | string | Name of the database                                       |
+| server_administrator_login | string | Administrator login name                                   |
+| server_domain_name         | string | Domain name of the server                                  |
+| ODBC_connection_string     | string | OBDC Connection string with a placeholder for the password |
 
 ## Contributing
 

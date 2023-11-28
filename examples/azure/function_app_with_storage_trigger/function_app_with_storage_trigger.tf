@@ -13,6 +13,11 @@ module "function_app_with_storage_trigger" {
     function_name = "hello-world"
     events        = ["Microsoft.Storage.BlobCreated"]
   }
+
+  tags = {
+    Project   = "they-terraform-examples"
+    CreatedBy = "terraform"
+  }
 }
 
 # --- OUTPUT ---
