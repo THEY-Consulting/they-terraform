@@ -1,7 +1,13 @@
 # --- RESOURCES / MODULES ---
 
 locals {
-  name = "they-test-with-attached-vpc"
+  name = "they-test-with-attached-vpc-${random_string.suffix.id}"
+}
+
+resource "random_string" "suffix" {
+  length  = 4
+  upper   = false
+  special = false
 }
 
 resource "aws_vpc" "main" {
