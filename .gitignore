@@ -14,6 +14,8 @@
 # .tfstate files
 *.tfstate
 *.tfstate.*
+# Track this file only within the examples directory.
+!**/examples/.setup-tfstate/terraform.tfstate
 
 # Crash log files
 crash.log
