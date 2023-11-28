@@ -14,11 +14,6 @@ variable "versioning" {
   type        = bool
 }
 
-variable "encrypted" {
-  description = "Enable encryption of s3 bucket."
-  type        = bool
-}
-
 variable "prevent_destroy" {
   description = "Prevent destroy of s3 bucket."
   type        = bool

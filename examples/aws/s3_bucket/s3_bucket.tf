@@ -12,7 +12,6 @@ module "s3_bucket" {
 
   # bucket names are blocked for some time (approx. 1hr) after destroy, therefore use a random suffix to create unique names
   name       = "they-test-s3-bucket-${random_string.suffix.id}"
-  encrypted  = true
   versioning = true
 
   prevent_destroy = false # disable protection for testing purposes, don't do this in production

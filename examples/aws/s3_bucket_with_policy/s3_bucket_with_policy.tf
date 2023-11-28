@@ -20,7 +20,6 @@ module "s3_bucket_with_policy" {
   source = "../../../aws/s3-bucket"
 
   name       = local.name
-  encrypted  = true
   versioning = false
 
   policy = jsonencode({

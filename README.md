@@ -329,7 +329,6 @@ module "s3_bucket" {
   source = "github.com/THEY-Consulting/they-terraform//aws/s3-bucket"
 
   name       = "my-bucket"
-  encrypted  = true
   versioning = true
 
   policy = jsonencode({
@@ -365,7 +364,6 @@ module "s3_bucket" {
 |-----------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
 | name            | string | Name of the bucket                                                                                                                            | yes      |         |
 | versioning      | bool   | Enable versioning of s3 bucket                                                                                                                | yes      |         |
-| encrypted       | bool   | Enable encryption of s3 bucket                                                                                                                | yes      |         |
 | policy          | string | Policy of s3 bucket                                                                                                                           | no       | `null`  |
 | prevent_destroy | bool   | Prevent destroy of s3 bucket. To bypass this protection even if this is enabled, remove the module from your code and run `terraform apply`.  | no       | `true`  |
 
