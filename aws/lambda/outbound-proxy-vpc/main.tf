@@ -1,12 +1,3 @@
-/**
- * # Outbound proxy VPC
- *
- * Whenever you need to talk to APIs which use IP based whitelisting, this is
- * the module to create the required setup with. It requires an eip/elastic ip
- * and it spits out a vpc_config which can be attached to a lambda function. The
- * lambda function will then execute requests via the ip of the given eip.
- */
-
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/25" # 128 IPs
 
