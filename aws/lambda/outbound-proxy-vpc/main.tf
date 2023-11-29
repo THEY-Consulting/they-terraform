@@ -1,22 +1,19 @@
 resource "aws_vpc" "main" {
-  # TODO: adapt ip range, only need 32IPs..?
   cidr_block = "10.0.0.0/25" # 128 IPs
 
   tags = var.tags
 }
 
 resource "aws_subnet" "public" {
-  vpc_id = aws_vpc.main.id
-  # TODO: adapt to 64 ips
-  cidr_block = "10.0.0.0/28" # 16 IPs
+  vpc_id     = aws_vpc.main.id
+  cidr_block = "10.0.0.0/26" # 64 IPs
 
   tags = merge(var.tags, { Name = "${var.name}-public" })
 }
 
 resource "aws_subnet" "private" {
-  vpc_id = aws_vpc.main.id
-  # TODO: adapt to 64 ips
-  cidr_block = "10.0.0.32/28" # 16 IPs
+  vpc_id     = aws_vpc.main.id
+  cidr_block = "10.0.0.64/26" # 64 IPs
 
   tags = merge(var.tags, { Name = "${var.name}-private" })
 }
@@ -72,6 +69,16 @@ resource "aws_route_table" "private" {
   }
 
   tags = merge(var.tags, { Name = "${var.name}-private" })
+}
+
+resource "aws_route_table_association" "public" {
+  subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table_association" "private" {
+  subnet_id      = aws_subnet.private.id
+  route_table_id = aws_route_table.private.id
 }
 
 data "aws_security_group" "default" {
