@@ -10,7 +10,7 @@ terraform {
     bucket         = "they-terraform-examples-tfstate"
     encrypt        = true
     dynamodb_table = "they-terraform-examples-tfstate-lock"
-    key            = "lambda-with-attached-vpc/terraform.tfstate"
+    key            = "lambda-with-outbound-proxy/terraform.tfstate"
     region         = "eu-central-1"
   }
 

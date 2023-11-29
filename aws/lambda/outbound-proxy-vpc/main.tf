@@ -6,14 +6,16 @@ resource "aws_vpc" "main" {
 }
 
 resource "aws_subnet" "public" {
-  vpc_id     = aws_vpc.main.id
+  vpc_id = aws_vpc.main.id
+  # TODO: adapt to 64 ips
   cidr_block = "10.0.0.0/28" # 16 IPs
 
   tags = var.tags
 }
 
 resource "aws_subnet" "private" {
-  vpc_id     = aws_vpc.main.id
+  vpc_id = aws_vpc.main.id
+  # TODO: adapt to 64 ips
   cidr_block = "10.0.0.16/28" # 16 IPs
 
   tags = var.tags
@@ -26,7 +28,7 @@ resource "aws_internet_gateway" "main" {
 }
 
 resource "aws_nat_gateway" "main" {
-  allocation_id = var.eip_allociation_id
+  allocation_id = var.eip_allocation_id
   subnet_id     = aws_subnet.public.id
 
   # To ensure proper ordering, it is recommended to add an explicit dependency
@@ -78,6 +80,3 @@ data "aws_security_group" "default" {
 
   tags = var.tags
 }
-
-# TODO: be able to pass lambda function arn and connect it to the vpc and the
-# private subnet.
