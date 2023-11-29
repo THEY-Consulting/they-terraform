@@ -33,6 +33,7 @@ variable "storage_account" {
 variable "service_plan" {
   description = "The service plan."
   type = object({
+    # Name of an **existing service** plan, if this is `null` a new service plan will be created
     name     = optional(string, null)
     os_type  = optional(string, "Windows")
     sku_name = optional(string, "Y1")
