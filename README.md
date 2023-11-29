@@ -14,6 +14,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [S3 Bucket](#s3-bucket)
     - [GitHub OpenID role](#github-openid-role)
     - [setup-tfstate](#setup-tfstate)
+    - [Outbound proxy VPC](./aws/lambda/outbound-proxy-vpc/docu.md)
   - [Azure](#azure)
     - [Function app](#function-app)
     - [MSSQL Database](#mssql-database)
