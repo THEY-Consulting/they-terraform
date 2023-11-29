@@ -10,15 +10,15 @@ resource "aws_subnet" "public" {
   # TODO: adapt to 64 ips
   cidr_block = "10.0.0.0/28" # 16 IPs
 
-  tags = var.tags
+  tags = merge(var.tags, { Name = "${var.name}-public" })
 }
 
 resource "aws_subnet" "private" {
   vpc_id = aws_vpc.main.id
   # TODO: adapt to 64 ips
-  cidr_block = "10.0.0.16/28" # 16 IPs
+  cidr_block = "10.0.0.32/28" # 16 IPs
 
-  tags = var.tags
+  tags = merge(var.tags, { Name = "${var.name}-private" })
 }
 
 resource "aws_internet_gateway" "main" {

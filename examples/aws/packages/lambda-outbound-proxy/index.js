@@ -1,4 +1,4 @@
-export const handler = async () => {
+const handler = async () => {
   try {
     const result = await fetch('http://ipv4.icanhazip.com/icanhazip.com');
     const resultText = await result.text();
@@ -20,3 +20,5 @@ export const handler = async () => {
     };
   }
 };
+
+exports.handler = handler;

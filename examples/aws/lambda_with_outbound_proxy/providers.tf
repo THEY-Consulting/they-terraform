@@ -26,6 +26,8 @@ provider "aws" {
     tags = {
       Project   = "they-terraform-examples"
       CreatedBy = "terraform"
+      Example   = "lambda-with-outbound-proxy"
+      Name      = local.name
     }
   }
 }
