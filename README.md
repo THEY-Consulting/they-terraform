@@ -679,6 +679,8 @@ module "vm" {
   name                = "they-test-vm"
   resource_group_name = "they-dev"
 
+  vm_hostname       = "vm" 
+  vm_os             = "linux"
   vm_size           = "Standard_B2s"
   vm_username       = "they"
   vm_password       = "P@ssw0rd123!"
@@ -706,6 +708,7 @@ module "vm" {
   public_ip = true
   
   allow_ssh = true
+  allow_rdp = true
   security_rules = [{
     name                   = "mock-server"
     priority               = 200
@@ -725,11 +728,13 @@ module "vm" {
 |---------------------------------------|--------------|--------------------------------------------------------------------------------------------------|----------|----------------------------------------------------------------------------------------|
 | name                                  | string       | Name of the vm and related resources                                                             | yes      |                                                                                        |
 | resource_group_name                   | string       | The name of the resource group in which to create the resources                                  | yes      |                                                                                        |
+| vm_hostname                           | string       | Hostname of the vm                                                                               | no       | `var.name`                                                                             |
+| vm_os                                 | string       | The OS to use for the VM. Valid values are 'linux' or 'windows'                                  | no       | `"linux"`                                                                              |
 | vm_size                               | string       | The size of the VM to create                                                                     | no       | `"Standard_B2s"`                                                                       |
 | vm_username                           | string       | The username for the VM admin user                                                               | no       | `"they"`                                                                               |
 | vm_password                           | string       | The password of the VM admin user                                                                | yes      |                                                                                        |
-| vm_public_ssh_key                     | string       | Public SSH key to use for the VM                                                                 | yes      |                                                                                        |
-| custom_data                           | string       | The custom data to setup the VM                                                                  | yes      |                                                                                        |
+| vm_public_ssh_key                     | string       | Public SSH key to use for the VM, required for linux VMs                                         | yes*     |                                                                                        |
+| custom_data                           | string       | The custom data to setup the VM                                                                  | no       | `null`                                                                                 |
 | vm_image                              | object       | The image to use for the VM                                                                      | no       | see sub fields                                                                         |
 | vm_image.publisher                    | string       | Publisher of the VM image                                                                        | no       | `"Canonical"`                                                                          |
 | vm_image.offer                        | string       | Offer of the VM image                                                                            | no       | `"0001-com-ubuntu-server-jammy"`                                                       |
@@ -745,6 +750,7 @@ module "vm" {
 | routes.next_hop_type                  | string       | Next hop type of the route                                                                       | yes      |                                                                                        |
 | public_ip                             | bool         | Enable a static public IP for the VM                                                             | no       | `false`                                                                                |
 | allow_ssh                             | bool         | Allow SSH access to the VM                                                                       | no       | `false`                                                                                |
+| allow_rdp                             | bool         | Allow RDP access to the VM                                                                       | no       | `false`                                                                                |
 | security_rules                        | list(object) | The security rules to use for the VM                                                             | no       | `[]`                                                                                   |
 | security_rules.name                   | string       | Name of the security rule                                                                        | yes      |                                                                                        |
 | security_rules.description            | string       | Description of the security rule                                                                 | no       | `""`                                                                                   |

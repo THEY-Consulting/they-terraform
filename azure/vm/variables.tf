@@ -8,6 +8,18 @@ variable "resource_group_name" {
   type        = string
 }
 
+variable "vm_hostname" {
+  description = "The host name of the VM."
+  type        = string
+  default     = null
+}
+
+variable "vm_os" {
+  description = "The OS to use for the VM. Valid values are 'linux' or 'windows'."
+  type        = string
+  default     = "linux"
+}
+
 variable "vm_size" {
   description = "The size of the VM to create."
   type        = string
@@ -29,11 +41,13 @@ variable "vm_password" {
 variable "vm_public_ssh_key" {
   description = "Public SSH key to use for the VM."
   type        = string
+  default     = null
 }
 
 variable "custom_data" {
   description = "The custom data to setup the VM."
   type        = string
+  default     = null
 }
 
 variable "vm_image" {
@@ -84,6 +98,12 @@ variable "public_ip" {
 
 variable "allow_ssh" {
   description = "Allow SSH access to the VM."
+  type        = bool
+  default     = false
+}
+
+variable "allow_rdp" {
+  description = "Allow RDP access to the VM."
   type        = bool
   default     = false
 }

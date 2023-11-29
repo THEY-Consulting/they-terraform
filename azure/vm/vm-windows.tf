@@ -1,7 +1,10 @@
-resource "azurerm_linux_virtual_machine" "main" {
+resource "azurerm_windows_virtual_machine" "main" {
+  count = var.vm_os == "windows" ? 1 : 0
+
   name                = "${var.name}-vm"
   resource_group_name = data.azurerm_resource_group.main.name
   location            = data.azurerm_resource_group.main.location
+  computer_name       = coalesce(var.vm_hostname, var.name)
   size                = var.vm_size
   admin_username      = var.vm_username
   admin_password      = var.vm_password
@@ -9,11 +12,6 @@ resource "azurerm_linux_virtual_machine" "main" {
     azurerm_network_interface.main.id,
   ]
   custom_data = var.custom_data
-
-  admin_ssh_key {
-    username   = var.vm_username
-    public_key = var.vm_public_ssh_key
-  }
 
   os_disk {
     caching              = "ReadWrite"

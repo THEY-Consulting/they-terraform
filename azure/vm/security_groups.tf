@@ -13,11 +13,28 @@ resource "azurerm_network_security_rule" "ssh" {
   description                 = "Allow SSH from Internet"
   direction                   = "Inbound"
   access                      = "Allow"
-  priority                    = 100
+  priority                    = 500
   protocol                    = "Tcp"
   source_port_range           = "*"
   source_address_prefix       = "*"
   destination_port_range      = "22"
+  destination_address_prefix  = azurerm_network_interface.main.private_ip_address
+  resource_group_name         = data.azurerm_resource_group.main.name
+  network_security_group_name = azurerm_network_security_group.main.name
+}
+
+resource "azurerm_network_security_rule" "rdp" {
+  count = var.allow_rdp ? 1 : 0
+
+  name                        = "rdp"
+  description                 = "Allow RDP from Internet"
+  direction                   = "Inbound"
+  access                      = "Allow"
+  priority                    = 550
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  source_address_prefix       = "*"
+  destination_port_range      = "3389"
   destination_address_prefix  = azurerm_network_interface.main.private_ip_address
   resource_group_name         = data.azurerm_resource_group.main.name
   network_security_group_name = azurerm_network_security_group.main.name
