@@ -379,11 +379,29 @@ module "s3_bucket" {
 #### Auto Scaling group
 
 ```hcl
+data "aws_availability_zones" "azs" {
+  state = "available"
+}
+
 module "auto-scaling-group" {
   source = "github.com/THEY-Consulting/they-terraform//aws/auto-scaling-group"
 
-  name       = "my-auto-scaling-group"
+  name        = "they-terraform-test-asg"
+  ami_id = "ami-0ba27d9989b7d8c5d" # AMI valid for eu-central-1
+  prod_instance_type = "t4g.nano"
+  dev_instance_type = "t4g.nano"
+  desired_capacity = 2
+  min_size = 1
+  max_size = 3
+  availability_zones = data.aws_availability_zones.azs.names[*] # Use AZs of region defined by provider.
+  vpc_cidr_block = "10.0.0.0/16"
+  public_subnets = false
+  tags = {
+    createdBy = "terraform"
+    environment = "dev"
+  }
 }
+
 ```
 
 ##### Inputs
@@ -397,10 +415,10 @@ module "auto-scaling-group" {
 | desired_capacity   | number       | The number of EC2 instances that will be running in the ASG                                                                    | yes      |                 |
 | min_size           | number       | The minimum number of EC2 instances in the ASG                                                                                 | yes      |                 |
 | max_size           | number       | The maximum number of EC2 instances in the ASG                                                                                 | yes      |                 |
-| tags               | map(string)  | Additional tags for the components of this module                                                                              | no       | `{}`            |
 | availability_zones | list(string) | List of availability zones (AZs). A subnet is created for every AZ and the ASG instances are deployed across the different AZs | yes      |                 |
 | vpc_cidr_block     | string       | The CIDR block of the VPC. The subnets will be located within this CIDR block.                                                 | yes      | `"10.0.0.0/16"` |
 | public_subnets     | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                       | yes      | `false`         |
+| tags               | map(string)  | Additional tags for the components of this module                                                                              | no       | `{}`            |
 
 ##### Outputs
 

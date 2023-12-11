@@ -1,11 +1,11 @@
 resource "aws_lb" "lb" {
   name               = "${terraform.workspace}-${var.name}-alb"
   load_balancer_type = "application"
-  security_groups    = [ aws_security_group.sg.id ]
+  security_groups    = [aws_security_group.sg.id]
   subnets            = aws_subnet.subnets[*].id
   internal           = false # False for internet-facing ALBs.
 
-  tags = merge(var.tags, 
+  tags = merge(var.tags,
   { Name = "${terraform.workspace}-${var.name}-alb" })
 }
 

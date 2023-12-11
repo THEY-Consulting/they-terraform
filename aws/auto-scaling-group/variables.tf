@@ -10,12 +10,12 @@ variable "ami_id" {
 
 variable "prod_instance_type" {
   description = "Instance type used in production to deploy ASG."
-  type = string
+  type        = string
 }
 
 variable "dev_instance_type" {
   description = "Instance type used in dev environments to deploy ASG."
-  type = string
+  type        = string
 }
 
 variable "desired_capacity" {

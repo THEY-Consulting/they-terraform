@@ -6,7 +6,7 @@ resource "aws_autoscaling_group" "asg" {
   desired_capacity     = var.desired_capacity
   min_size             = var.min_size
   max_size             = var.max_size
-  target_group_arns    = [ aws_lb_target_group.tg.arn ]
+  target_group_arns    = [aws_lb_target_group.tg.arn]
   enabled_metrics      = var.enabled_metrics
   health_check_type    = "ELB" # Integrates with ALB/ELB.
   termination_policies = ["OldestInstance"]
@@ -51,11 +51,11 @@ resource "aws_autoscaling_group" "asg" {
 # }
 
 resource "aws_launch_template" "launch_template" {
-  name_prefix = "${terraform.workspace}-${var.name}-asg-template"
-  image_id    = var.ami_id
+  name_prefix   = "${terraform.workspace}-${var.name}-asg-template"
+  image_id      = var.ami_id
   instance_type = terraform.workspace == "prod" ? var.prod_instance_type : var.dev_instance_type
 
-  vpc_security_group_ids =  [ aws_security_group.sg.id ]
+  vpc_security_group_ids = [aws_security_group.sg.id]
 
   # TODO: 
   user_data = filebase64("${path.module}/user_data.sh")
