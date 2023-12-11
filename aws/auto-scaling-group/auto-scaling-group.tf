@@ -16,7 +16,7 @@ resource "aws_autoscaling_group" "asg" {
     version = aws_launch_template.launch_template.latest_version
   }
 
-  # TODO: define instace_refresh property.
+  # TODO: define instance_refresh property.
 
   # AWS Auto Scaling Groups dynamically create and destroy EC2 instances
   # as defined in the ASG's configuration. Because these EC2 instances are created
@@ -57,7 +57,7 @@ resource "aws_launch_template" "launch_template" {
 
   vpc_security_group_ids = [aws_security_group.sg.id]
 
-  # TODO: 
+  # TODO: generalize this solution
   user_data = filebase64("${path.module}/user_data.sh")
 }
 

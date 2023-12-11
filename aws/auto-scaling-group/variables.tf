@@ -33,7 +33,7 @@ variable "max_size" {
   type        = number
 }
 
-# TODO:
+# NOTE: should this be a variable?
 variable "enabled_metrics" {
   description = "List of metrics to enable"
   type        = list(string)
@@ -63,7 +63,7 @@ variable "public_subnets" {
   default     = false
 }
 
-# TODO:
+# NOTE: should this be a variable?
 variable "cidr_offset" {
   description = "Start CIDR block at an offset."
   type        = number
