@@ -393,6 +393,7 @@ module "auto-scaling-group" {
   desired_capacity = 2
   min_size = 1
   max_size = 3
+  user_data_file_name = "user_data.sh"
   availability_zones = data.aws_availability_zones.azs.names[*] # Use AZs of region defined by provider.
   vpc_cidr_block = "10.0.0.0/16"
   public_subnets = false
@@ -406,19 +407,20 @@ module "auto-scaling-group" {
 
 ##### Inputs
 
-| Variable           | Type         | Description                                                                                                                    | Required | Default         |
-| ------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------ | -------- | --------------- |
-| name               | string       | Name of the Auto Scaling group (ASG)                                                                                           | yes      |                 |
-| ami_id             | string       | ID of AMI used in EC2 instances of ASG                                                                                         | yes      |                 |
-| prod_instance_type | string       | Instance type to deploy production instances                                                                                   | yes      |                 |
-| dev_instance_type  | string       | Instance type to deploy instances in dev environment                                                                           | yes      |                 |
-| desired_capacity   | number       | The number of EC2 instances that will be running in the ASG                                                                    | yes      |                 |
-| min_size           | number       | The minimum number of EC2 instances in the ASG                                                                                 | yes      |                 |
-| max_size           | number       | The maximum number of EC2 instances in the ASG                                                                                 | yes      |                 |
-| availability_zones | list(string) | List of availability zones (AZs). A subnet is created for every AZ and the ASG instances are deployed across the different AZs | yes      |                 |
-| vpc_cidr_block     | string       | The CIDR block of the VPC. The subnets will be located within this CIDR block.                                                 | yes      | `"10.0.0.0/16"` |
-| public_subnets     | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                       | yes      | `false`         |
-| tags               | map(string)  | Additional tags for the components of this module                                                                              | no       | `{}`            |
+| Variable            | Type         | Description                                                                                                                    | Required | Default         |
+| ------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------ | -------- | --------------- |
+| name                | string       | Name of the Auto Scaling group (ASG)                                                                                           | yes      |                 |
+| ami_id              | string       | ID of AMI used in EC2 instances of ASG                                                                                         | yes      |                 |
+| prod_instance_type  | string       | Instance type to deploy production instances                                                                                   | yes      |                 |
+| dev_instance_type   | string       | Instance type to deploy instances in dev environment                                                                           | yes      |                 |
+| desired_capacity    | number       | The number of EC2 instances that will be running in the ASG                                                                    | yes      |                 |
+| min_size            | number       | The minimum number of EC2 instances in the ASG                                                                                 | yes      |                 |
+| max_size            | number       | The maximum number of EC2 instances in the ASG                                                                                 | yes      |                 |
+| user_data_file_name | string       | The name of the local file in the working directory with the user data used in the instances of the ASG                        | yes      |                 |
+| availability_zones  | list(string) | List of availability zones (AZs). A subnet is created for every AZ and the ASG instances are deployed across the different AZs | yes      |                 |
+| vpc_cidr_block      | string       | The CIDR block of the VPC. The subnets will be located within this CIDR block.                                                 | yes      | `"10.0.0.0/16"` |
+| public_subnets      | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                       | yes      | `false`         |
+| tags                | map(string)  | Additional tags for the components of this module                                                                              | no       | `{}`            |
 
 ##### Outputs
 

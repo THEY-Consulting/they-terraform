@@ -7,7 +7,6 @@ resource "aws_autoscaling_group" "asg" {
   min_size             = var.min_size
   max_size             = var.max_size
   target_group_arns    = [aws_lb_target_group.tg.arn]
-  enabled_metrics      = var.enabled_metrics
   health_check_type    = "ELB" # Integrates with ALB/ELB.
   termination_policies = ["OldestInstance"]
 
@@ -57,8 +56,7 @@ resource "aws_launch_template" "launch_template" {
 
   vpc_security_group_ids = [aws_security_group.sg.id]
 
-  # TODO: generalize this solution
-  user_data = filebase64("${path.module}/user_data.sh")
+  user_data = filebase64("${path.root}/${var.user_data_file_name}")
 }
 
 

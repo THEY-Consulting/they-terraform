@@ -33,11 +33,9 @@ variable "max_size" {
   type        = number
 }
 
-# NOTE: should this be a variable?
-variable "enabled_metrics" {
-  description = "List of metrics to enable"
-  type        = list(string)
-  default     = null
+variable "user_data_file_name" {
+  description = "Name of file in working directory with user data used in instances of ASG."
+  type = string
 }
 
 variable "tags" {
