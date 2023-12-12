@@ -37,7 +37,7 @@ resource "aws_autoscaling_group" "asg" {
 }
 
 resource "aws_launch_template" "launch_template" {
-  name_prefix   = "${var.name}-asg-template"
+  name_prefix   = "${var.name}-launch-template"
   image_id      = var.ami_id
   instance_type = var.instance_type
 
