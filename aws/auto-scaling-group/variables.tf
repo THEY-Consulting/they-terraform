@@ -60,10 +60,3 @@ variable "public_subnets" {
   type        = bool
   default     = false
 }
-
-# NOTE: should this be a variable?
-variable "cidr_offset" {
-  description = "Start CIDR block at an offset."
-  type        = number
-  default     = 0
-}

@@ -22,7 +22,7 @@ resource "aws_internet_gateway" "igw" {
 resource "aws_subnet" "subnets" {
   count                   = length(var.availability_zones)
   vpc_id                  = aws_vpc.vpc.id
-  cidr_block              = cidrsubnet(var.vpc_cidr_block, 4, count.index + var.cidr_offset)
+  cidr_block              = cidrsubnet(var.vpc_cidr_block, 4, count.index)
   availability_zone       = var.availability_zones[count.index]
   map_public_ip_on_launch = var.public_subnets # Default is false. 
   # Subnets do not have public IPs per default.
@@ -32,9 +32,9 @@ resource "aws_subnet" "subnets" {
   }
 }
 
+# Security group to allow in/out HTTP traffic.
 resource "aws_security_group" "sg" {
   vpc_id = aws_vpc.vpc.id
-  # TODO: generalize ingress and egress
   ingress {
     protocol    = "tcp"
     from_port   = 80
@@ -75,9 +75,10 @@ resource "aws_route_table" "rt" {
   })
 }
 
+# A route table association should be performed.
 # Otherwise, AWS creates another default route table for the VPC,
-# and the subnets do not get automatically associated to the route table
-# which would mean that internet traffic would not be re-routed to internet
+# and the subnets do not get automatically associated to the correct route table,
+# which would mean that internet traffic would not be re-routed to the internet
 # gateway.
 resource "aws_main_route_table_association" "main_rt" {
   vpc_id         = aws_vpc.vpc.id

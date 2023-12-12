@@ -15,8 +15,6 @@ resource "aws_autoscaling_group" "asg" {
     version = aws_launch_template.launch_template.latest_version
   }
 
-  # TODO: define instance_refresh property.
-
   # AWS Auto Scaling Groups dynamically create and destroy EC2 instances
   # as defined in the ASG's configuration. Because these EC2 instances are created
   # and destroyed by AWS, Terraform does not manage them and is not directly
@@ -38,17 +36,6 @@ resource "aws_autoscaling_group" "asg" {
 
 }
 
-# TODO: asg_schedules not required for MVP.
-
-# resource "aws_autoscaling_schedule" "asg-schedule" {
-#   scheduled_action_name  = var.name
-#   min_size               = var.min_size
-#   max_size               = var.max_size
-#   desired_capacity       = var.desired_capacity
-#   recurrence             = var.recurrence
-#   autoscaling_group_name = var.autoscaling_group_name
-# }
-
 resource "aws_launch_template" "launch_template" {
   name_prefix   = "${terraform.workspace}-${var.name}-asg-template"
   image_id      = var.ami_id
@@ -58,5 +45,3 @@ resource "aws_launch_template" "launch_template" {
 
   user_data = filebase64("${path.root}/${var.user_data_file_name}")
 }
-
-
