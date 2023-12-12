@@ -43,5 +43,5 @@ resource "aws_launch_template" "launch_template" {
 
   vpc_security_group_ids = [aws_security_group.sg.id]
 
-  user_data = filebase64("${path.root}/${var.user_data_file_name}")
+  user_data = var.user_data_file_name != null ? filebase64("${path.root}/${var.user_data_file_name}") : null
 }

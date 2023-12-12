@@ -36,6 +36,7 @@ variable "max_size" {
 variable "user_data_file_name" {
   description = "Name of file in working directory with user data used in instances of ASG."
   type = string
+  default = null # Variable is optional.
 }
 
 variable "tags" {
