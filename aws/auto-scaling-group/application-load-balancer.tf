@@ -1,5 +1,5 @@
 resource "aws_lb" "lb" {
-  name               = "${terraform.workspace}-${var.name}-alb"
+  name               = "${var.name}-alb"
   load_balancer_type = "application"
   security_groups    = [aws_security_group.sg.id]
   subnets            = aws_subnet.subnets[*].id
