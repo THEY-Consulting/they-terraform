@@ -21,16 +21,19 @@ variable "dev_instance_type" {
 variable "desired_capacity" {
   description = "The number of EC2 instances that should be running in the ASG."
   type        = number
+  default     = 1
 }
 
 variable "min_size" {
   description = "The minimum number of instances in the ASG."
   type        = number
+  default     = 1
 }
 
 variable "max_size" {
   description = "The maximum number of instances in the ASG."
   type        = number
+  default     = 1
 }
 
 variable "user_data_file_name" {
