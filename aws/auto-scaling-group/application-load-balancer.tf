@@ -6,7 +6,7 @@ resource "aws_lb" "lb" {
   internal           = false # False for internet-facing ALBs.
 
   tags = merge(var.tags,
-  { Name = "${terraform.workspace}-${var.name}-alb" })
+  { Name = "${var.name}-alb" })
 }
 
 resource "aws_lb_listener" "lb_listener" {
