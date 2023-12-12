@@ -1,8 +1,10 @@
-# --- RESOURCES / MODULES ---
+# --- DATA ---
 
 data "aws_availability_zones" "azs" {
   state = "available"
 }
+
+# --- RESOURCES / MODULES ---
 
 module "auto-scaling-group" {
   # source = "github.com/THEY-Consulting/they-terraform//aws/auto-scaling-group"
