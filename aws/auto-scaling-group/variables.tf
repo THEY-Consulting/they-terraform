@@ -8,13 +8,8 @@ variable "ami_id" {
   type        = string
 }
 
-variable "prod_instance_type" {
-  description = "Instance type used in production to deploy ASG."
-  type        = string
-}
-
-variable "dev_instance_type" {
-  description = "Instance type used in dev environments to deploy ASG."
+variable "instance_type" {
+  description = "Instance type used to deploy ASG."
   type        = string
 }
 

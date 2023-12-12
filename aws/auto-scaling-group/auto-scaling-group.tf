@@ -37,9 +37,9 @@ resource "aws_autoscaling_group" "asg" {
 }
 
 resource "aws_launch_template" "launch_template" {
-  name_prefix   = "${terraform.workspace}-${var.name}-asg-template"
+  name_prefix   = "${var.name}-asg-template"
   image_id      = var.ami_id
-  instance_type = terraform.workspace == "prod" ? var.prod_instance_type : var.dev_instance_type
+  instance_type = var.instance_type
 
   vpc_security_group_ids = [aws_security_group.sg.id]
 
