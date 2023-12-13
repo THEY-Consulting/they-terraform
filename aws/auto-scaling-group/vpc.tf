@@ -2,12 +2,12 @@ resource "aws_vpc" "vpc" {
   cidr_block       = var.vpc_cidr_block
   instance_tenancy = "default"
   tags = merge(var.tags, {
-    Name = "${terraform.workspace}-${var.name}-vpc"
+    Name = "${var.name}-vpc"
   })
 }
 
-# Allows instances in private IPs to get incoming connections from the internet 
-# through an Application Load Balancer. 
+# The Internet Gateway allows instances in private IPs to get 
+# incoming connections from the internet through an Application Load Balancer. 
 # Nonetheless, this resource does not allow an instance in a private subnet to 
 # establish internet connections at boot-up (to for example get packages), for that
 # refer to AWS NAT.
@@ -15,7 +15,7 @@ resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.vpc.id
 
   tags = merge(var.tags, {
-    Name = "${terraform.workspace}-${var.name}-ig"
+    Name = "${var.name}-ig"
   })
 }
 
@@ -28,7 +28,7 @@ resource "aws_subnet" "subnets" {
   # Subnets do not have public IPs per default.
 
   tags = {
-    Name = "${terraform.workspace}-${var.name}-subnet-${var.availability_zones[count.index]}"
+    Name = "${var.name}-subnet-${var.availability_zones[count.index]}"
   }
 }
 
@@ -50,7 +50,7 @@ resource "aws_security_group" "sg" {
   }
 
   tags = {
-    Name = "${terraform.workspace}-${var.name}-sg"
+    Name = "${var.name}-sg"
   }
 
 }
@@ -71,7 +71,7 @@ resource "aws_route_table" "rt" {
   }
 
   tags = merge(var.tags, {
-    Name = "${terraform.workspace}-${var.name}-rt"
+    Name = "${var.name}-rt"
   })
 }
 

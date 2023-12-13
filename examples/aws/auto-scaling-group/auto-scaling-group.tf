@@ -10,8 +10,8 @@ module "auto-scaling-group" {
   # source = "github.com/THEY-Consulting/they-terraform//aws/auto-scaling-group"
   source = "../../../aws/auto-scaling-group"
 
-  name                = "they-terraform-test-asg"
-  ami_id              = "ami-0ba27d9989b7d8c5d" # AMI valid for eu-central-1 (Amazon Linux 2023 arm64)
+  name                = "${terraform.workspace}-they-terraform-asg"
+  ami_id              = "ami-0ba27d9989b7d8c5d" # AMI valid for eu-central-1 (Amazon Linux 2023 arm64).
   instance_type       = "t4g.nano"
   desired_capacity    = 2
   min_size            = 1
