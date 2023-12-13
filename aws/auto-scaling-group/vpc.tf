@@ -34,6 +34,8 @@ resource "aws_subnet" "subnets" {
 
 # Security group to allow in/out HTTP traffic.
 resource "aws_security_group" "sg" {
+  name = "${var.name}-sg"
+  description = "Security group for ASG, HTTP and HTTPS traffic."
   vpc_id = aws_vpc.vpc.id
   ingress {
     protocol    = "tcp"
@@ -53,6 +55,27 @@ resource "aws_security_group" "sg" {
     Name = "${var.name}-sg"
   }
 
+  # Rule is only deployed if a certificate for HTTPS was provided.  
+  dynamic "ingress" {
+    for_each = var.certificate_arn != null ? [1] : []
+    content {
+      protocol    = "tcp"
+      from_port   = 443
+      to_port     = 443
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
+
+  # Rule is only deployed if a certificate for HTTPS was provided.  
+  dynamic "egress" {
+    for_each = var.certificate_arn != null ? [1] : []
+    content{
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
 }
 
 resource "aws_route_table" "rt" {

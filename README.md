@@ -383,11 +383,16 @@ data "aws_availability_zones" "azs" {
   state = "available"
 }
 
+data "aws_acm_certificate" "certificate" {
+  domain   = "they-code.de"
+  statuses = ["ISSUED"]
+}
+
 module "auto-scaling-group" {
   source = "github.com/THEY-Consulting/they-terraform//aws/auto-scaling-group"
 
   name        = "they-terraform-test-asg"
-  ami_id = "ami-0ba27d9989b7d8c5d" # AMI valid for eu-central-1 (Amazon Linux 2023 arm64)
+  ami_id = "ami-0ba27d9989b7d8c5d" # AMI valid for eu-central-1 (Amazon Linux 2023 arm64).
   instance_type = "t4g.nano"
   desired_capacity = 2
   min_size = 1
@@ -396,6 +401,7 @@ module "auto-scaling-group" {
   availability_zones = data.aws_availability_zones.azs.names[*] # Use AZs of region defined by provider.
   vpc_cidr_block = "10.0.0.0/16"
   public_subnets = false
+  certificate_arn = data.aws_acm_certificate.certificate.arn
   tags = {
     createdBy = "terraform"
     environment = "dev"
@@ -406,19 +412,20 @@ module "auto-scaling-group" {
 
 ##### Inputs
 
-| Variable            | Type         | Description                                                                                                                    | Required | Default         |
-| ------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------ | -------- | --------------- |
-| name                | string       | Name of the Auto Scaling group (ASG)                                                                                           | yes      |                 |
-| ami_id              | string       | ID of AMI used in EC2 instances of ASG                                                                                         | yes      |                 |
-| instance_type       | string       | Instance type used to deploy instances in ASG                                                                                  | yes      |                 |
-| desired_capacity    | number       | The number of EC2 instances that will be running in the ASG                                                                    | yes      | 1               |
-| min_size            | number       | The minimum number of EC2 instances in the ASG                                                                                 | yes      | 1               |
-| max_size            | number       | The maximum number of EC2 instances in the ASG                                                                                 | yes      | 1               |
-| user_data_file_name | string       | The name of the local file in the working directory with the user data used in the instances of the ASG                        | no       |                 |
-| availability_zones  | list(string) | List of availability zones (AZs). A subnet is created for every AZ and the ASG instances are deployed across the different AZs | yes      |                 |
-| vpc_cidr_block      | string       | The CIDR block of private IP addresses of the VPC. The subnets will be located within this CIDR block.                         | yes      | `"10.0.0.0/16"` |
-| public_subnets      | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                       | yes      | `false`         |
-| tags                | map(string)  | Additional tags for the components of this module                                                                              | no       | `{}`            |
+| Variable            | Type         | Description                                                                                                                          | Required | Default         |
+| ------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ | -------- | --------------- |
+| name                | string       | Name of the Auto Scaling group (ASG)                                                                                                 | yes      |                 |
+| ami_id              | string       | ID of AMI used in EC2 instances of ASG                                                                                               | yes      |                 |
+| instance_type       | string       | Instance type used to deploy instances in ASG                                                                                        | yes      |                 |
+| desired_capacity    | number       | The number of EC2 instances that will be running in the ASG                                                                          | yes      | 1               |
+| min_size            | number       | The minimum number of EC2 instances in the ASG                                                                                       | yes      | 1               |
+| max_size            | number       | The maximum number of EC2 instances in the ASG                                                                                       | yes      | 1               |
+| user_data_file_name | string       | The name of the local file in the working directory with the user data used in the instances of the ASG                              | no       |                 |
+| availability_zones  | list(string) | List of availability zones (AZs) names. A subnet is created for every AZ and the ASG instances are deployed across the different AZs | yes      |                 |
+| vpc_cidr_block      | string       | The CIDR block of private IP addresses of the VPC. The subnets will be located within this CIDR block.                               | yes      | `"10.0.0.0/16"` |
+| public_subnets      | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                             | yes      | `false`         |
+| certificate_arn     | string       | ARN of certificate used to setup HTTPs in Application Load Balancer                                                                  | no       |                 |
+| tags                | map(string)  | Additional tags for the components of this module                                                                                    | no       | `{}`            |
 
 ##### Outputs
 

@@ -59,3 +59,9 @@ variable "public_subnets" {
   type        = bool
   default     = false
 }
+
+variable "certificate_arn" {
+  description = "ARN of certificate used to setup HTTPs in ALB"
+  type = string
+  default = null # Variable is optional.
+}
