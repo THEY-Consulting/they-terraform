@@ -690,29 +690,115 @@ module "mssql_database" {
 
 ##### Inputs
 
-| Variable                               | Type         | Description                                                                                                                                                 | Required | Default                          |
-| -------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------- |
-| name                                   | string       | Name of the database                                                                                                                                        | yes      |                                  |
-| location                               | string       | The Azure region where the resources should be created                                                                                                      | yes      |                                  |
-| resource_group_name                    | string       | The name of the resource group in which to create the resources                                                                                             | yes      |                                  |
-| server                                 | object       | The database server                                                                                                                                         | yes      |                                  |
-| server.preexisting_name                | string       | Name of an existing database server, if this is `null` a new database server will be created                                                                | no       | `null`                           |
-| server.version                         | string       | Version of the MSSQL database, ignored if `server.preexisting_name` is set                                                                                  | no       | `12.0`                           |
-| server.administrator_login             | string       | Name of the administrator login, ignored if `server.preexisting_name` is set                                                                                | no       | `"AdminUser"`                    |
-| server.administrator_login_password    | string       | Password of the administrator login, ignored if `server.preexisting_name` is set, required otherwise                                                        | yes\*    |                                  |
-| server.allow_azure_resources           | bool         | Adds a database server firewall rule to grant database access to azure resources, ignored if `server.preexisting_name` is set                               | no       | `true`                           |
-| server.allow_all                       | bool         | Adds a database server firewall rule to grant database access to everyone, ignored if `server.preexisting_name` is set                                      | no       | `false`                          |
-| server.firewall_rules                  | list(object) | Adds server firewall rules, ignored if `server.preexisting_name` is set                                                                                     | no       | `[]`                             |
-| server.firewall_rules.name             | string       | Name of the firewall rule                                                                                                                                   | yes      |                                  |
-| server.firewall_rules.start_ip_address | string       | Start ip address of the firewall rule                                                                                                                       | yes      |                                  |
-| server.firewall_rules.end_ip_address   | string       | End ip address of the firewall rule                                                                                                                         | yes      |                                  |
-| users                                  | list(object) | List of users (with logins) to create in the database                                                                                                       | no       | `[]`                             |
-| users.username                         | string       | Name for the user and login                                                                                                                                 | yes      |                                  |
-| users.password                         | string       | Password for the user login                                                                                                                                 | yes      |                                  |
-| users.roles                            | list(string) | List of roles to attach to the user                                                                                                                         | yes      |                                  |
-| collation                              | string       | The collation of the database                                                                                                                               | no       | `"SQL_Latin1_General_CP1_CI_AS"` |
-| sku_name                               | string       | The sku for the database. For vCores, this also sets the maximum capacity                                                                                   | no       | `"GP_S_Gen5_1"`                  |
-| max_size_gb                            | number       | The maximum size of the database in gigabytes                                                                                                               | no       | `16`                             |
-| min_capacity                           | number       | The minimum vCore of the database. The maximum is set by the sku tier. Only relevant when using a serverless vCore based database. Set this to 0 otherwise. | no       | `0.5`                            |
-| storage_account_type                   | string       | The storage account type used to store backups for this database. Possible values are Geo, Local and Zone                                                   | no       | `"Local"`                        |
-| auto_pause_delay_in_minutes            | nu           |
+| Variable                               | Type         | Description                                                                                                                                                                                              | Required | Default                          |
+| -------------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------- |
+| name                                   | string       | Name of the database                                                                                                                                                                                     | yes      |                                  |
+| location                               | string       | The Azure region where the resources should be created                                                                                                                                                   | yes      |                                  |
+| resource_group_name                    | string       | The name of the resource group in which to create the resources                                                                                                                                          | yes      |                                  |
+| server                                 | object       | The database server                                                                                                                                                                                      | yes      |                                  |
+| server.preexisting_name                | string       | Name of an existing database server, if this is `null` a new database server will be created                                                                                                             | no       | `null`                           |
+| server.version                         | string       | Version of the MSSQL database, ignored if `server.preexisting_name` is set                                                                                                                               | no       | `12.0`                           |
+| server.administrator_login             | string       | Name of the administrator login, ignored if `server.preexisting_name` is set                                                                                                                             | no       | `"AdminUser"`                    |
+| server.administrator_login_password    | string       | Password of the administrator login, ignored if `server.preexisting_name` is set, required otherwise                                                                                                     | yes\*    |                                  |
+| server.allow_azure_resources           | bool         | Adds a database server firewall rule to grant database access to azure resources, ignored if `server.preexisting_name` is set                                                                            | no       | `true`                           |
+| server.allow_all                       | bool         | Adds a database server firewall rule to grant database access to everyone, ignored if `server.preexisting_name` is set                                                                                   | no       | `false`                          |
+| server.firewall_rules                  | list(object) | Adds server firewall rules, ignored if `server.preexisting_name` is set                                                                                                                                  | no       | `[]`                             |
+| server.firewall_rules.name             | string       | Name of the firewall rule                                                                                                                                                                                | yes      |                                  |
+| server.firewall_rules.start_ip_address | string       | Start ip address of the firewall rule                                                                                                                                                                    | yes      |                                  |
+| server.firewall_rules.end_ip_address   | string       | End ip address of the firewall rule                                                                                                                                                                      | yes      |                                  |
+| users                                  | list(object) | List of users (with logins) to create in the database                                                                                                                                                    | no       | `[]`                             |
+| users.username                         | string       | Name for the user and login                                                                                                                                                                              | yes      |                                  |
+| users.password                         | string       | Password for the user login                                                                                                                                                                              | yes      |                                  |
+| users.roles                            | list(string) | List of roles to attach to the user                                                                                                                                                                      | yes      |                                  |
+| collation                              | string       | The collation of the database                                                                                                                                                                            | no       | `"SQL_Latin1_General_CP1_CI_AS"` |
+| sku_name                               | string       | The sku for the database. For vCores, this also sets the maximum capacity                                                                                                                                | no       | `"GP_S_Gen5_1"`                  |
+| max_size_gb                            | number       | The maximum size of the database in gigabytes                                                                                                                                                            | no       | `16`                             |
+| min_capacity                           | number       | The minimum vCore of the database. The maximum is set by the sku tier. Only relevant when using a serverless vCore based database. Set this to 0 otherwise.                                              | no       | `0.5`                            |
+| storage_account_type                   | string       | The storage account type used to store backups for this database. Possible values are Geo, Local and Zone                                                                                                | no       | `"Local"`                        |
+| auto_pause_delay_in_minutes            | number       | Time in minutes after which database is automatically paused. A value of -1 means that automatic pause is disabled. Only relevant when using a serverless vCore based database. Set this to 0 otherwise. | no       | `60`                             |
+| tags                                   | map(string)  | Map of tags to assign to the resources                                                                                                                                                                   | no       | `{}`                             |
+
+##### Outputs
+
+| Output                     | Type   | Description                                                |
+| -------------------------- | ------ | ---------------------------------------------------------- |
+| database_name              | string | Name of the database                                       |
+| server_administrator_login | string | Administrator login name                                   |
+| server_domain_name         | string | Domain name of the server                                  |
+| ODBC_connection_string     | string | OBDC Connection string with a placeholder for the password |
+
+## Contributing
+
+### Prerequisites
+
+- [Terraform](https://www.terraform.io/downloads.html) version 1.6.4
+- [tfenv](https://github.com/tfutils/tfenv) optional, recommended
+- [nodejs](https://nodejs.org/en) version 18.X
+- [yarn](https://classic.yarnpkg.com/lang/en/docs/) `npm i -g yarn`
+- [aws cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+- [az cli](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
+- [direnv](https://direnv.net/)
+
+### Environment Variables
+
+- Configure your environment variables (create and put them in `.envrc` in the project's root dir):
+
+```bash
+export AWS_PROFILE=nameOfProfile
+export AZURE_TENANT_ID=tenantId #<see https://portal.azure.com/#settings/directory for the correct Directory ID>
+export TF_VAR_tenant_id=$AZURE_TENANT_ID
+
+```
+
+- Remember to add the aws profile info to `~/.aws/config`
+- And the key and secret for said profile to `~/.aws/credentials`
+
+### Local Dev
+
+Install dependencies:
+
+```bash
+cd examples/aws/packages
+yarn install
+
+cd examples/azure/packages
+yarn install
+```
+
+If you want to import and test changes you made without merging them first into main,
+you can use the git commit hash as the version in the source URL
+when importing the module within other projects.
+Don't forget to remove the hash when you are done ;)
+
+```hcl
+module "module_with_unmerged_changes" {
+  source = "github.com/THEY-Consulting/they-terraform//aws/lambda?ref=ee423515"
+}
+```
+
+### Deployment
+
+Currently, we only use a single workspace within each cloud provider.
+To deploy each example execute:
+
+```bash
+cd examples/aws/<example>
+terraform apply
+
+cd examples/azure/<example>
+terraform apply
+```
+
+The resources used to manage the state of the resources deployed within the `examples` folder can be found at `examples/.setup-tfstate`.
+If you want to setup your own Terraform state management system, remove any `.terraform.lock.hcl` files within the `examples` folder, and deploy the resources at `examples/.setup-tfstate/` in your own AWS account.
+
+#### Clean-up
+
+When you are done testing, please destroy the resources with `terraform destroy`.
+
+`examples/aws/setup-tfstate` is a bit more complicated to clean up.
+`terraform destroy` can not remove the S3 bucket (due to `prevent_destroy = true`).
+
+Therefore, you need to delete the bucket manually in the AWS console.
+After that you can remove the remaining resources with `terraform destroy`.
+Keep in mind that after destroying a bucket it can take up to 24 hours until the name is available again.
