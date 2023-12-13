@@ -12,6 +12,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [Lambda](#lambda)
     - [API Gateway (REST)](#api-gateway-rest)
     - [S3 Bucket](#s3-bucket)
+    - [Auto Scaling group](#auto-scaling-group)
     - [GitHub OpenID role](#github-openid-role)
     - [setup-tfstate](#setup-tfstate)
   - [Azure](#azure)
@@ -360,20 +361,77 @@ module "s3_bucket" {
 
 ##### Inputs
 
-| Variable        | Type   | Description                                                                                                                                   | Required | Default |
-|-----------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
-| name            | string | Name of the bucket                                                                                                                            | yes      |         |
-| versioning      | bool   | Enable versioning of s3 bucket                                                                                                                | yes      |         |
-| policy          | string | Policy of s3 bucket                                                                                                                           | no       | `null`  |
-| prevent_destroy | bool   | Prevent destroy of s3 bucket. To bypass this protection even if this is enabled, remove the module from your code and run `terraform apply`.  | no       | `true`  |
+| Variable        | Type   | Description                                                                                                                                  | Required | Default |
+| --------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
+| name            | string | Name of the bucket                                                                                                                           | yes      |         |
+| versioning      | bool   | Enable versioning of s3 bucket                                                                                                               | yes      |         |
+| policy          | string | Policy of s3 bucket                                                                                                                          | no       | `null`  |
+| prevent_destroy | bool   | Prevent destroy of s3 bucket. To bypass this protection even if this is enabled, remove the module from your code and run `terraform apply`. | no       | `true`  |
 
 ##### Outputs
 
 | Output     | Type   | Description                    |
-|------------|--------|--------------------------------|
+| ---------- | ------ | ------------------------------ |
 | id         | string | ID of the s3 bucket            |
 | arn        | string | ARN of the s3 bucket           |
 | versioning | string | ID of the s3 bucket versioning |
+
+#### Auto Scaling group
+
+```hcl
+data "aws_availability_zones" "azs" {
+  state = "available"
+}
+
+data "aws_acm_certificate" "certificate" {
+  domain   = "they-code.de"
+  statuses = ["ISSUED"]
+}
+
+module "auto-scaling-group" {
+  source = "github.com/THEY-Consulting/they-terraform//aws/auto-scaling-group"
+
+  name        = "they-terraform-test-asg"
+  ami_id = "ami-0ba27d9989b7d8c5d" # AMI valid for eu-central-1 (Amazon Linux 2023 arm64).
+  instance_type = "t4g.nano"
+  desired_capacity = 2
+  min_size = 1
+  max_size = 3
+  user_data_file_name = "user_data.sh"
+  availability_zones = data.aws_availability_zones.azs.names[*] # Use AZs of region defined by provider.
+  vpc_cidr_block = "10.0.0.0/16"
+  public_subnets = false
+  certificate_arn = data.aws_acm_certificate.certificate.arn
+  tags = {
+    createdBy = "terraform"
+    environment = "dev"
+  }
+}
+
+```
+
+##### Inputs
+
+| Variable            | Type         | Description                                                                                                                          | Required | Default         |
+| ------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ | -------- | --------------- |
+| name                | string       | Name of the Auto Scaling group (ASG)                                                                                                 | yes      |                 |
+| ami_id              | string       | ID of AMI used in EC2 instances of ASG                                                                                               | yes      |                 |
+| instance_type       | string       | Instance type used to deploy instances in ASG                                                                                        | yes      |                 |
+| desired_capacity    | number       | The number of EC2 instances that will be running in the ASG                                                                          | yes      | 1               |
+| min_size            | number       | The minimum number of EC2 instances in the ASG                                                                                       | yes      | 1               |
+| max_size            | number       | The maximum number of EC2 instances in the ASG                                                                                       | yes      | 1               |
+| user_data_file_name | string       | The name of the local file in the working directory with the user data used in the instances of the ASG                              | no       |                 |
+| availability_zones  | list(string) | List of availability zones (AZs) names. A subnet is created for every AZ and the ASG instances are deployed across the different AZs | yes      |                 |
+| vpc_cidr_block      | string       | The CIDR block of private IP addresses of the VPC. The subnets will be located within this CIDR block.                               | yes      | `"10.0.0.0/16"` |
+| public_subnets      | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                             | yes      | `false`         |
+| certificate_arn     | string       | ARN of certificate used to setup HTTPs in Application Load Balancer                                                                  | no       |                 |
+| tags                | map(string)  | Additional tags for the components of this module                                                                                    | no       | `{}`            |
+
+##### Outputs
+
+| Output  | Type   | Description                                      |
+| ------- | ------ | ------------------------------------------------ |
+| alb_dns | string | DNS of the Application Load Balancer for the ASG |
 
 #### GitHub OpenID role
 
@@ -633,7 +691,7 @@ module "mssql_database" {
 ##### Inputs
 
 | Variable                               | Type         | Description                                                                                                                                                                                              | Required | Default                          |
-|----------------------------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|----------------------------------|
+| -------------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------- |
 | name                                   | string       | Name of the database                                                                                                                                                                                     | yes      |                                  |
 | location                               | string       | The Azure region where the resources should be created                                                                                                                                                   | yes      |                                  |
 | resource_group_name                    | string       | The name of the resource group in which to create the resources                                                                                                                                          | yes      |                                  |
@@ -641,7 +699,7 @@ module "mssql_database" {
 | server.preexisting_name                | string       | Name of an existing database server, if this is `null` a new database server will be created                                                                                                             | no       | `null`                           |
 | server.version                         | string       | Version of the MSSQL database, ignored if `server.preexisting_name` is set                                                                                                                               | no       | `12.0`                           |
 | server.administrator_login             | string       | Name of the administrator login, ignored if `server.preexisting_name` is set                                                                                                                             | no       | `"AdminUser"`                    |
-| server.administrator_login_password    | string       | Password of the administrator login, ignored if `server.preexisting_name` is set, required otherwise                                                                                                     | yes*     |                                  |
+| server.administrator_login_password    | string       | Password of the administrator login, ignored if `server.preexisting_name` is set, required otherwise                                                                                                     | yes\*    |                                  |
 | server.allow_azure_resources           | bool         | Adds a database server firewall rule to grant database access to azure resources, ignored if `server.preexisting_name` is set                                                                            | no       | `true`                           |
 | server.allow_all                       | bool         | Adds a database server firewall rule to grant database access to everyone, ignored if `server.preexisting_name` is set                                                                                   | no       | `false`                          |
 | server.firewall_rules                  | list(object) | Adds server firewall rules, ignored if `server.preexisting_name` is set                                                                                                                                  | no       | `[]`                             |
@@ -663,7 +721,7 @@ module "mssql_database" {
 ##### Outputs
 
 | Output                     | Type   | Description                                                |
-|----------------------------| ------ |------------------------------------------------------------|
+| -------------------------- | ------ | ---------------------------------------------------------- |
 | database_name              | string | Name of the database                                       |
 | server_administrator_login | string | Administrator login name                                   |
 | server_domain_name         | string | Domain name of the server                                  |
