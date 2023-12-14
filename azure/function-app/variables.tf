@@ -3,6 +3,18 @@ variable "name" {
   type        = string
 }
 
+variable "runtime" {
+  description = "The runtime."
+  type = object({
+    name    = string
+    version = string
+  })
+  default = {
+    name    = "node"
+    version = "~18"
+  }
+}
+
 variable "source_dir" {
   description = "Directory containing the function code."
   type        = string

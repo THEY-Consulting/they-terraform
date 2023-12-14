@@ -538,6 +538,11 @@ module "function_app" {
     retention_in_days = 30
   }
 
+  runtime = {
+    name = "node"
+    version = "~18"
+  }
+  
   environment = {
     ENV_VAR_1 = "value1"
     ENV_VAR_2 = "value2"
@@ -604,6 +609,9 @@ module "function_app" {
 | insights.enabled                                   | bool         | Enable/Disable application insights                                                                         | no       | `true`                                 |
 | insights.sku                                       | string       | SKU for application insights                                                                                | no       | `"PerGB2018"`                          |
 | insights.retention_in_days                         | number       | Retention for application insights in days                                                                  | no       | `30`                                   |
+| runtime                                            | object       | The runtime environment                                                                                     | no       | see sub fields                         |
+| runtime.name                                       | string       | The runtime environment name, valid values are `dotnet`, `java`, `node`, and `powershell`                   | no       | `"node"`                               |
+| runtime.version                                    | string       | The runtime environment version. Depends on the runtime.                                                    | no       | `"~18"`                                |
 | environment                                        | map(string)  | Map of environment variables that are accessible from the function code during execution                    | no       | `{}`                                   |
 | build                                              | object       | Build configuration                                                                                         | no       | see sub fields                         |
 | build.enabled                                      | bool         | Enable/Disable running build command                                                                        | no       | `true`                                 |
