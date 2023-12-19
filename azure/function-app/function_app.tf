@@ -44,8 +44,15 @@ resource "azurerm_windows_function_app" "function_app" {
   dynamic "identity" {
     for_each = var.identity != null ? [var.identity] : []
     content {
-      type         = "UserAssigned"
+      type         = var.assign_system_identity ? "SystemAssigned, UserAssigned" : "UserAssigned"
       identity_ids = [data.azurerm_user_assigned_identity.identity.0.id]
+    }
+  }
+
+  dynamic "identity" {
+    for_each = var.assign_system_identity && var.identity == null ? [var.assign_system_identity] : []
+    content {
+      type = "SystemAssigned"
     }
   }
 

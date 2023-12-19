@@ -119,6 +119,11 @@ variable "identity" {
   default = null
 }
 
+variable "assign_system_identity" {
+  description = "If true, a system identity will be assigned to the function app."
+  default     = false
+}
+
 variable "tags" {
   description = "Tags for the resources."
   type        = map(string)

@@ -579,6 +579,7 @@ module "function_app" {
   identity = {
     name = "they-test-identity"
   }
+  assign_system_identity = true
 
   tags = {
     createdBy   = "Terraform"
@@ -590,7 +591,7 @@ module "function_app" {
 ##### Inputs
 
 | Variable                                           | Type         | Description                                                                                                 | Required | Default                                |
-| -------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------- |
+|----------------------------------------------------|--------------|-------------------------------------------------------------------------------------------------------------| -------- |----------------------------------------|
 | name                                               | string       | Name of the function app                                                                                    | yes      |                                        |
 | source_dir                                         | string       | Directory containing the function code                                                                      | yes      |                                        |
 | location                                           | string       | The Azure region where the resources should be created                                                      | yes      |                                        |
@@ -632,16 +633,18 @@ module "function_app" {
 | storage_trigger.retry_policy.max_delivery_attempts | number       | Specifies the maximum number of delivery retry attempts for events                                          | no       | `1`                                    |
 | identity                                           | object       | Identity to use                                                                                             | no       | `null`                                 |
 | identity.name                                      | string       | Name of the identity                                                                                        | (yes)    |                                        |
+| assign_system_identity                             | bool         | If true, a system identity will be assigned to the function app.                                            | no       | `false`                                |
 | tags                                               | map(string)  | Map of tags to assign to the function app and related resources                                             | no       | `{}`                                   |
 
 ##### Outputs
 
-| Output            | Type   | Description                        |
-| ----------------- | ------ | ---------------------------------- |
-| id                | string | The ID of the Function App         |
-| build             | string | Build output                       |
-| archive_file_path | string | Path to the generated archive file |
-| endpoint_url      | string | Endpoint URL                       |
+| Output            | Type         | Description                        |
+|-------------------|--------------|------------------------------------|
+| id                | string       | The ID of the Function App         |
+| build             | string       | Build output                       |
+| archive_file_path | string       | Path to the generated archive file |
+| endpoint_url      | string       | Endpoint URL                       |
+| identities        | list(object) | Identities if some were assigned   |
 
 #### MSSQL Database
 
