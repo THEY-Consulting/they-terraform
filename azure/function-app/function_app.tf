@@ -29,7 +29,6 @@ resource "azurerm_windows_function_app" "function_app" {
     {
       WEBSITE_RUN_FROM_PACKAGE                  = "1"
       WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT = "1"
-      FUNCTIONS_WORKER_RUNTIME                  = "node"
       AzureWebJobsDisableHomepage               = "true"
       "languageWorkers:node:arguments"          = "--max-old-space-size=1024"
     },
@@ -45,16 +44,47 @@ resource "azurerm_windows_function_app" "function_app" {
   dynamic "identity" {
     for_each = var.identity != null ? [var.identity] : []
     content {
-      type         = "UserAssigned"
+      type         = var.assign_system_identity ? "SystemAssigned, UserAssigned" : "UserAssigned"
       identity_ids = [data.azurerm_user_assigned_identity.identity.0.id]
+    }
+  }
+
+  dynamic "identity" {
+    for_each = var.assign_system_identity && var.identity == null ? [var.assign_system_identity] : []
+    content {
+      type = "SystemAssigned"
     }
   }
 
   site_config {
     application_insights_key = var.insights.enabled ? azurerm_application_insights.app_insights.0.instrumentation_key : null
 
-    application_stack {
-      node_version = "~18"
+    dynamic "application_stack" {
+      for_each = var.runtime.name == "dotnet" ? [var.runtime] : []
+      content {
+        dotnet_version = application_stack.value.version
+      }
+    }
+
+    dynamic "application_stack" {
+      for_each = var.runtime.name == "java" ? [var.runtime] : []
+      content {
+        java_version = application_stack.value.version
+      }
+    }
+
+    dynamic "application_stack" {
+      for_each = var.runtime.name == "node" ? [var.runtime] : []
+      content {
+        node_version = application_stack.value.version
+      }
+    }
+
+    dynamic "application_stack" {
+      for_each = var.runtime.name == "powershell" ? [var.runtime] : []
+      content {
+        powershell_core_version = application_stack.value.version
+      }
     }
   }
 

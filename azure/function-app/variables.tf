@@ -3,6 +3,18 @@ variable "name" {
   type        = string
 }
 
+variable "runtime" {
+  description = "The runtime."
+  type = object({
+    name    = string
+    version = string
+  })
+  default = {
+    name    = "node"
+    version = "~18"
+  }
+}
+
 variable "source_dir" {
   description = "Directory containing the function code."
   type        = string
@@ -105,6 +117,11 @@ variable "identity" {
     name = string
   })
   default = null
+}
+
+variable "assign_system_identity" {
+  description = "If true, a system identity will be assigned to the function app."
+  default     = false
 }
 
 variable "tags" {

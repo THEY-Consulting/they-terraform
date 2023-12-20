@@ -538,6 +538,11 @@ module "function_app" {
     retention_in_days = 30
   }
 
+  runtime = {
+    name = "node"
+    version = "~18"
+  }
+  
   environment = {
     ENV_VAR_1 = "value1"
     ENV_VAR_2 = "value2"
@@ -574,6 +579,7 @@ module "function_app" {
   identity = {
     name = "they-test-identity"
   }
+  assign_system_identity = true
 
   tags = {
     createdBy   = "Terraform"
@@ -585,7 +591,7 @@ module "function_app" {
 ##### Inputs
 
 | Variable                                           | Type         | Description                                                                                                 | Required | Default                                |
-| -------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------- |
+|----------------------------------------------------|--------------|-------------------------------------------------------------------------------------------------------------| -------- |----------------------------------------|
 | name                                               | string       | Name of the function app                                                                                    | yes      |                                        |
 | source_dir                                         | string       | Directory containing the function code                                                                      | yes      |                                        |
 | location                                           | string       | The Azure region where the resources should be created                                                      | yes      |                                        |
@@ -604,6 +610,9 @@ module "function_app" {
 | insights.enabled                                   | bool         | Enable/Disable application insights                                                                         | no       | `true`                                 |
 | insights.sku                                       | string       | SKU for application insights                                                                                | no       | `"PerGB2018"`                          |
 | insights.retention_in_days                         | number       | Retention for application insights in days                                                                  | no       | `30`                                   |
+| runtime                                            | object       | The runtime environment                                                                                     | no       | see sub fields                         |
+| runtime.name                                       | string       | The runtime environment name, valid values are `dotnet`, `java`, `node`, and `powershell`                   | no       | `"node"`                               |
+| runtime.version                                    | string       | The runtime environment version. Depends on the runtime.                                                    | no       | `"~18"`                                |
 | environment                                        | map(string)  | Map of environment variables that are accessible from the function code during execution                    | no       | `{}`                                   |
 | build                                              | object       | Build configuration                                                                                         | no       | see sub fields                         |
 | build.enabled                                      | bool         | Enable/Disable running build command                                                                        | no       | `true`                                 |
@@ -624,16 +633,18 @@ module "function_app" {
 | storage_trigger.retry_policy.max_delivery_attempts | number       | Specifies the maximum number of delivery retry attempts for events                                          | no       | `1`                                    |
 | identity                                           | object       | Identity to use                                                                                             | no       | `null`                                 |
 | identity.name                                      | string       | Name of the identity                                                                                        | (yes)    |                                        |
+| assign_system_identity                             | bool         | If true, a system identity will be assigned to the function app.                                            | no       | `false`                                |
 | tags                                               | map(string)  | Map of tags to assign to the function app and related resources                                             | no       | `{}`                                   |
 
 ##### Outputs
 
-| Output            | Type   | Description                        |
-| ----------------- | ------ | ---------------------------------- |
-| id                | string | The ID of the Function App         |
-| build             | string | Build output                       |
-| archive_file_path | string | Path to the generated archive file |
-| endpoint_url      | string | Endpoint URL                       |
+| Output            | Type         | Description                        |
+|-------------------|--------------|------------------------------------|
+| id                | string       | The ID of the Function App         |
+| build             | string       | Build output                       |
+| archive_file_path | string       | Path to the generated archive file |
+| endpoint_url      | string       | Endpoint URL                       |
+| identities        | list(object) | Identities if some were assigned   |
 
 #### MSSQL Database
 
