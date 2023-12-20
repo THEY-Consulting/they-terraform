@@ -10,18 +10,13 @@ resource "random_string" "suffix" {
   special = false
 }
 
-# creates eip for testing
-resource "aws_eip" "main" {
-  domain = "vpc"
-}
-
 module "outbound_proxy_vpc" {
   # source = "github.com/THEY-Consulting/they-terraform//aws/lambda"
   source = "../../../aws/lambda/outbound-proxy-vpc"
 
   name = local.name
   # Note: Would replace this with a preexisting whitelisted ip in production code.
-  eip_allocation_id = aws_eip.main.allocation_id
+  # eip_allocation_id = aws_eip.main.allocation_id
 }
 
 module "lambda_with_outbound_proxy" {
@@ -41,8 +36,8 @@ module "lambda_with_outbound_proxy" {
 
 # --- OUTPUT ---
 
-output "created_eip_public_ip" {
-  value       = aws_eip.main.public_ip
+output "eip_public_ip" {
+  value       = module.outbound_proxy_vpc.public_outbound_ip
   description = "The public ip of the eip that gets created for this example. The output of the lambda is expected to use and return this ip."
 }
 

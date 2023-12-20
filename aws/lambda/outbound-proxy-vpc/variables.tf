@@ -10,7 +10,8 @@ variable "tags" {
 }
 
 variable "eip_allocation_id" {
-  description = "The allocation id of the elastic ip address. The public ip of this eip will be used as the outbound ip of the proxy."
+  description = "The allocation id of the elastic ip address. The public ip of this eip will be used as the outbound ip. If none given, one will be created."
   type        = string
+  default     = null
 }
 
