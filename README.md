@@ -18,6 +18,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
   - [Azure](#azure)
     - [Function app](#function-app)
     - [MSSQL Database](#mssql-database)
+    - [VM](#vm)
 - [Contributing](#contributing)
   - [Prerequisites](#prerequisites-1)
   - [Environment Variables](#environment-variables)
@@ -737,6 +738,110 @@ module "mssql_database" {
 | server_administrator_login | string | Administrator login name                                   |
 | server_domain_name         | string | Domain name of the server                                  |
 | ODBC_connection_string     | string | OBDC Connection string with a placeholder for the password |
+
+#### VM
+
+```hcl
+module "vm" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/vm"
+
+  name                = "they-test-vm"
+  resource_group_name = "they-dev"
+
+  vm_hostname       = "vm" 
+  vm_os             = "linux"
+  vm_size           = "Standard_B2s"
+  vm_username       = "they"
+  vm_password       = "P@ssw0rd123!"
+  vm_public_ssh_key = file("key.pub")
+  custom_data = base64encode(templatefile("setup_instance.yml", {
+    hello = "world"
+  }))
+  vm_image = {
+    publisher = "Canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts-gen2"
+    version   = "latest"
+  }
+  
+  network = {
+    preexisting_name = "they-dev-vnet"
+    address_space    = ["10.0.0.0/16"]
+  }
+  subnet_address_prefix = "10.0.0.0/24"
+  routes = [{
+    name           = "all_traffic"
+    address_prefix = "0.0.0.0/0"
+    next_hop_type  = "Internet"
+  }]
+  public_ip = true
+  
+  allow_ssh = true
+  allow_rdp = true
+  security_rules = [{
+    name                   = "mock-server"
+    priority               = 200
+    destination_port_range = "80"
+  }]
+
+  tags = {
+    Project   = "they-terraform-examples"
+    CreatedBy = "terraform"
+  }
+}
+```
+
+##### Inputs
+
+| Variable                              | Type         | Description                                                                                      | Required | Default                                                                                |
+|---------------------------------------|--------------|--------------------------------------------------------------------------------------------------|----------|----------------------------------------------------------------------------------------|
+| name                                  | string       | Name of the vm and related resources                                                             | yes      |                                                                                        |
+| resource_group_name                   | string       | The name of the resource group in which to create the resources                                  | yes      |                                                                                        |
+| vm_hostname                           | string       | Hostname of the vm                                                                               | no       | `var.name`                                                                             |
+| vm_os                                 | string       | The OS to use for the VM. Valid values are 'linux' or 'windows'                                  | no       | `"linux"`                                                                              |
+| vm_size                               | string       | The size of the VM to create                                                                     | no       | `"Standard_B2s"`                                                                       |
+| vm_username                           | string       | The username for the VM admin user                                                               | no       | `"they"`                                                                               |
+| vm_password                           | string       | The password of the VM admin user                                                                | yes      |                                                                                        |
+| vm_public_ssh_key                     | string       | Public SSH key to use for the VM, required for linux VMs                                         | yes*     |                                                                                        |
+| custom_data                           | string       | The custom data to setup the VM                                                                  | no       | `null`                                                                                 |
+| vm_image                              | object       | The image to use for the VM                                                                      | no       | see sub fields                                                                         |
+| vm_image.publisher                    | string       | Publisher of the VM image                                                                        | no       | `"Canonical"`                                                                          |
+| vm_image.offer                        | string       | Offer of the VM image                                                                            | no       | `"0001-com-ubuntu-server-jammy"`                                                       |
+| vm_image.sku                          | string       | SKU of the VM image                                                                              | no       | `"22_04-lts-gen2"`                                                                     |
+| vm_image.version                      | string       | Version of the VM image                                                                          | no       | `"latest"`                                                                             |
+| network                               | object       | The network config to use for the VM                                                             | no       | see sb fields                                                                          |
+| network.preexisting_name              | string       | Name of an existing network that should be used, if this is `null` a new network will be created | no       | `null`                                                                                 |
+| network.address_space                 | list(string) | List of address spaces for the network, ignored if `preexisting_name` is not `null`              | no       | `["10.0.0.0/16"]`                                                                      |
+| subnet_address_prefix                 | string       | The address prefix to use for the subnet                                                         | no       | `"10.0.0.0/24"`                                                                        |
+| routes                                | list(object) | The routes to use for the VM                                                                     | no       | `[{ name = "all_traffic", address_prefix = "0.0.0.0/0", next_hop_type = "Internet" }]` |
+| routes.name                           | string       | Name of the route                                                                                | yes      |                                                                                        |
+| routes.address_prefix                 | string       | Address prefix of the route                                                                      | yes      |                                                                                        |
+| routes.next_hop_type                  | string       | Next hop type of the route                                                                       | yes      |                                                                                        |
+| public_ip                             | bool         | Enable a static public IP for the VM                                                             | no       | `false`                                                                                |
+| allow_ssh                             | bool         | Allow SSH access to the VM                                                                       | no       | `false`                                                                                |
+| allow_rdp                             | bool         | Allow RDP access to the VM                                                                       | no       | `false`                                                                                |
+| security_rules                        | list(object) | The security rules to use for the VM                                                             | no       | `[]`                                                                                   |
+| security_rules.name                   | string       | Name of the security rule                                                                        | yes      |                                                                                        |
+| security_rules.description            | string       | Description of the security rule                                                                 | no       | `""`                                                                                   |
+| security_rules.direction              | string       | Direction of the security rule                                                                   | no       | `"Inbound"`                                                                            |
+| security_rules.access                 | string       | Access of the security rule                                                                      | no       | `"Allow"`                                                                              |
+| security_rules.priority               | number       | Priority of the security rule                                                                    | yes      |                                                                                        |
+| security_rules.protocol               | string       | Protocol of the security rule                                                                    | no       | `"Tcp"`                                                                                |
+| security_rules.source_port_range      | string       | Source port range of the security rule                                                           | no       | `"*"`                                                                                  |
+| security_rules.source_address_prefix  | string       | Source address prefix of the security rule                                                       | no       | `"*"`                                                                                  |
+| security_rules.destination_port_range | string       | Destination port range of the security rule                                                      | yes      |                                                                                        |
+| tags                                  | map(string)  | Map of tags to assign to the resources                                                           | no       | `{}`                                                                                   |
+
+
+##### Outputs
+
+| Output                    | Type   | Description                      |
+|---------------------------|--------|----------------------------------|
+| public_ip                 | string | Public ip if enabled             |
+| network_name              | string | Name of the network              |
+| subnet_id                 | string | Id of the subnet                 |
+| network_security_group_id | string | Id of the network security group |
+| vm_username               | string | Admin username                   |
 
 ## Contributing
 
