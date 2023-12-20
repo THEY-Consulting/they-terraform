@@ -36,7 +36,7 @@ module "lambda_with_outbound_proxy" {
 
 # --- OUTPUT ---
 
-output "eip_public_ip" {
+output "outbound_proxy_public_ip" {
   value       = module.outbound_proxy_vpc.public_outbound_ip
   description = "The public ip of the eip that gets created for this example. The output of the lambda is expected to use and return this ip."
 }
