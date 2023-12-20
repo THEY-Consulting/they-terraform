@@ -516,11 +516,11 @@ example, click [here](./examples/aws/lambda_with_outbound_proxy/main.tf).
 
 ## Inputs
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| <a name="input_eip_allocation_id"></a> [eip\_allocation\_id](#input\_eip\_allocation\_id) | The allocation id of the elastic ip address. The public ip of this eip will be used as the outbound ip of the proxy. | `string` | n/a | yes |
-| <a name="input_name"></a> [name](#input\_name) | Name/Prefix of resources created by this module. | `string` | n/a | yes |
-| <a name="input_tags"></a> [tags](#input\_tags) | Map of tags to assign to the created resources of this module. | `map(string)` | `{}` | no |
+| Name | Description | Type | Required | Default |
+|------|-------------|------|----------|:-------:|
+| <a name="input_eip_allocation_id"></a> [eip\_allocation\_id](#input\_eip\_allocation\_id) | The allocation id of the elastic ip address. The public ip of this eip will be used as the outbound ip of the proxy. | `string` | yes |  |
+| <a name="input_name"></a> [name](#input\_name) | Name/Prefix of resources created by this module. | `string` | yes |  |
+| <a name="input_tags"></a> [tags](#input\_tags) | Map of tags to assign to the created resources of this module. | `map(string)` | no | `{}` |
 
 ## Outputs
 
@@ -566,7 +566,7 @@ module "function_app" {
     name = "node"
     version = "~18"
   }
-  
+
   environment = {
     ENV_VAR_1 = "value1"
     ENV_VAR_2 = "value2"
