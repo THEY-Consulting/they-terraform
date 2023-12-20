@@ -510,7 +510,7 @@ module "setup_tfstate" {
 
 Whenever you need to talk to APIs which use IP based whitelisting, this is
 the module to create the required setup with. It requires an eip/elastic ip
-and it spits out a vpc\_config which can be attached to a lambda function. The
+and it spits out a vpc_config which can be attached to a lambda function. The
 lambda function will then execute requests via the ip of the given eip. For an
 example, click [here](./examples/aws/lambda_with_outbound_proxy/main.tf).
 
