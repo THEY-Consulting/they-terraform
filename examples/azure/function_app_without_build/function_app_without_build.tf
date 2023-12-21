@@ -5,7 +5,7 @@ module "function_app_without_build" {
   source = "../../../azure/function-app"
 
   name                = "they-test-no-build"
-  source_dir          = "../packages/function-app-simple"
+  source_dir          = "../.packages/function-app-simple"
   location            = "Germany West Central"
   resource_group_name = "they-dev"
 

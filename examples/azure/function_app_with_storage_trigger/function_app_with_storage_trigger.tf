@@ -5,7 +5,7 @@ module "function_app_with_storage_trigger" {
   source = "../../../azure/function-app"
 
   name                = "they-test-storage-trigger"
-  source_dir          = "../packages/function-app-with-trigger"
+  source_dir          = "../.packages/function-app-with-trigger"
   location            = "Germany West Central"
   resource_group_name = "they-dev"
 

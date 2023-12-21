@@ -874,10 +874,10 @@ export TF_VAR_tenant_id=$AZURE_TENANT_ID
 Install dependencies:
 
 ```bash
-cd examples/aws/packages
+cd examples/aws/.packages
 yarn install
 
-cd examples/azure/packages
+cd examples/azure/.packages
 yarn install
 ```
 

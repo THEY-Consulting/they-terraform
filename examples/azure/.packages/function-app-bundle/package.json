@@ -2,7 +2,6 @@
   "name": "@they/example-bundle-function-app",
   "version": "1.0.0",
   "main": "dist/hello-world/index.js",
-  "packageManager": "yarn@3.5.1",
   "scripts": {
     "build": "tsc --noemit && esbuild hello-world/index.ts --bundle --platform=node --outdir=dist"
   },

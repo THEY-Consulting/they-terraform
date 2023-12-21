@@ -49,8 +49,11 @@ terraform.rc
 dist
 node_modules
 
-# Normally included but we don't need this because our examples are not deployed directly/only during testing
-.yarn
-yarn.lock
-.pnp.cjs
-.yarnrc.yml
+# src: https://next.yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
+**/.pnp.*
+**/.yarn/*
+!**/.yarn/patches
+!**/.yarn/plugins
+!**/.yarn/releases
+!**/.yarn/sdks
+!**/.yarn/versions

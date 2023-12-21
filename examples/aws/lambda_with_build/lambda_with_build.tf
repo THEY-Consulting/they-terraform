@@ -6,7 +6,7 @@ module "lambda_with_build" {
 
   name        = "they-test-build"
   description = "Test typescript lambda with build step"
-  source_dir  = "../packages/lambda-typescript"
+  source_dir  = "../.packages/lambda-typescript"
   runtime     = "nodejs20.x"
 }
 

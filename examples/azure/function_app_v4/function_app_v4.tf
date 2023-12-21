@@ -5,7 +5,7 @@ module "function_app_v4" {
   source = "../../../azure/function-app"
 
   name                = "they-test-v4"
-  source_dir          = "../packages/function-app-v4"
+  source_dir          = "../.packages/function-app-v4"
   location            = "Germany West Central"
   resource_group_name = "they-dev"
   environment = {

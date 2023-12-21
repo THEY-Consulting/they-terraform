@@ -23,7 +23,7 @@ module "auto-scaling-group" {
   max_size            = 3
   user_data_file_name = "user_data.sh"
   availability_zones  = data.aws_availability_zones.azs.names[*] # Use AZs of region defined by provider.
-  certificate_arn = data.aws_acm_certificate.certificate.arn
+  certificate_arn     = data.aws_acm_certificate.certificate.arn
 }
 
 # --- OUTPUT ---
