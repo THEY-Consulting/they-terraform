@@ -8,10 +8,17 @@ variable "runtime" {
   type = object({
     name    = string
     version = string
+    os      = optional(string, "windows")
   })
   default = {
     name    = "node"
     version = "~18"
+    os      = "windows"
+  }
+
+  validation {
+    condition     = var.runtime.name != "python" || var.runtime.os != "windows"
+    error_message = "Python is not supported on Windows."
   }
 }
 
@@ -46,7 +53,6 @@ variable "service_plan" {
   description = "The service plan."
   type = object({
     name     = optional(string, null)
-    os_type  = optional(string, "Windows")
     sku_name = optional(string, "Y1")
   })
   default = {}

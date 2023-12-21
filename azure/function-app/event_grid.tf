@@ -17,7 +17,7 @@ resource "azurerm_eventgrid_event_subscription" "eventgrid_subscription" {
   included_event_types = var.storage_trigger.events
 
   azure_function_endpoint {
-    function_id = "${azurerm_windows_function_app.function_app.id}/functions/${var.storage_trigger.function_name}"
+    function_id = "${local.function_app.id}/functions/${var.storage_trigger.function_name}"
 
     # defaults, specified to avoid "no-op" changes when 'apply' is re-ran
     max_events_per_batch              = 1
