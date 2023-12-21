@@ -1,8 +1,7 @@
 {
-  "name": "@they/example-typescript-function-app-with-trigger",
+  "name": "@they/example-typescript-function-app",
   "version": "1.0.0",
   "main": "dist/hello-world/index.js",
-  "packageManager": "yarn@3.5.1",
   "scripts": {
     "build": "tsc"
   },

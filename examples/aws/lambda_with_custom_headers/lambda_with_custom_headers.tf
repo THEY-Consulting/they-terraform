@@ -6,7 +6,7 @@ module "lambda_with_custom_headers" {
 
   name        = "they-test-custom-headers"
   description = "Test lambda with custom headers in response"
-  source_dir  = "../packages/lambda-response-headers"
+  source_dir  = "../.packages/lambda-response-headers"
   runtime     = "nodejs20.x"
 
   build = {
