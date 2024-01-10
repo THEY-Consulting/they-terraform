@@ -38,7 +38,7 @@ module "lambda_with_attached_vpc" {
 
   name        = local.name
   description = "Typescript lambda attached to vpc"
-  source_dir  = "../packages/lambda-typescript"
+  source_dir  = "../.packages/lambda-typescript"
   runtime     = "nodejs20.x"
   is_bundle   = true
   vpc_config = {

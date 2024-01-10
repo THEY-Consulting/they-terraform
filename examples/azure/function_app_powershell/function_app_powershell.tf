@@ -5,7 +5,7 @@ module "function_app_powershell" {
   source = "../../../azure/function-app"
 
   name                = "they-test-powershell"
-  source_dir          = "../packages/function-app-powershell"
+  source_dir          = "../.packages/function-app-powershell"
   location            = "Germany West Central"
   resource_group_name = "they-dev"
 

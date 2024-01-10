@@ -6,7 +6,7 @@ module "lambda_without_build" {
 
   name        = "they-test-api-gateway-with-domain-simple"
   description = "Test lambda without build step"
-  source_dir  = "../packages/lambda-simple"
+  source_dir  = "../.packages/lambda-simple"
   runtime     = "nodejs20.x"
 
   build = {
