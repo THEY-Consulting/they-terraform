@@ -5,7 +5,7 @@ module "function_app_python" {
   source = "../../../azure/function-app"
 
   name                = "they-test-python"
-  source_dir          = "../packages/function-app-python"
+  source_dir          = "../.packages/function-app-python"
   location            = "Germany West Central"
   resource_group_name = "they-dev"
 
