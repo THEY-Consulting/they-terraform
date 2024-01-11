@@ -1,5 +1,5 @@
 output "id" {
-  value = azurerm_windows_function_app.function_app.id
+  value = local.function_app.id
 }
 
 output "build" {
@@ -11,9 +11,9 @@ output "archive_file_path" {
 }
 
 output "endpoint_url" {
-  value = "https://${azurerm_windows_function_app.function_app.default_hostname}"
+  value = "https://${local.function_app.default_hostname}"
 }
 
 output "identities" {
-  value = azurerm_windows_function_app.function_app.identity
+  value = local.function_app.identity
 }

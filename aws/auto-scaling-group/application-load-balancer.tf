@@ -13,7 +13,7 @@ resource "aws_lb_listener" "lb_listener_only_http" {
   # Forward HTTP to target group, if a certificate is
   # provided, HTTP traffic will be redirected to HTTPs
   # with another resource.
-  count = var.certificate_arn == null ? 1 : 0
+  count             = var.certificate_arn == null ? 1 : 0
   load_balancer_arn = aws_lb.lb.arn
   port              = "80"
   protocol          = "HTTP"
@@ -27,13 +27,13 @@ resource "aws_lb_listener" "lb_listener_only_http" {
 resource "aws_lb_listener" "lb_listener_redirect_http" {
   # Redirect HTTP traffic to HTTPs if a certificate was
   # provided.
-  count = var.certificate_arn != null ? 1 : 0
+  count             = var.certificate_arn != null ? 1 : 0
   load_balancer_arn = aws_lb.lb.arn
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
-  type = "redirect"
+    type = "redirect"
 
     redirect {
       port        = "443"
@@ -46,11 +46,11 @@ resource "aws_lb_listener" "lb_listener_redirect_http" {
 resource "aws_lb_listener" "lb_listener_https" {
   # Do not create an HTTPs listener,
   # if no certificate_arn is provided.
-  count = var.certificate_arn != null ? 1 : 0
+  count             = var.certificate_arn != null ? 1 : 0
   load_balancer_arn = aws_lb.lb.arn
   port              = "443"
   protocol          = "HTTPS"
-  certificate_arn = var.certificate_arn
+  certificate_arn   = var.certificate_arn
 
   default_action {
     type             = "forward"
