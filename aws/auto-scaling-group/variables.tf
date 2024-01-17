@@ -37,6 +37,12 @@ variable "user_data_file_name" {
   default     = null # Variable is optional.
 }
 
+variable "user_data" {
+  description = "User data to provide when launching instances of ASG. Use this to provide plain text instead of file."
+  type        = string
+  default     = null # Variable is optional.
+}
+
 variable "tags" {
   description = "Additional tags for the Auto Scaling Group."
   type        = map(string)
@@ -64,4 +70,25 @@ variable "certificate_arn" {
   description = "ARN of certificate used to setup HTTPs in ALB"
   type        = string
   default     = null # Variable is optional.
+}
+
+variable "health_check_path" {
+  description = "Destination for the health check request"
+  type        = string
+  default     = "/"
+}
+
+variable "policies" {
+  description = "List of policies to attach to the ASG instances via IAM Instance Profile"
+  type = list(object({
+    name   = string
+    policy = string
+  }))
+  default = []
+}
+
+variable "allow_all_outbound" {
+  description = "Allow all outbound traffic from instances"
+  type        = bool
+  default     = false
 }
