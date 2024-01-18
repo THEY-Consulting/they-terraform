@@ -43,5 +43,19 @@ resource "aws_launch_template" "launch_template" {
 
   vpc_security_group_ids = [aws_security_group.sg.id]
 
-  user_data = var.user_data_file_name != null ? filebase64("${path.root}/${var.user_data_file_name}") : null
+  user_data = var.user_data_file_name != null ? filebase64("${path.root}/${var.user_data_file_name}") : var.user_data
+
+  dynamic "iam_instance_profile" {
+    for_each = length(var.policies) > 0 ? [1] : []
+    content {
+      arn = resource.aws_iam_instance_profile.instance_profile[0].arn
+    }
+  }
+
+  lifecycle {
+    precondition {
+      condition     = var.user_data == null || var.user_data_file_name == null
+      error_message = "Cannot use user_data and user_data_file_name at the same time"
+    }
+  }
 }

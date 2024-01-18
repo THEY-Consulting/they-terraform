@@ -55,7 +55,7 @@ and run `terraform init`.
 
 For more examples see the [examples](./examples) directory.
 
-If you want to use a specific version of the module, you can specify the version or commit in the source url:
+If you want to use a specific version of the module, you can specify the version, commit or branch name (urlencoded) in the source url:
 
 ```hcl
 module "lambda_with_build" {
@@ -398,7 +398,10 @@ module "auto-scaling-group" {
   desired_capacity = 2
   min_size = 1
   max_size = 3
-  user_data_file_name = "user_data.sh"
+  user_data_file_name = "user_data.sh" # or
+  use_data = base64encode(templatefile("cloud_init.yaml", {
+    environment = var.environment
+  }))
   availability_zones = data.aws_availability_zones.azs.names[*] # Use AZs of region defined by provider.
   vpc_cidr_block = "10.0.0.0/16"
   public_subnets = false
@@ -407,26 +410,50 @@ module "auto-scaling-group" {
     createdBy = "terraform"
     environment = "dev"
   }
+  health_check_path = "/health"
+  policies = [{
+    name = "ecr_pull"
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "s3:GetObject",
+            "s3:ListBucket"
+          ],
+          Effect   = "Allow"
+          Resource = "${var.bucket_arn}/*"
+        }
+      ]
+    })
+  }]
+  allow_all_outbound = false
 }
 
 ```
 
 ##### Inputs
 
-| Variable            | Type         | Description                                                                                                                          | Required | Default         |
-| ------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ | -------- | --------------- |
-| name                | string       | Name of the Auto Scaling group (ASG)                                                                                                 | yes      |                 |
-| ami_id              | string       | ID of AMI used in EC2 instances of ASG                                                                                               | yes      |                 |
-| instance_type       | string       | Instance type used to deploy instances in ASG                                                                                        | yes      |                 |
-| desired_capacity    | number       | The number of EC2 instances that will be running in the ASG                                                                          | yes      | 1               |
-| min_size            | number       | The minimum number of EC2 instances in the ASG                                                                                       | yes      | 1               |
-| max_size            | number       | The maximum number of EC2 instances in the ASG                                                                                       | yes      | 1               |
-| user_data_file_name | string       | The name of the local file in the working directory with the user data used in the instances of the ASG                              | no       |                 |
-| availability_zones  | list(string) | List of availability zones (AZs) names. A subnet is created for every AZ and the ASG instances are deployed across the different AZs | yes      |                 |
-| vpc_cidr_block      | string       | The CIDR block of private IP addresses of the VPC. The subnets will be located within this CIDR block.                               | yes      | `"10.0.0.0/16"` |
-| public_subnets      | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                             | yes      | `false`         |
-| certificate_arn     | string       | ARN of certificate used to setup HTTPs in Application Load Balancer                                                                  | no       |                 |
-| tags                | map(string)  | Additional tags for the components of this module                                                                                    | no       | `{}`            |
+| Variable                 | Type         | Description                                                                                                                          | Required | Default         |
+| ------------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ | -------- | --------------- |
+| name                     | string       | Name of the Auto Scaling group (ASG)                                                                                                 | yes      |                 |
+| ami_id                   | string       | ID of AMI used in EC2 instances of ASG                                                                                               | yes      |                 |
+| instance_type            | string       | Instance type used to deploy instances in ASG                                                                                        | yes      |                 |
+| desired_capacity         | number       | The number of EC2 instances that will be running in the ASG                                                                          | yes      | 1               |
+| min_size                 | number       | The minimum number of EC2 instances in the ASG                                                                                       | yes      | 1               |
+| max_size                 | number       | The maximum number of EC2 instances in the ASG                                                                                       | yes      | 1               |
+| user_data_file_name      | string       | The name of the local file in the working directory with the user data used in the instances of the ASG                              | no       |                 |
+| user_data                | string       | User data to provide when launching instances of ASG. Use this to provide plain text instead of user_data_file_name.                 | no       |                 |
+| availability_zones       | list(string) | List of availability zones (AZs) names. A subnet is created for every AZ and the ASG instances are deployed across the different AZs | yes      |                 |
+| vpc_cidr_block           | string       | The CIDR block of private IP addresses of the VPC. The subnets will be located within this CIDR block.                               | yes      | `"10.0.0.0/16"` |
+| public_subnets           | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                             | yes      | `false`         |
+| certificate_arn          | string       | ARN of certificate used to setup HTTPs in Application Load Balancer                                                                  | no       |                 |
+| tags                     | map(string)  | Additional tags for the components of this module                                                                                    | no       | `{}`            |
+| health_check_path        | string       | Destination for the health check request                                                                                             | no       | `"/"`           |
+| policies                 | list(object) | List of policies to attach to the ASG instances via IAM Instance Profile                                                             | no       | `[]`            |
+| policies.\*.name         | string       | Name of the inline policy                                                                                                            | yes      |                 |
+| policies.\*.policy       | string       | Policy document as a JSON formatted string                                                                                           | yes      |                 |
+| allow_all_outbound       | bool         | Allow all outbound traffic from instances                                                                                            | no       | `false`         |
 
 ##### Outputs
 

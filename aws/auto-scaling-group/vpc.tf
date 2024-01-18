@@ -76,6 +76,17 @@ resource "aws_security_group" "sg" {
       cidr_blocks = ["0.0.0.0/0"]
     }
   }
+
+  # Rule is only deployed if variable allow_all_outbound is true.
+  dynamic "egress" {
+    for_each = var.allow_all_outbound == true ? [1] : []
+    content {
+      from_port        = 0
+      to_port          = 0
+      protocol         = "-1"
+      cidr_blocks      = ["0.0.0.0/0"]
+    }
+  }
 }
 
 resource "aws_route_table" "rt" {
