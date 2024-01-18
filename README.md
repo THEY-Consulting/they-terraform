@@ -398,7 +398,10 @@ module "auto-scaling-group" {
   desired_capacity = 2
   min_size = 1
   max_size = 3
-  user_data_file_name = "user_data.sh"
+  user_data_file_name = "user_data.sh" # or
+  use_data = base64encode(templatefile("cloud_init.yaml", {
+    environment = var.environment
+  }))
   availability_zones = data.aws_availability_zones.azs.names[*] # Use AZs of region defined by provider.
   vpc_cidr_block = "10.0.0.0/16"
   public_subnets = false
@@ -407,6 +410,24 @@ module "auto-scaling-group" {
     createdBy = "terraform"
     environment = "dev"
   }
+  health_check_path = "/health"
+  policies = [{
+    name = "ecr_pull"
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "s3:GetObject",
+            "s3:ListBucket"
+          ],
+          Effect   = "Allow"
+          Resource = "${var.bucket_arn}/*"
+        }
+      ]
+    })
+  }]
+  allow_all_outbound = false
 }
 
 ```
