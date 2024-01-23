@@ -457,9 +457,10 @@ module "auto-scaling-group" {
 
 ##### Outputs
 
-| Output  | Type   | Description                                      |
-| ------- | ------ | ------------------------------------------------ |
-| alb_dns | string | DNS of the Application Load Balancer for the ASG |
+| Output      | Type   | Description                                          |
+|-------------| ------ |------------------------------------------------------|
+| alb_dns     | string | DNS of the Application Load Balancer for the ASG     |
+| alb_zone_id | string | Zone ID of the application load balancer for the ASG |
 
 #### GitHub OpenID role
 
