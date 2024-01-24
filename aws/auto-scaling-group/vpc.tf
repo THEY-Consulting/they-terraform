@@ -20,7 +20,8 @@ resource "aws_internet_gateway" "igw" {
 }
 
 resource "aws_subnet" "subnets" {
-  count                   = length(var.availability_zones)
+  count = length(var.availability_zones)
+
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = cidrsubnet(var.vpc_cidr_block, 4, count.index)
   availability_zone       = var.availability_zones[count.index]
@@ -117,4 +118,11 @@ resource "aws_route_table" "rt" {
 resource "aws_main_route_table_association" "main_rt" {
   vpc_id         = aws_vpc.vpc.id
   route_table_id = aws_route_table.rt.id
+}
+
+resource "aws_route_table_association" "rta" {
+  count = length(aws_subnet.subnets)
+
+  route_table_id = aws_route_table.rt.id
+  subnet_id      = aws_subnet.subnets[count.index].id
 }
