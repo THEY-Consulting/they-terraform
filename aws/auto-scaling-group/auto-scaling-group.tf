@@ -42,6 +42,7 @@ resource "aws_launch_template" "launch_template" {
   instance_type = var.instance_type
 
   vpc_security_group_ids = [aws_security_group.sg.id]
+  key_name               = var.key_name
 
   user_data = var.user_data_file_name != null ? filebase64("${path.root}/${var.user_data_file_name}") : var.user_data
 

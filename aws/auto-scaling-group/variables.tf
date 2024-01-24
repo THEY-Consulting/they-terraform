@@ -31,6 +31,12 @@ variable "max_size" {
   default     = 1
 }
 
+variable "key_name" {
+  description = "Name of key pair used for the instances."
+  type        = string
+  default     = null
+}
+
 variable "user_data_file_name" {
   description = "Name of file in working directory with user data used in instances of ASG."
   type        = string
