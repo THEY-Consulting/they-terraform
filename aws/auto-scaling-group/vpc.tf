@@ -115,7 +115,7 @@ resource "aws_route_table" "rt" {
 # and the subnets do not get automatically associated to the correct route table,
 # which would mean that internet traffic would not be re-routed to the internet
 # gateway.
-resource "aws_main_route_table_association" "main_rt" {
+resource "aws_main_route_table_association" "main_rta" {
   vpc_id         = aws_vpc.vpc.id
   route_table_id = aws_route_table.rt.id
 }
