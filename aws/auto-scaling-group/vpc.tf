@@ -126,3 +126,15 @@ resource "aws_route_table_association" "rta" {
   route_table_id = aws_route_table.rt.id
   subnet_id      = aws_subnet.subnets[count.index].id
 }
+
+# TODO: public NAT Gateway
+# 1- NAT Gateway (NATGW) is assigned to a public subnet and elastic IP.
+#   - Create public subnet within ASG VPC. 
+#   - Create EIP for NATGW. 
+#   - Create NATGW.
+# 2- Route internet traffic of private EC2 through NATGW.
+#   - Create route table, internet traffic of private subnets goes to NATGW
+#   - Create route table association between NATGW subnet and route table for NATGW ?
+# 3- Dev/prod deployment:
+#   - Dev deployment: Only one single NATGW in a single AZ 
+#   - Prod deployment: A NATGW in each AZ with EC2 instances.
