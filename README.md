@@ -495,20 +495,22 @@ module "github_action_role" {
   ],
   permissions_boundary_arn = "arn:aws:iam::123456789012:policy/they-test-boundary"
   s3StateBackend = true
+  INSECURE_allowAccountToAssumeRole = false # Do not enable this in production!
 }
 ```
 
 ##### Inputs
 
-| Variable           | Type         | Description                                                                                                                                                                                              | Required | Default |
-|--------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| -------- |---------|
-| name               | string       | Name of the role                                                                                                                                                                                         | yes      |         |
-| repo               | string       | Repository that is authorized to assume this role                                                                                                                                                        | yes      |         |
-| policies           | list(object) | List of additional inline policies to attach to the app                                                                                                                                                  | no       | `[]`    |
-| policies.\*.name   | string       | Name of the inline policy                                                                                                                                                                                | yes      |         |
-| policies.\*.policy | string       | Policy document as a JSON formatted string                                                                                                                                                               | yes      |         |
-| boundary_policy    | string       | Boundary policy document as a JSON formatted string                                                                                                                                                      | no       | `null`  |
-| s3StateBackend     | bool         | Set to true if a s3 state backend was setup with the setup-tfstate module (or uses the same naming scheme for the s3 bucket and dynamoDB table). This will set the required s3 and dynamoDB permissions. | no       | `true`  |
+| Variable                          | Type         | Description                                                                                                                                                                                              | Required | Default |
+|-----------------------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| -------- |---------|
+| name                              | string       | Name of the role                                                                                                                                                                                         | yes      |         |
+| repo                              | string       | Repository that is authorized to assume this role                                                                                                                                                        | yes      |         |
+| policies                          | list(object) | List of additional inline policies to attach to the app                                                                                                                                                  | no       | `[]`    |
+| policies.\*.name                  | string       | Name of the inline policy                                                                                                                                                                                | yes      |         |
+| policies.\*.policy                | string       | Policy document as a JSON formatted string                                                                                                                                                               | yes      |         |
+| boundary_policy                   | string       | Boundary policy document as a JSON formatted string                                                                                                                                                      | no       | `null`  |
+| s3StateBackend                    | bool         | Set to true if a s3 state backend was setup with the setup-tfstate module (or uses the same naming scheme for the s3 bucket and dynamoDB table). This will set the required s3 and dynamoDB permissions. | no       | `true`  |
+| INSECURE_allowAccountToAssumeRole | bool         | Set to true if you want to allow the account to assume the role. This is insecure and should only be used for testing. Do not enable this in production!                                                 | no       | `false` |
 
 ##### Outputs
 
