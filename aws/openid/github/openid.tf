@@ -94,7 +94,7 @@ resource "aws_iam_role" "github_oidc_role" {
   assume_role_policy = local.assume_role_policy
 
   dynamic "inline_policy" {
-    for_each = local.policies
+    for_each = var.inline ? local.policies : []
     content {
       name   = inline_policy.value.name
       policy = inline_policy.value.policy
@@ -102,4 +102,17 @@ resource "aws_iam_role" "github_oidc_role" {
   }
 
   permissions_boundary = var.boundary_policy != null ? aws_iam_policy.permissions_boundary[0].arn : null
+}
+
+resource "aws_iam_policy" "policy" {
+  count = var.inline == false ? length(local.policies) : 0
+
+  name   = "github-action-${var.name}-${local.policies[count.index].name}"
+  policy = local.policies[count.index].policy
+}
+
+resource "aws_iam_role_policy_attachment" "github_oidc_role_attachment" {
+  count      = length(aws_iam_policy.policy)
+  role       = aws_iam_role.github_oidc_role.name
+  policy_arn = aws_iam_policy.policy[count.index].arn
 }

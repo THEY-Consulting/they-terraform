@@ -17,6 +17,12 @@ variable "policies" {
   default = []
 }
 
+variable "inline" {
+  description = "If true, the policies will be created as inline policies. If false, they will be created as managed policies."
+  type        = bool
+  default     = true
+}
+
 variable "boundary_policy" {
   description = "Boundary policy document as a JSON formatted string"
   type        = string
