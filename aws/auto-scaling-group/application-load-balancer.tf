@@ -2,7 +2,8 @@ resource "aws_lb" "lb" {
   name               = "${var.name}-alb"
   load_balancer_type = "application"
   security_groups    = [aws_security_group.sg.id]
-  subnets            = aws_subnet.subnets[*].id
+  # subnets            = [aws_subnet.natgw_subnet.id]
+  subnets            = aws_subnet.instances_subnets[*].id
   internal           = false # False for internet-facing ALBs.
 
   tags = merge(var.tags,
@@ -67,4 +68,9 @@ resource "aws_lb_target_group" "tg" {
   health_check {
     path = var.health_check_path
   }
+}
+
+resource "aws_autoscaling_attachment" "asg_tg_attachment" {
+  autoscaling_group_name = aws_autoscaling_group.asg.id
+  lb_target_group_arn    = aws_lb_target_group.tg.arn
 }

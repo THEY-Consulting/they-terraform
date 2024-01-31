@@ -10,7 +10,7 @@ resource "aws_vpc" "vpc" {
 # incoming connections from the internet through an Application Load Balancer. 
 # Nonetheless, this resource does not allow an instance in a private subnet to 
 # establish internet connections at boot-up (to for example get packages), for that
-# refer to AWS NAT.
+# refer to AWS NAT-Gateway.
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.vpc.id
 
@@ -19,7 +19,7 @@ resource "aws_internet_gateway" "igw" {
   })
 }
 
-resource "aws_subnet" "subnets" {
+resource "aws_subnet" "instances_subnets" {
   count = length(var.availability_zones)
 
   vpc_id                  = aws_vpc.vpc.id
@@ -90,10 +90,32 @@ resource "aws_security_group" "sg" {
   }
 }
 
-resource "aws_route_table" "rt" {
+resource "aws_route_table" "rt_private_subnets" {
   vpc_id = aws_vpc.vpc.id
 
-  # Traffic within private subnets.
+  # Traffic within VPC, e.g. with private subnets.
+  route {
+    cidr_block = var.vpc_cidr_block
+    gateway_id = "local"
+  }
+
+  # Re-route internet traffic to NAT gateway.
+  # NAT gateway lies within a public subnet that can 
+  # forward internet traffic to the internet gateway.
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_nat_gateway.natgw.id
+  }
+
+  tags = merge(var.tags, {
+    Name = "${var.name}-rt_private_subnets"
+  })
+}
+
+resource "aws_route_table" "rt_public_subnets" {
+  vpc_id = aws_vpc.vpc.id
+
+  # Traffic within VPC, e.g. with private subnets.
   route {
     cidr_block = var.vpc_cidr_block
     gateway_id = "local"
@@ -106,7 +128,7 @@ resource "aws_route_table" "rt" {
   }
 
   tags = merge(var.tags, {
-    Name = "${var.name}-rt"
+    Name = "${var.name}-rt_public_subnets"
   })
 }
 
@@ -115,16 +137,58 @@ resource "aws_route_table" "rt" {
 # and the subnets do not get automatically associated to the correct route table,
 # which would mean that internet traffic would not be re-routed to the internet
 # gateway.
-resource "aws_main_route_table_association" "main_rta" {
-  vpc_id         = aws_vpc.vpc.id
-  route_table_id = aws_route_table.rt.id
+
+# resource "aws_main_route_table_association" "main_rta" {
+#   vpc_id         = aws_vpc.vpc.id
+#   route_table_id = aws_route_table.rt_public_subnets.id
+# }
+
+resource "aws_route_table_association" "rta_private" {
+  count = length(aws_subnet.instances_subnets)
+
+  route_table_id = aws_route_table.rt_private_subnets.id
+  subnet_id      = aws_subnet.instances_subnets[count.index].id
 }
 
-resource "aws_route_table_association" "rta" {
-  count = length(aws_subnet.subnets)
+resource "aws_route_table_association" "rta_natgw" {
+  route_table_id = aws_route_table.rt_public_subnets.id
+  subnet_id      = aws_subnet.natgw_subnet.id
+}
 
-  route_table_id = aws_route_table.rt.id
-  subnet_id      = aws_subnet.subnets[count.index].id
+resource "aws_subnet" "natgw_subnet" {
+  vpc_id = aws_vpc.vpc.id
+  # TODO: Change hardcoded '15' value.
+  cidr_block              = cidrsubnet(var.vpc_cidr_block, 4, 15)
+  availability_zone       = var.availability_zones[0]
+  map_public_ip_on_launch = true # NATGW subnet must be public!
+
+  tags = {
+    Name = "${var.name}-natgw-subnet"
+  }
+
+}
+
+resource "aws_eip" "natgw_eip" {
+  domain = "vpc"
+
+  tags = {
+    Name = "${var.name}-natgw-eip"
+  }
+
+}
+
+resource "aws_nat_gateway" "natgw" {
+  allocation_id = aws_eip.natgw_eip.id
+  subnet_id     = aws_subnet.natgw_subnet.id
+
+  tags = merge(var.tags, {
+    Name = "${var.name}-natgw"
+  })
+
+  # Terraform docs recommendation:
+  # To ensure proper ordering, it is recommended to add an explicit dependency
+  # on the Internet Gateway for the VPC.
+  depends_on = [aws_internet_gateway.igw]
 }
 
 # TODO: public NAT Gateway
