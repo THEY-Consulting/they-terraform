@@ -82,13 +82,6 @@ locals {
   )
 }
 
-resource "aws_iam_policy" "permissions_boundary" {
-  count = var.boundary_policy != null ? 1 : 0
-
-  name   = "github-action-${var.name}-permissions-boundary"
-  policy = var.boundary_policy
-}
-
 resource "aws_iam_role" "github_oidc_role" {
   name               = "github-action-${var.name}"
   assume_role_policy = local.assume_role_policy
@@ -101,7 +94,7 @@ resource "aws_iam_role" "github_oidc_role" {
     }
   }
 
-  permissions_boundary = var.boundary_policy != null ? aws_iam_policy.permissions_boundary[0].arn : null
+  permissions_boundary = var.boundary_policy_arn
 }
 
 resource "aws_iam_policy" "policy" {

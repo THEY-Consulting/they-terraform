@@ -18,13 +18,13 @@ variable "policies" {
 }
 
 variable "inline" {
-  description = "If true, the policies will be created as inline policies. If false, they will be created as managed policies."
+  description = "If true, the policies will be created as inline policies. If false, they will be created as managed policies. Changing this will not necessarily remove the old policies correctly, check in the AWS console!"
   type        = bool
   default     = true
 }
 
-variable "boundary_policy" {
-  description = "Boundary policy document as a JSON formatted string"
+variable "boundary_policy_arn" {
+  description = "ARN of a boundary policy to attach to the app"
   type        = string
   default     = null
 }
