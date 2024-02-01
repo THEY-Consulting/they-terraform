@@ -2,9 +2,9 @@ resource "aws_lb" "lb" {
   name               = "${var.name}-alb"
   load_balancer_type = "application"
   security_groups    = [aws_security_group.sg.id]
-  # subnets            = [aws_subnet.natgw_subnet.id]
-  subnets            = aws_subnet.instances_subnets[*].id
-  internal           = false # False for internet-facing ALBs.
+  subnets            = [aws_subnet.natgw_subnet.id, aws_subnet.snB.id, aws_subnet.snC.id]
+  # subnets  = aws_subnet.instances_subnets[*].id
+  internal = false # False for internet-facing ALBs.
 
   tags = merge(var.tags,
   { Name = "${var.name}-alb" })

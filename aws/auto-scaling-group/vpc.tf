@@ -168,6 +168,32 @@ resource "aws_subnet" "natgw_subnet" {
 
 }
 
+resource "aws_subnet" "snB" {
+  vpc_id = aws_vpc.vpc.id
+  # TODO: Change hardcoded '15' value.
+  cidr_block              = cidrsubnet(var.vpc_cidr_block, 4, 14)
+  availability_zone       = var.availability_zones[1]
+  map_public_ip_on_launch = true # NATGW subnet must be public!
+
+  tags = {
+    Name = "${var.name}-natgw-subnet"
+  }
+
+}
+
+resource "aws_subnet" "snC" {
+  vpc_id = aws_vpc.vpc.id
+  # TODO: Change hardcoded '15' value.
+  cidr_block              = cidrsubnet(var.vpc_cidr_block, 4, 13)
+  availability_zone       = var.availability_zones[2]
+  map_public_ip_on_launch = true # NATGW subnet must be public!
+
+  tags = {
+    Name = "${var.name}-natgw-subnet"
+  }
+
+}
+
 resource "aws_eip" "natgw_eip" {
   domain = "vpc"
 

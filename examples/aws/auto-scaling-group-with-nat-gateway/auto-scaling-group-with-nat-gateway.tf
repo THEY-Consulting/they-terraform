@@ -13,7 +13,7 @@ module "auto-scaling-group" {
   name                = "${terraform.workspace}-they-terraform-asg-natgw"
   ami_id              = "ami-0ba27d9989b7d8c5d" # AMI valid for eu-central-1 (Amazon Linux 2023 arm64).
   instance_type       = "t4g.nano"
-  desired_capacity    = 2
+  desired_capacity    = 3
   min_size            = 1
   max_size            = 3
   user_data_file_name = "user_data.sh"
