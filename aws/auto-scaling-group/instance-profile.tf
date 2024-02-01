@@ -23,6 +23,8 @@ resource "aws_iam_role" "asg_instance_role" {
       policy = inline_policy.value.policy
     }
   }
+
+  permissions_boundary = var.permissions_boundary_arn
 }
 
 resource "aws_iam_instance_profile" "instance_profile" {
