@@ -155,6 +155,16 @@ resource "aws_route_table_association" "rta_natgw" {
   subnet_id      = aws_subnet.natgw_subnet.id
 }
 
+resource "aws_route_table_association" "rta_b" {
+  route_table_id = aws_route_table.rt_public_subnets.id
+  subnet_id      = aws_subnet.snB.id
+}
+
+resource "aws_route_table_association" "rta_c" {
+  route_table_id = aws_route_table.rt_public_subnets.id
+  subnet_id      = aws_subnet.snC.id
+}
+
 resource "aws_subnet" "natgw_subnet" {
   vpc_id = aws_vpc.vpc.id
   # TODO: Change hardcoded '15' value.
