@@ -1,6 +1,8 @@
 #!/bin/bash
-# # TODO: update comment
-# Respond with a webpage with the private IP of the instance on port 80.
+# Respond with a webpage with the private IP of the instance which is part of the ASG.
+# The webpage also shows that it was possible for the ASG instances to establish outbound 
+# internet connections with other servers through the NAT-Gateway. Otherwise the output of
+# both the `yum` command and the `ping` should show a failure.
 
 HTML_FILE_NAME="/var/www/index.html"
 

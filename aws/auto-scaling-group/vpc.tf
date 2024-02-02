@@ -19,6 +19,7 @@ resource "aws_internet_gateway" "igw" {
   })
 }
 
+# Private subnets in which the instances get private IP addresses.
 resource "aws_subnet" "instances_subnets" {
   count = length(var.availability_zones)
 
@@ -26,13 +27,13 @@ resource "aws_subnet" "instances_subnets" {
   cidr_block              = cidrsubnet(var.vpc_cidr_block, 4, count.index)
   availability_zone       = var.availability_zones[count.index]
   map_public_ip_on_launch = var.public_subnets # Default is false. 
-  # Subnets do not have public IPs per default.
 
   tags = {
     Name = "${var.name}-subnet-${var.availability_zones[count.index]}"
   }
 }
 
+# TODO: Change inline rules.
 # Security group to allow in/out HTTP traffic.
 resource "aws_security_group" "sg" {
   name        = "${var.name}-sg"
@@ -132,17 +133,6 @@ resource "aws_route_table" "rt_public_subnets" {
   })
 }
 
-# A route table association should be performed.
-# Otherwise, AWS creates another default route table for the VPC,
-# and the subnets do not get automatically associated to the correct route table,
-# which would mean that internet traffic would not be re-routed to the internet
-# gateway.
-
-# resource "aws_main_route_table_association" "main_rta" {
-#   vpc_id         = aws_vpc.vpc.id
-#   route_table_id = aws_route_table.rt_public_subnets.id
-# }
-
 resource "aws_route_table_association" "rta_private" {
   count = length(aws_subnet.instances_subnets)
 
@@ -227,14 +217,6 @@ resource "aws_nat_gateway" "natgw" {
   depends_on = [aws_internet_gateway.igw]
 }
 
-# TODO: public NAT Gateway
-# 1- NAT Gateway (NATGW) is assigned to a public subnet and elastic IP.
-#   - Create public subnet within ASG VPC. 
-#   - Create EIP for NATGW. 
-#   - Create NATGW.
-# 2- Route internet traffic of private EC2 through NATGW.
-#   - Create route table, internet traffic of private subnets goes to NATGW
-#   - Create route table association between NATGW subnet and route table for NATGW ?
 # 3- Dev/prod deployment:
 #   - Dev deployment: Only one single NATGW in a single AZ 
 #   - Prod deployment: A NATGW in each AZ with EC2 instances.
