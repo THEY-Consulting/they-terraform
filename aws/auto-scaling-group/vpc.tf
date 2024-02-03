@@ -6,11 +6,6 @@ resource "aws_vpc" "vpc" {
   })
 }
 
-# The Internet Gateway allows instances in private IPs to get 
-# incoming connections from the internet through an Application Load Balancer. 
-# Nonetheless, this resource does not allow an instance in a private subnet to 
-# establish internet connections at boot-up (to for example get packages), for that
-# refer to AWS NAT-Gateway.
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.vpc.id
 
@@ -100,6 +95,8 @@ resource "aws_route_table" "rt_private_subnets" {
     gateway_id = "local"
   }
 
+  # TODO: the NAT Gateway route depends on the AZ where the private subnet is.
+
   # Re-route internet traffic to NAT gateway.
   # NAT gateway lies within a public subnet that can 
   # forward internet traffic to the internet gateway.
@@ -145,14 +142,11 @@ resource "aws_route_table_association" "rta_natgw" {
   subnet_id      = aws_subnet.natgw_subnet.id
 }
 
-resource "aws_route_table_association" "rta_b" {
-  route_table_id = aws_route_table.rt_public_subnets.id
-  subnet_id      = aws_subnet.snB.id
-}
+resource "aws_route_table_association" "rta_alb_public_subnets" {
+  count          = length(aws_subnet.alb_public_subnets)
 
-resource "aws_route_table_association" "rta_c" {
+  subnet_id      = aws_subnet.alb_public_subnets[count.index].id
   route_table_id = aws_route_table.rt_public_subnets.id
-  subnet_id      = aws_subnet.snC.id
 }
 
 resource "aws_subnet" "natgw_subnet" {
@@ -168,30 +162,17 @@ resource "aws_subnet" "natgw_subnet" {
 
 }
 
-resource "aws_subnet" "snB" {
-  vpc_id = aws_vpc.vpc.id
-  # TODO: Change hardcoded '15' value.
-  cidr_block              = cidrsubnet(var.vpc_cidr_block, 4, 14)
-  availability_zone       = var.availability_zones[1]
-  map_public_ip_on_launch = true # NATGW subnet must be public!
+# Public subnets for the ALB nodes in each AZ.
+resource "aws_subnet" "alb_public_subnets" {
+  count = length(var.availability_zones)
+
+  vpc_id            = aws_vpc.vpc.id
+  cidr_block        = cidrsubnet(var.vpc_cidr_block, 4, count.index + length(aws_subnet.instances_subnets))
+  availability_zone = var.availability_zones[count.index]
 
   tags = {
-    Name = "${var.name}-natgw-subnet"
+    Name = "${var.name}-alb_subnet-${var.availability_zones[count.index]}"
   }
-
-}
-
-resource "aws_subnet" "snC" {
-  vpc_id = aws_vpc.vpc.id
-  # TODO: Change hardcoded '15' value.
-  cidr_block              = cidrsubnet(var.vpc_cidr_block, 4, 13)
-  availability_zone       = var.availability_zones[2]
-  map_public_ip_on_launch = true # NATGW subnet must be public!
-
-  tags = {
-    Name = "${var.name}-natgw-subnet"
-  }
-
 }
 
 resource "aws_eip" "natgw_eip" {
@@ -203,6 +184,7 @@ resource "aws_eip" "natgw_eip" {
 
 }
 
+# TODO: Either create 1 or multiple NATGWs.
 resource "aws_nat_gateway" "natgw" {
   allocation_id = aws_eip.natgw_eip.id
   subnet_id     = aws_subnet.natgw_subnet.id
@@ -216,7 +198,3 @@ resource "aws_nat_gateway" "natgw" {
   # on the Internet Gateway for the VPC.
   depends_on = [aws_internet_gateway.igw]
 }
-
-# 3- Dev/prod deployment:
-#   - Dev deployment: Only one single NATGW in a single AZ 
-#   - Prod deployment: A NATGW in each AZ with EC2 instances.

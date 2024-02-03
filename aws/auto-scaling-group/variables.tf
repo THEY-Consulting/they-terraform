@@ -98,3 +98,9 @@ variable "allow_all_outbound" {
   type        = bool
   default     = false
 }
+
+variable "multi_az_natgw" {
+  description = "If true, a NAT Gateway will be deployed in each availability zone (AZ) of the deployment. Otherwise, only a single NAT Gateway will be deployed."
+  type        = bool
+  default     = false
+}
