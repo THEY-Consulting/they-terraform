@@ -16,7 +16,8 @@ resource "aws_internet_gateway" "igw" {
 
 # Private subnets in which the instances get private IP addresses.
 resource "aws_subnet" "instances_subnets" {
-  count = length(var.availability_zones)
+  # A maximum of 3 private networks is initialized.
+  count = var.desired_capacity < 3 ? var.desired_capacity : 3
 
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = cidrsubnet(var.vpc_cidr_block, 4, count.index)
@@ -28,8 +29,8 @@ resource "aws_subnet" "instances_subnets" {
   }
 }
 
-# TODO: Change inline rules.
-# Security group to allow in/out HTTP traffic.
+# TODO: Remove ingress and egress rules,
+# see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group
 resource "aws_security_group" "sg" {
   name        = "${var.name}-sg"
   description = "Security group for ASG, HTTP and HTTPS traffic."
@@ -87,7 +88,8 @@ resource "aws_security_group" "sg" {
 }
 
 resource "aws_route_table" "rt_private_subnets" {
-  count  = var.multi_az_natgw ? length(var.availability_zones) : 1
+  count = var.multi_az_nat ? length(aws_subnet.instances_subnets) : 1
+  # count  = var.multi_az_nat ? length(var.availability_zones) : 1
   vpc_id = aws_vpc.vpc.id
 
   # Traffic within VPC, e.g. with private subnets.
@@ -134,7 +136,10 @@ resource "aws_route_table" "rt_public_subnets" {
 resource "aws_route_table_association" "rta_private" {
   count = length(aws_subnet.instances_subnets)
 
-  route_table_id = aws_route_table.rt_private_subnets[count.index].id
+  # If you do not choose a multi-AZ NAT Gateway deployment, there is only
+  # one single NAT Gateway, so there is only one single route table routing
+  # traffic to the single NAT Gateway.
+  route_table_id = var.multi_az_nat ? aws_route_table.rt_private_subnets[count.index].id : aws_route_table.rt_private_subnets[0].id
   subnet_id      = aws_subnet.instances_subnets[count.index].id
 }
 
@@ -147,7 +152,7 @@ resource "aws_route_table_association" "rta_alb_public_subnets" {
 
 # Public subnets for the ALB nodes in each AZ.
 resource "aws_subnet" "alb_public_subnets" {
-  count = length(var.availability_zones)
+  count = length(aws_subnet.instances_subnets)
 
   vpc_id            = aws_vpc.vpc.id
   cidr_block        = cidrsubnet(var.vpc_cidr_block, 4, count.index + length(aws_subnet.instances_subnets))
@@ -158,15 +163,13 @@ resource "aws_subnet" "alb_public_subnets" {
   }
 }
 
-# TODO: Either create 1 or multiple NATGWs.
 resource "aws_nat_gateway" "natgw" {
-  count = var.multi_az_natgw ? length(var.availability_zones) : 1
+  count = var.multi_az_nat ? length(aws_subnet.instances_subnets) : 1
 
   allocation_id = aws_eip.natgw_eip[count.index].id
   subnet_id     = aws_subnet.alb_public_subnets[count.index].id
 
   tags = merge(var.tags, {
-    # TODO: Maybe add AZ to tag.
     Name = "${var.name}-natgw"
   })
 
@@ -177,13 +180,11 @@ resource "aws_nat_gateway" "natgw" {
 }
 
 resource "aws_eip" "natgw_eip" {
-  # TODO: change for exact number of instances in true case.
-  count = var.multi_az_natgw ? length(var.availability_zones) : 1
+  count = var.multi_az_nat ? length(aws_subnet.instances_subnets) : 1
 
   domain = "vpc"
 
   tags = {
-    # TODO: maybe change name for only count.index instead of AZ.
     Name = "${var.name}-natgw-eip-${var.availability_zones[count.index]}"
   }
 }

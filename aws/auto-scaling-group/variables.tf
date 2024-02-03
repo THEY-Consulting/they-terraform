@@ -16,7 +16,7 @@ variable "instance_type" {
 variable "desired_capacity" {
   description = "The number of EC2 instances that should be running in the ASG."
   type        = number
-  default     = 1
+  default     = 2
 }
 
 variable "min_size" {
@@ -28,7 +28,7 @@ variable "min_size" {
 variable "max_size" {
   description = "The maximum number of instances in the ASG."
   type        = number
-  default     = 1
+  default     = 3
 }
 
 variable "key_name" {
@@ -99,8 +99,8 @@ variable "allow_all_outbound" {
   default     = false
 }
 
-variable "multi_az_natgw" {
-  description = "If true, a NAT Gateway will be deployed in each availability zone (AZ) of the deployment. Otherwise, only a single NAT Gateway will be deployed."
+variable "multi_az_nat" {
+  description = "Specify true to deploy a NAT Gateway in each availability zone (AZ) of the deployment. Otherwise, only a single NAT Gateway will be deployed."
   type        = bool
   default     = false
 }
