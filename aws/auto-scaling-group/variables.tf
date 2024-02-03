@@ -93,6 +93,12 @@ variable "policies" {
   default = []
 }
 
+variable "permissions_boundary_arn" {
+  description = "ARN of the permissions boundary to attach to the IAM Instance Profile"
+  type        = string
+  default     = null
+}
+
 variable "allow_all_outbound" {
   description = "Allow all outbound traffic from instances"
   type        = bool
