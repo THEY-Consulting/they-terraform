@@ -19,6 +19,7 @@ module "auto-scaling-group" {
   user_data_file_name = "user_data.sh"
   availability_zones  = data.aws_availability_zones.azs.names[*] # Use AZs of region defined by provider.
   allow_all_outbound  = true
+  multi_az_natgw      = true
 }
 
 # --- OUTPUT ---
