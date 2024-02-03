@@ -1,3 +1,9 @@
+locals {
+  # The maximum number of deployed NAT Gateways equals the number of instance subnets
+  # that have been created (total possible max. value is 3).
+  number_of_nat_gateways = var.multi_az_nat ? length(aws_subnet.instances_subnets) : 1
+}
+
 resource "aws_vpc" "vpc" {
   cidr_block       = var.vpc_cidr_block
   instance_tenancy = "default"
@@ -89,7 +95,7 @@ resource "aws_security_group" "sg" {
 
 resource "aws_route_table" "rt_private_subnets" {
   # Only create as many route tables as NAT Gateways that are created.
-  count = var.multi_az_nat ? length(aws_subnet.instances_subnets) : 1
+  count = local.number_of_nat_gateways
 
   vpc_id = aws_vpc.vpc.id
 
@@ -165,7 +171,7 @@ resource "aws_subnet" "alb_public_subnets" {
 resource "aws_nat_gateway" "natgw" {
   # The maximum number of deployed NAT Gateways equals the number of instance subnets
   # that have been created (total possible max. value is 3).
-  count = var.multi_az_nat ? length(aws_subnet.instances_subnets) : 1
+  count = local.number_of_nat_gateways
 
   allocation_id = aws_eip.natgw_eip[count.index].id
   subnet_id     = aws_subnet.alb_public_subnets[count.index].id
@@ -181,7 +187,7 @@ resource "aws_nat_gateway" "natgw" {
 }
 
 resource "aws_eip" "natgw_eip" {
-  count = var.multi_az_nat ? length(aws_subnet.instances_subnets) : 1
+  count = local.number_of_nat_gateways
 
   domain = "vpc"
 
