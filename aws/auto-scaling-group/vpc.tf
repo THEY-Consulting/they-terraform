@@ -88,8 +88,9 @@ resource "aws_security_group" "sg" {
 }
 
 resource "aws_route_table" "rt_private_subnets" {
+  # Only create as many route tables as NAT Gateways that are created.
   count = var.multi_az_nat ? length(aws_subnet.instances_subnets) : 1
-  # count  = var.multi_az_nat ? length(var.availability_zones) : 1
+
   vpc_id = aws_vpc.vpc.id
 
   # Traffic within VPC, e.g. with private subnets.
@@ -97,8 +98,6 @@ resource "aws_route_table" "rt_private_subnets" {
     cidr_block = var.vpc_cidr_block
     gateway_id = "local"
   }
-
-  # TODO: the NAT Gateway route depends on the AZ where the private subnet is.
 
   # Re-route internet traffic to NAT gateway.
   # NAT gateway lies within a public subnet that can 
@@ -164,6 +163,8 @@ resource "aws_subnet" "alb_public_subnets" {
 }
 
 resource "aws_nat_gateway" "natgw" {
+  # The maximum number of deployed NAT Gateways equals the number of instance subnets
+  # that have been created (total possible max. value is 3).
   count = var.multi_az_nat ? length(aws_subnet.instances_subnets) : 1
 
   allocation_id = aws_eip.natgw_eip[count.index].id
