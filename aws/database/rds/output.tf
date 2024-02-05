@@ -1,5 +1,5 @@
 output "db_connection_string" {
-  description = "Connection String that can be used to connect to the instance. If you use psql you could just run `psql connectionStringHere` after replacing the password stub with the actual password"
+  description = "Connection String that can be used to connect to the instance. If you use psql you could just run `psql 'connectionStringHere'` after replacing the password stub with the actual password"
   # https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING-URIS
   value = "${aws_db_instance.main.engine}://${aws_db_instance.main.username}:ReplaceThisWithThePassword@${aws_db_instance.main.address}:${aws_db_instance.main.port}/${aws_db_instance.main.db_name}"
 }

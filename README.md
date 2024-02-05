@@ -118,22 +118,22 @@ module "rds_postgres_database" {
 ```
 #### Inputs
 
-| Variable                      | Type         | Description                                                                                                                        | Required | Default                    |
-|-------------------------------|--------------|------------------------------------------------------------------------------------------------------------------------------------|----------|----------------------------|
-| db_name                       | string       | Name of the database                                                                                                               | yes      |                            |
-| engine                        | string       | Engine of the database                                                                                                             | yes      | `"postgres"`               |
-| engine_version                | string       | Database's engine version                                                                                                          | yes      | `"15.5"`                   |
-| user_name                     | string       | Main username for the database                                                                                                     | yes      |                            |
-| password                      | string       | Password of the main username for the database                                                                                     | yes      |                            |
-| allocated_storage             | number       | Allocated storage for the DB in GBs.                                                                                               | yes      | `5`                        |
-| max_allocated_storage         | number       | Upper limit to which the RDS can automatically scale the storage of the db instance                                                | no       | `30`                       |
-| instance_class                | string       | Instacnce class of database                                                                                                        | yes      | `"db.t3.micro"`            |
-| multiple_az                   | bool         | Specifies whether the RDS is multi-AZ                                                                                              | yes      | `false`                    |
-| storage_type                  | string       | Database's storage type                                                                                                            | yes      | `"gp2"`                    |
-| backup_retention_period       | number       | The number of days to retain backups for                                                                                           | no       | `1`                        |
-| backup_window                 | string       | Daily time range for when backup creation is run                                                                                   | no       | `03:00-04:00`              |
-| publicly_accessible           | bool         | Enable/Disable depending on whether db needs to be publicly accessible                                                             | no       | `false`                    |
-| tags                          | map(string)  | Map of tags to assign to the Lambda Function and related resources                                                                 | no       | `{}`                       |
+| Variable                      | Type         | Description                                                                        | Required | Default                    |
+|-------------------------------|--------------|------------------------------------------------------------------------------------|----------|----------------------------|
+| db_name                       | string       | Name of the database                                                               | yes      |                            |
+| engine                        | string       | Engine of the database                                                             | yes      | `"postgres"`               |
+| engine_version                | string       | Database's engine version                                                          | yes      | `"15.5"`                   |
+| user_name                     | string       | Main username for the database                                                     | yes      |                            |
+| password                      | string       | Password of the main username for the database                                     | yes      |                            |
+| allocated_storage             | number       | Allocated storage for the DB in GBs.                                               | yes      | `5`                        |
+| max_allocated_storage         | number       | Upper limit to which the RDS can automatically scale the storage of the db instance| no       | `30`                       |
+| instance_class                | string       | Instacnce class of database                                                        | yes      | `"db.t3.micro"`            |
+| multiple_az                   | bool         | Specifies whether the RDS is multi-AZ                                              | yes      | `false`                    |
+| storage_type                  | string       | Database's storage type                                                            | yes      | `"gp2"`                    |
+| backup_retention_period       | number       | The number of days to retain backups for                                           | no       | `1`                        |
+| backup_window                 | string       | Daily time range for when backup creation is run                                   | no       | `03:00-04:00`              |
+| publicly_accessible           | bool         | Enable/Disable depending on whether db needs to be publicly accessible             | no       | `false`                    |
+| tags                          | map(string)  | Map of tags to assign to the Lambda Function and related resources                 | no       | `{}`                       |
 
 #### Outputs
 
