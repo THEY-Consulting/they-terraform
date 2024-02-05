@@ -110,3 +110,9 @@ variable "multi_az_nat" {
   type        = bool
   default     = false
 }
+
+variable "health_check_type" {
+  description = "Controls how the health check for the EC2 instances under the ASG is done"
+  type        = string
+  default     = "ELB"
+}
