@@ -437,7 +437,7 @@ module "auto-scaling-group" {
 ##### Inputs
 
 | Variable                 | Type         | Description                                                                                                                          | Required | Default         |
-| ------------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ | -------- | --------------- |
+|--------------------------|--------------|--------------------------------------------------------------------------------------------------------------------------------------|----------|-----------------|
 | name                     | string       | Name of the Auto Scaling group (ASG)                                                                                                 | yes      |                 |
 | ami_id                   | string       | ID of AMI used in EC2 instances of ASG                                                                                               | yes      |                 |
 | instance_type            | string       | Instance type used to deploy instances in ASG                                                                                        | yes      |                 |
@@ -463,7 +463,7 @@ module "auto-scaling-group" {
 ##### Outputs
 
 | Output      | Type   | Description                                          |
-| ----------- | ------ | ---------------------------------------------------- |
+|-------------| ------ |------------------------------------------------------|
 | alb_dns     | string | DNS of the Application Load Balancer for the ASG     |
 | alb_zone_id | string | Zone ID of the application load balancer for the ASG |
 
@@ -504,7 +504,7 @@ module "github_action_role" {
 ##### Inputs
 
 | Variable                          | Type         | Description                                                                                                                                                                                                   | Required | Default |
-| --------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
+|-----------------------------------|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
 | name                              | string       | Name of the role                                                                                                                                                                                              | yes      |         |
 | repo                              | string       | Repository that is authorized to assume this role                                                                                                                                                             | yes      |         |
 | policies                          | list(object) | List of additional inline policies to attach to the app                                                                                                                                                       | no       | `[]`    |
@@ -581,7 +581,7 @@ module "function_app" {
     name = "node"
     version = "~18"
   }
-
+  
   environment = {
     ENV_VAR_1 = "value1"
     ENV_VAR_2 = "value2"
@@ -630,7 +630,7 @@ module "function_app" {
 ##### Inputs
 
 | Variable                                           | Type         | Description                                                                                                             | Required | Default                                |
-| -------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------- |
+|----------------------------------------------------|--------------|-------------------------------------------------------------------------------------------------------------------------| -------- |----------------------------------------|
 | name                                               | string       | Name of the function app                                                                                                | yes      |                                        |
 | source_dir                                         | string       | Directory containing the function code                                                                                  | yes      |                                        |
 | location                                           | string       | The Azure region where the resources should be created                                                                  | yes      |                                        |
@@ -678,7 +678,7 @@ module "function_app" {
 ##### Outputs
 
 | Output            | Type         | Description                        |
-| ----------------- | ------------ | ---------------------------------- |
+|-------------------|--------------|------------------------------------|
 | id                | string       | The ID of the Function App         |
 | build             | string       | Build output                       |
 | archive_file_path | string       | Path to the generated archive file |
@@ -786,7 +786,7 @@ module "vm" {
   name                = "they-test-vm"
   resource_group_name = "they-dev"
 
-  vm_hostname       = "vm"
+  vm_hostname       = "vm" 
   vm_os             = "linux"
   vm_size           = "Standard_B2s"
   vm_username       = "they"
@@ -801,7 +801,7 @@ module "vm" {
     sku       = "22_04-lts-gen2"
     version   = "latest"
   }
-
+  
   network = {
     preexisting_name = "they-dev-vnet"
     address_space    = ["10.0.0.0/16"]
@@ -813,7 +813,7 @@ module "vm" {
     next_hop_type  = "Internet"
   }]
   public_ip = true
-
+  
   allow_ssh = true
   allow_rdp = true
   security_rules = [{
@@ -832,7 +832,7 @@ module "vm" {
 ##### Inputs
 
 | Variable                              | Type         | Description                                                                                      | Required | Default                                                                                |
-| ------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------ | -------- | -------------------------------------------------------------------------------------- |
+|---------------------------------------|--------------|--------------------------------------------------------------------------------------------------|----------|----------------------------------------------------------------------------------------|
 | name                                  | string       | Name of the vm and related resources                                                             | yes      |                                                                                        |
 | resource_group_name                   | string       | The name of the resource group in which to create the resources                                  | yes      |                                                                                        |
 | vm_hostname                           | string       | Hostname of the vm                                                                               | no       | `var.name`                                                                             |
@@ -840,7 +840,7 @@ module "vm" {
 | vm_size                               | string       | The size of the VM to create                                                                     | no       | `"Standard_B2s"`                                                                       |
 | vm_username                           | string       | The username for the VM admin user                                                               | no       | `"they"`                                                                               |
 | vm_password                           | string       | The password of the VM admin user                                                                | yes      |                                                                                        |
-| vm_public_ssh_key                     | string       | Public SSH key to use for the VM, required for linux VMs                                         | yes\*    |                                                                                        |
+| vm_public_ssh_key                     | string       | Public SSH key to use for the VM, required for linux VMs                                         | yes*     |                                                                                        |
 | custom_data                           | string       | The custom data to setup the VM                                                                  | no       | `null`                                                                                 |
 | vm_image                              | object       | The image to use for the VM                                                                      | no       | see sub fields                                                                         |
 | vm_image.publisher                    | string       | Publisher of the VM image                                                                        | no       | `"Canonical"`                                                                          |
@@ -870,10 +870,11 @@ module "vm" {
 | security_rules.destination_port_range | string       | Destination port range of the security rule                                                      | yes      |                                                                                        |
 | tags                                  | map(string)  | Map of tags to assign to the resources                                                           | no       | `{}`                                                                                   |
 
+
 ##### Outputs
 
 | Output                    | Type   | Description                      |
-| ------------------------- | ------ | -------------------------------- |
+|---------------------------|--------|----------------------------------|
 | public_ip                 | string | Public ip if enabled             |
 | network_name              | string | Name of the network              |
 | subnet_id                 | string | Id of the subnet                 |
