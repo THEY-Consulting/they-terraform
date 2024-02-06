@@ -93,8 +93,8 @@ resource "aws_security_group" "sg" {
 }
 
 resource "aws_route_table" "rt_private_subnets" {
-  # Only create as many route tables as NAT Gateways that are created.
-  count = local.number_of_nat_gateways
+  # Only create as many route tables as NAT Gateways that were created.
+  count = length(aws_nat_gateway.natgw)
 
   vpc_id = aws_vpc.vpc.id
 
