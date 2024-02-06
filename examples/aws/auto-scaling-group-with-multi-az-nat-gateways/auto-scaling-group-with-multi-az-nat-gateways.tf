@@ -18,7 +18,8 @@ module "auto-scaling-group" {
   max_size            = 3
   user_data_file_name = "user_data.sh"
   availability_zones  = data.aws_availability_zones.azs.names[*] # Use AZs of region defined by provider.
-  # Allow all outbound traffic to permit pings and all sorts of requests, e.g. package updates.
+  # Allow all outbound traffic to permit pings and all sorts of requests, e.g. package updates, when the 
+  # EC2 instances of the ASG are booting-up.
   allow_all_outbound = true
   multi_az_nat       = true
 }

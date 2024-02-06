@@ -143,8 +143,8 @@ resource "aws_route_table_association" "rta_private" {
   # If you do not choose a multi-AZ NAT Gateway deployment, there is only
   # one single NAT Gateway, so there is only one single route table routing
   # traffic to the single NAT Gateway.
-  route_table_id = var.multi_az_nat ? aws_route_table.rt_private_subnets[count.index].id : aws_route_table.rt_private_subnets[0].id
-  subnet_id      = aws_subnet.instances_subnets[count.index].id
+  route_table_id = aws_route_table.rt_private_subnets[min(count.index, length(aws_route_table.rt_private_subnets) - 1)].id
+  subnet_id = aws_subnet.instances_subnets[count.index].id
 }
 
 resource "aws_route_table_association" "rta_alb_public_subnets" {
