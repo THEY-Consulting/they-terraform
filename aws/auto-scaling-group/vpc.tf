@@ -1,6 +1,6 @@
 locals {
-  # The maximum number of deployed NAT Gateways equals the number of instance subnets
-  # that have been created (total possible max. value is 3).
+  # The total maximum value of NAT Gateways is one NAT Gateway for each 
+  # availability zone.
   number_of_nat_gateways = var.multi_az_nat ? length(aws_subnet.instances_subnets) : 1
 }
 
@@ -22,8 +22,7 @@ resource "aws_internet_gateway" "igw" {
 
 # Private subnets in which the instances get private IP addresses.
 resource "aws_subnet" "instances_subnets" {
-  # A maximum of 3 private networks is initialized.
-  count = var.desired_capacity < 3 ? var.desired_capacity : 3
+  count = length(var.availability_zones)
 
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = cidrsubnet(var.vpc_cidr_block, 4, count.index)
@@ -157,7 +156,7 @@ resource "aws_route_table_association" "rta_alb_public_subnets" {
 
 # Public subnets for the ALB nodes in each AZ.
 resource "aws_subnet" "alb_public_subnets" {
-  count = length(aws_subnet.instances_subnets)
+  count = length(var.availability_zones)
 
   vpc_id            = aws_vpc.vpc.id
   cidr_block        = cidrsubnet(var.vpc_cidr_block, 4, count.index + length(aws_subnet.instances_subnets))
@@ -169,8 +168,6 @@ resource "aws_subnet" "alb_public_subnets" {
 }
 
 resource "aws_nat_gateway" "natgw" {
-  # The maximum number of deployed NAT Gateways equals the number of instance subnets
-  # that have been created (total possible max. value is 3).
   count = local.number_of_nat_gateways
 
   allocation_id = aws_eip.natgw_eip[count.index].id
