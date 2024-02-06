@@ -16,7 +16,7 @@ variable "instance_type" {
 variable "desired_capacity" {
   description = "The number of EC2 instances that should be running in the ASG."
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "min_size" {
@@ -28,7 +28,7 @@ variable "min_size" {
 variable "max_size" {
   description = "The maximum number of instances in the ASG."
   type        = number
-  default     = 3
+  default     = 1
 }
 
 variable "key_name" {
