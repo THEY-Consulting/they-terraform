@@ -1,4 +1,5 @@
 # since we don't have a default VPC, we need to make sure our VPC has connection out
+# ToDo: evaluate the necessity of this for when we have a non public subnet
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 }
