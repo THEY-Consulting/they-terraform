@@ -1,6 +1,7 @@
 variable "db_name" {
   description = "The name of the database."
   type        = string
+  default     = "app"
 }
 
 variable "engine" {
@@ -18,6 +19,7 @@ variable "engine_version" {
 variable "user_name" {
   description = "The main username for the database."
   type        = string
+  default     = "psql"
 }
 
 variable "password" {
@@ -59,7 +61,7 @@ variable "storage_type" {
 variable "backup_retention_period" {
   description = "The days to retain backups for."
   type        = number
-  default     = 1 #since we're using this for dev purposes, we can set this to 1
+  default     = 14
 }
 
 variable "backup_window" {
@@ -71,13 +73,25 @@ variable "backup_window" {
 variable "publicly_accessible" {
   description = "Whether the database is publicly accessible."
   type        = bool
-  default     = false
+  default     = true
+}
+
+variable "apply_immediately" {
+  description = "Specifies whether any database modifications are applied immediately, or during the next maintenance window."
+  type        = bool
+  default     = true
 }
 
 variable "tags" {
   description = "Tags for the resources."
   type        = map(string)
   default     = {}
+}
+
+variable "vpc_cidr_block" {
+  description = "The CIDR block for the VPC."
+  type        = string
+  default     = "10.0.0.0/24"
 }
 
 

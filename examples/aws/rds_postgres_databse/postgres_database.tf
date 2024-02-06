@@ -8,7 +8,7 @@ module "rds_postgres_database" {
   engine         = "postgres"
   engine_version = "15.5"
   user_name      = "psql"
-  password       = sensitive("Passw0rd123!")
+  password       = sensitive("Passw0rd123")
 
   allocated_storage = 5
   instance_class    = "db.t3.micro"

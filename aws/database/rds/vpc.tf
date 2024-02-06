@@ -1,5 +1,5 @@
 locals {
-  vpc_cidr_block = "10.0.0.0/24"
+  vpc_cidr_block = var.vpc_cidr_block
 }
 
 resource "aws_vpc" "main" {

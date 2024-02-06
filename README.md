@@ -95,20 +95,27 @@ The location of all resources is always determined by the `region` of your aws `
 #### RDS postgres database
 ```hcl
 module "rds_postgres_database" {
-  # source = "github.com/THEY-Consulting/they-terraform//azure/database/rds"
-  source = "../../../aws/database/rds"
+  source = "github.com/THEY-Consulting/they-terraform//aws/database/rds"
 
-  db_name        = "postgres" #DBName must begin with a letter and contain only alphanumeric characters
+  db_name        = "app" # DBName must begin with a letter and contain only alphanumeric characters
   engine         = "postgres"
   engine_version = "15.5"
+  
   user_name      = "psql"
-  password       = sensitive("Passw0rd123!")
+  password       = sensitive("Passw0rd123")
 
-  allocated_storage = 5
-  instance_class    = "db.t3.micro"
+  allocated_storage     = 5
+  max_allocated_storage = 30
+  
+  instance_class        = "db.t3.micro"
+  multi_az              = false
+  storage_type          = "gp2"
+  
+  backup_retention_period = 14
+  backup_window           = "03:00-04:00"
 
   publicly_accessible = true
-
+  apply_immediately   = true
 
   tags = {
     Project   = "they-terraform-examples"
@@ -118,22 +125,24 @@ module "rds_postgres_database" {
 ```
 #### Inputs
 
-| Variable                      | Type         | Description                                                                        | Required | Default                    |
-|-------------------------------|--------------|------------------------------------------------------------------------------------|----------|----------------------------|
-| db_name                       | string       | Name of the database                                                               | yes      |                            |
-| engine                        | string       | Engine of the database                                                             | yes      | `"postgres"`               |
-| engine_version                | string       | Database's engine version                                                          | yes      | `"15.5"`                   |
-| user_name                     | string       | Main username for the database                                                     | yes      |                            |
-| password                      | string       | Password of the main username for the database                                     | yes      |                            |
-| allocated_storage             | number       | Allocated storage for the DB in GBs.                                               | yes      | `5`                        |
-| max_allocated_storage         | number       | Upper limit to which the RDS can automatically scale the storage of the db instance| no       | `30`                       |
-| instance_class                | string       | Instacnce class of database                                                        | yes      | `"db.t3.micro"`            |
-| multiple_az                   | bool         | Specifies whether the RDS is multi-AZ                                              | yes      | `false`                    |
-| storage_type                  | string       | Database's storage type                                                            | yes      | `"gp2"`                    |
-| backup_retention_period       | number       | The number of days to retain backups for                                           | no       | `1`                        |
-| backup_window                 | string       | Daily time range for when backup creation is run                                   | no       | `03:00-04:00`              |
-| publicly_accessible           | bool         | Enable/Disable depending on whether db needs to be publicly accessible             | no       | `false`                    |
-| tags                          | map(string)  | Map of tags to assign to the Lambda Function and related resources                 | no       | `{}`                       |
+| Variable                | Type        | Description                                                                                      | Required | Default         |
+|-------------------------|-------------|--------------------------------------------------------------------------------------------------|----------|-----------------|
+| db_name                 | string      | Name of the database                                                                             | no       | `"app"`         |
+| engine                  | string      | Engine of the database                                                                           | no       | `"postgres"`    |
+| engine_version          | string      | Database's engine version                                                                        | no       | `"15.5"`        |
+| user_name               | string      | Main username for the database                                                                   | no       | `"psql"`        |
+| password                | string      | Password of the main username for the database                                                   | yes      |                 |
+| allocated_storage       | number      | Allocated storage for the DB in GBs.                                                             | no       | `5`             |
+| max_allocated_storage   | number      | Upper limit to which the RDS can automatically scale the storage of the db instance              | no       | `30`            |
+| instance_class          | string      | Instance class of database                                                                       | no       | `"db.t3.micro"` |
+| multi_az                | bool        | Specifies whether the RDS is multi-AZ                                                            | no       | `false`         |
+| storage_type            | string      | Database's storage type                                                                          | no       | `"gp2"`         |
+| backup_retention_period | number      | The number of days to retain backups for                                                         | no       | `14`            |
+| backup_window           | string      | Daily time range for when backup creation is run                                                 | no       | `03:00-04:00`   |
+| publicly_accessible     | bool        | Enable/Disable depending on whether db needs to be publicly accessible                           | no       | `true`          |
+| apply_immediately       | bool        | Specifies whether db modifications are applied immediately or during the next maintenance window | no       | `true`          |
+| tags                    | map(string) | Map of tags to assign to the RDS instance and related resources                                  | no       | `{}`            |
+| vpc_cidr_block          | string      | CIDR blocj for the VPC                                                                           | no       | `"10.0.0.0/24"` |
 
 #### Outputs
 

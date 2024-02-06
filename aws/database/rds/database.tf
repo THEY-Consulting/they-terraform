@@ -25,5 +25,6 @@ resource "aws_db_instance" "main" {
 
   skip_final_snapshot = true
   publicly_accessible = var.publicly_accessible
+  apply_immediately   = var.apply_immediately
   tags                = var.tags
 }
