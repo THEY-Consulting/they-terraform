@@ -1,7 +1,7 @@
 # --- RESOURCES / MODULES ---
 
 module "rds_postgres_database" {
-  # source = "github.com/THEY-Consulting/they-terraform//azure/database/rds"
+  # source = "github.com/THEY-Consulting/they-terraform//aws/database/rds"
   source = "../../../aws/database/rds"
 
   db_name        = "app" #DBName must begin with a letter and contain only alphanumeric characters
