@@ -144,7 +144,7 @@ resource "aws_route_table_association" "rta_private" {
   # one single NAT Gateway, so there is only one single route table routing
   # traffic to the single NAT Gateway.
   route_table_id = aws_route_table.rt_private_subnets[min(count.index, length(aws_route_table.rt_private_subnets) - 1)].id
-  subnet_id = aws_subnet.instances_subnets[count.index].id
+  subnet_id      = aws_subnet.instances_subnets[count.index].id
 }
 
 resource "aws_route_table_association" "rta_alb_public_subnets" {
