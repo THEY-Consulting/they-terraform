@@ -1,9 +1,5 @@
-locals {
-  vpc_cidr_block = var.vpc_cidr_block
-}
-
 resource "aws_vpc" "main" {
-  cidr_block           = local.vpc_cidr_block
+  cidr_block           = var.vpc_cidr_block
   enable_dns_support   = var.publicly_accessible # if DB instance is publicly accessible must be enabled
   enable_dns_hostnames = var.publicly_accessible # if DB instance is publicly accessible must be enabled
 }
@@ -15,7 +11,7 @@ data "aws_availability_zones" "available" {
 resource "aws_subnet" "instances_subnets" {
   count             = 2
   vpc_id            = aws_vpc.main.id
-  cidr_block        = cidrsubnet(local.vpc_cidr_block, 4, count.index)
+  cidr_block        = cidrsubnet(var.vpc_cidr_block, 4, count.index)
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
