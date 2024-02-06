@@ -10,7 +10,7 @@ terraform {
     bucket         = "they-terraform-examples-tfstate"
     encrypt        = true
     dynamodb_table = "they-terraform-examples-tfstate-lock"
-    key            = "auto-scaling-group-with-nat-gateway/terraform.tfstate"
+    key            = "auto-scaling-group-with-multi-az-nat-gateways/terraform.tfstate"
     region         = "eu-central-1"
   }
 
