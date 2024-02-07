@@ -1,7 +1,7 @@
 # --- RESOURCES / MODULES ---
 
 module "rds_postgres_database" {
-  # source = "github.com/THEY-Consulting/they-terraform//azure/database/rds"
+  # source = "github.com/THEY-Consulting/they-terraform//aws/database/rds"
   source = "../../../aws/database/rds"
 
   db_name        = "app" #DBName must begin with a letter and contain only alphanumeric characters
@@ -11,7 +11,7 @@ module "rds_postgres_database" {
   password       = sensitive("Passw0rd123")
 
   allocated_storage = 5
-  instance_class    = "db.t3.micro"
+  instance_class    = "db.t4g.micro"
 
   publicly_accessible = true
 

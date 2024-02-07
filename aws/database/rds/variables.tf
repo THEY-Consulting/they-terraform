@@ -43,7 +43,7 @@ variable "max_allocated_storage" {
 variable "instance_class" {
   description = "The instance class of database."
   type        = string
-  default     = "db.t3.micro"
+  default     = "db.t4g.micro"
 }
 
 variable "multi_az" {

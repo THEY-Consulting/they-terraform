@@ -107,7 +107,7 @@ module "rds_postgres_database" {
   allocated_storage     = 5
   max_allocated_storage = 30
   
-  instance_class        = "db.t3.micro"
+  instance_class        = "db.t4g.micro"
   multi_az              = false
   storage_type          = "gp2"
   
@@ -134,7 +134,7 @@ module "rds_postgres_database" {
 | password                | string      | Password of the main username for the database                                                   | yes      |                 |
 | allocated_storage       | number      | Allocated storage for the DB in GBs.                                                             | no       | `5`             |
 | max_allocated_storage   | number      | Upper limit to which the RDS can automatically scale the storage of the db instance              | no       | `30`            |
-| instance_class          | string      | Instance class of database                                                                       | no       | `"db.t3.micro"` |
+| instance_class          | string      | Instance class of database                                                                       | no       | `"db.t4g.micro"` |
 | multi_az                | bool        | Specifies whether the RDS is multi-AZ                                                            | no       | `false`         |
 | storage_type            | string      | Database's storage type                                                                          | no       | `"gp2"`         |
 | backup_retention_period | number      | The number of days to retain backups for                                                         | no       | `14`            |
