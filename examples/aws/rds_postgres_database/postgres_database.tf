@@ -11,7 +11,7 @@ module "rds_postgres_database" {
   password       = sensitive("Passw0rd123")
 
   allocated_storage = 5
-  instance_class    = "db.t3.micro"
+  instance_class    = "db.t4g.micro"
 
   publicly_accessible = true
 
