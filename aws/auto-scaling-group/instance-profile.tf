@@ -1,7 +1,7 @@
 resource "aws_iam_role" "asg_instance_role" {
   count = length(var.policies) > 0 ? 1 : 0
 
-  name = "${var.name}"
+  name = var.name
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -30,6 +30,6 @@ resource "aws_iam_role" "asg_instance_role" {
 resource "aws_iam_instance_profile" "instance_profile" {
   count = length(var.policies) > 0 ? 1 : 0
 
-  name = "${var.name}"
+  name = var.name
   role = aws_iam_role.asg_instance_role[0].name
 }

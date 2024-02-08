@@ -35,7 +35,7 @@ resource "aws_subnet" "instances_subnets" {
 }
 
 resource "aws_security_group" "sg" {
-  name        = "${var.name}"
+  name        = var.name
   description = "Security group for ASG, HTTP and HTTPS traffic."
   vpc_id      = aws_vpc.vpc.id
 
@@ -54,10 +54,10 @@ resource "aws_vpc_security_group_ingress_rule" "allow_http_ingress" {
 
 resource "aws_vpc_security_group_egress_rule" "allow_http_egress" {
   security_group_id = aws_security_group.sg.id
-  cidr_ipv4 = "0.0.0.0/0"
-  from_port = 80
-  ip_protocol = "tcp"
-  to_port = 80
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 80
+  ip_protocol       = "tcp"
+  to_port           = 80
 }
 
 resource "aws_vpc_security_group_egress_rule" "allow_all_egress" {
@@ -82,10 +82,20 @@ resource "aws_vpc_security_group_egress_rule" "allow_https_egress" {
   count = var.certificate_arn != null ? 1 : 0
 
   security_group_id = aws_security_group.sg.id
-  cidr_ipv4 = "0.0.0.0/0"
-  from_port = 443
-  ip_protocol = "tcp"
-  to_port = 443
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 443
+  ip_protocol       = "tcp"
+  to_port           = 443
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_ssh_ingress" {
+  count = var.key_name != null ? 1 : 0
+
+  security_group_id = aws_security_group.sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 22
+  ip_protocol       = "tcp"
+  to_port           = 22
 }
 
 resource "aws_route_table" "rt_private_subnets" {
