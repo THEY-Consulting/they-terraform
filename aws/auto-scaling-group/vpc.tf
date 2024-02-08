@@ -34,64 +34,15 @@ resource "aws_subnet" "instances_subnets" {
   }
 }
 
-# TODO: Remove ingress and egress rules,
-# see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group
 resource "aws_security_group" "sg" {
   name        = "${var.name}"
   description = "Security group for ASG, HTTP and HTTPS traffic."
   vpc_id      = aws_vpc.vpc.id
-  # ingress {
-  #   protocol    = "tcp"
-  #   from_port   = 80
-  #   to_port     = 80
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
-  #
-  # egress {
-  #   from_port   = 80
-  #   to_port     = 80
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
 
   tags = {
     Name = "${var.name}"
   }
-
-  # # Rule is only deployed if a certificate for HTTPS was provided.  
-  # dynamic "ingress" {
-  #   for_each = var.certificate_arn != null ? [1] : []
-  #   content {
-  #     protocol    = "tcp"
-  #     from_port   = 443
-  #     to_port     = 443
-  #     cidr_blocks = ["0.0.0.0/0"]
-  #   }
-  # }
-  #
-  # # Rule is only deployed if a certificate for HTTPS was provided.  
-  # dynamic "egress" {
-  #   for_each = var.certificate_arn != null ? [1] : []
-  #   content {
-  #     from_port   = 443
-  #     to_port     = 443
-  #     protocol    = "tcp"
-  #     cidr_blocks = ["0.0.0.0/0"]
-  #   }
-  # }
-  #
-  # # Rule is only deployed if variable allow_all_outbound is true.
-  # dynamic "egress" {
-  #   for_each = var.allow_all_outbound == true ? [1] : []
-  #   content {
-  #     from_port   = 0
-  #     to_port     = 0
-  #     protocol    = "-1"
-  #     cidr_blocks = ["0.0.0.0/0"]
-  #   }
-  # }
 }
-
 
 resource "aws_vpc_security_group_ingress_rule" "allow_http_ingress" {
   security_group_id = aws_security_group.sg.id
@@ -110,11 +61,32 @@ resource "aws_vpc_security_group_egress_rule" "allow_http_egress" {
 }
 
 resource "aws_vpc_security_group_egress_rule" "allow_all_egress" {
+  count = var.allow_all_outbound ? 1 : 0
+
   security_group_id = aws_security_group.sg.id
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "-1" # Semantically equivalent to all ports.
 }
 
+resource "aws_vpc_security_group_ingress_rule" "allow_https_ingress" {
+  count = var.certificate_arn != null ? 1 : 0
+
+  security_group_id = aws_security_group.sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 443
+  ip_protocol       = "tcp"
+  to_port           = 443
+}
+
+resource "aws_vpc_security_group_egress_rule" "allow_https_egress" {
+  count = var.certificate_arn != null ? 1 : 0
+
+  security_group_id = aws_security_group.sg.id
+  cidr_ipv4 = "0.0.0.0/0"
+  from_port = 443
+  ip_protocol = "tcp"
+  to_port = 443
+}
 
 resource "aws_route_table" "rt_private_subnets" {
   # Only create as many route tables as NAT Gateways that were created.
