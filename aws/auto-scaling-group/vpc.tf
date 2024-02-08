@@ -8,7 +8,7 @@ resource "aws_vpc" "vpc" {
   cidr_block       = var.vpc_cidr_block
   instance_tenancy = "default"
   tags = merge(var.tags, {
-    Name = "${var.name}-vpc"
+    Name = "${var.name}"
   })
 }
 
@@ -16,7 +16,7 @@ resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.vpc.id
 
   tags = merge(var.tags, {
-    Name = "${var.name}-ig"
+    Name = "${var.name}"
   })
 }
 
@@ -30,14 +30,14 @@ resource "aws_subnet" "instances_subnets" {
   map_public_ip_on_launch = var.public_subnets # Default is false. 
 
   tags = {
-    Name = "${var.name}-subnet-${var.availability_zones[count.index]}"
+    Name = "${var.name}-private-${var.availability_zones[count.index]}"
   }
 }
 
 # TODO: Remove ingress and egress rules,
 # see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group
 resource "aws_security_group" "sg" {
-  name        = "${var.name}-sg"
+  name        = "${var.name}"
   description = "Security group for ASG, HTTP and HTTPS traffic."
   vpc_id      = aws_vpc.vpc.id
   ingress {
@@ -55,7 +55,7 @@ resource "aws_security_group" "sg" {
   }
 
   tags = {
-    Name = "${var.name}-sg"
+    Name = "${var.name}"
   }
 
   # Rule is only deployed if a certificate for HTTPS was provided.  
@@ -113,7 +113,7 @@ resource "aws_route_table" "rt_private_subnets" {
   }
 
   tags = merge(var.tags, {
-    Name = "${var.name}-rt_private_subnets"
+    Name = "${var.name}-private"
   })
 }
 
@@ -133,7 +133,7 @@ resource "aws_route_table" "rt_public_subnets" {
   }
 
   tags = merge(var.tags, {
-    Name = "${var.name}-rt_public_subnets"
+    Name = "${var.name}-public"
   })
 }
 
@@ -163,7 +163,7 @@ resource "aws_subnet" "alb_public_subnets" {
   availability_zone = var.availability_zones[count.index]
 
   tags = {
-    Name = "${var.name}-alb_subnet-${var.availability_zones[count.index]}"
+    Name = "${var.name}-public-${var.availability_zones[count.index]}"
   }
 }
 
@@ -174,7 +174,7 @@ resource "aws_nat_gateway" "natgw" {
   subnet_id     = aws_subnet.alb_public_subnets[count.index].id
 
   tags = merge(var.tags, {
-    Name = "${var.name}-natgw"
+    Name = "${var.name}"
   })
 
   # Terraform docs recommendation:
@@ -189,6 +189,6 @@ resource "aws_eip" "natgw_eip" {
   domain = "vpc"
 
   tags = {
-    Name = "${var.name}-natgw-eip-${var.availability_zones[count.index]}"
+    Name = "${var.name}-${var.availability_zones[count.index]}"
   }
 }
