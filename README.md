@@ -9,6 +9,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
   - [Usage](#usage)
 - [Modules](#modules)
   - [AWS](#aws)
+    - [RDS postgres database](#rds-postgres-database)
     - [Lambda](#lambda)
     - [API Gateway (REST)](#api-gateway-rest)
     - [S3 Bucket](#s3-bucket)
@@ -93,6 +94,7 @@ module "lambda_with_specific_provider" {
 The location of all resources is always determined by the `region` of your aws `provider`.
 
 #### RDS postgres database
+
 ```hcl
 module "rds_postgres_database" {
   source = "github.com/THEY-Consulting/they-terraform//aws/database/rds"
@@ -100,17 +102,17 @@ module "rds_postgres_database" {
   db_name        = "app" # DBName must begin with a letter and contain only alphanumeric characters
   engine         = "postgres"
   engine_version = "15.5"
-  
+
   user_name      = "psql"
   password       = sensitive("Passw0rd123")
 
   allocated_storage     = 5
   max_allocated_storage = 30
-  
+
   instance_class        = "db.t4g.micro"
   multi_az              = false
   storage_type          = "gp2"
-  
+
   backup_retention_period = 14
   backup_window           = "03:00-04:00"
 
@@ -123,37 +125,37 @@ module "rds_postgres_database" {
   }
 }
 ```
-#### Inputs
 
-| Variable                | Type        | Description                                                                                      | Required | Default         |
-|-------------------------|-------------|--------------------------------------------------------------------------------------------------|----------|-----------------|
-| db_name                 | string      | Name of the database                                                                             | no       | `"app"`         |
-| engine                  | string      | Engine of the database                                                                           | no       | `"postgres"`    |
-| engine_version          | string      | Database's engine version                                                                        | no       | `"15.5"`        |
-| user_name               | string      | Main username for the database                                                                   | no       | `"psql"`        |
-| password                | string      | Password of the main username for the database                                                   | yes      |                 |
-| allocated_storage       | number      | Allocated storage for the DB in GBs.                                                             | no       | `5`             |
-| max_allocated_storage   | number      | Upper limit to which the RDS can automatically scale the storage of the db instance              | no       | `30`            |
+##### Inputs
+
+| Variable                | Type        | Description                                                                                      | Required | Default          |
+| ----------------------- | ----------- | ------------------------------------------------------------------------------------------------ | -------- | ---------------- |
+| db_name                 | string      | Name of the database                                                                             | no       | `"app"`          |
+| engine                  | string      | Engine of the database                                                                           | no       | `"postgres"`     |
+| engine_version          | string      | Database's engine version                                                                        | no       | `"15.5"`         |
+| user_name               | string      | Main username for the database                                                                   | no       | `"psql"`         |
+| password                | string      | Password of the main username for the database                                                   | yes      |                  |
+| allocated_storage       | number      | Allocated storage for the DB in GBs.                                                             | no       | `5`              |
+| max_allocated_storage   | number      | Upper limit to which the RDS can automatically scale the storage of the db instance              | no       | `30`             |
 | instance_class          | string      | Instance class of database                                                                       | no       | `"db.t4g.micro"` |
-| multi_az                | bool        | Specifies whether the RDS is multi-AZ                                                            | no       | `false`         |
-| storage_type            | string      | Database's storage type                                                                          | no       | `"gp2"`         |
-| backup_retention_period | number      | The number of days to retain backups for                                                         | no       | `14`            |
-| backup_window           | string      | Daily time range for when backup creation is run                                                 | no       | `03:00-04:00`   |
-| publicly_accessible     | bool        | Enable/Disable depending on whether db needs to be publicly accessible                           | no       | `true`          |
-| apply_immediately       | bool        | Specifies whether db modifications are applied immediately or during the next maintenance window | no       | `true`          |
-| tags                    | map(string) | Map of tags to assign to the RDS instance and related resources                                  | no       | `{}`            |
-| vpc_cidr_block          | string      | CIDR blocj for the VPC                                                                           | no       | `"10.0.0.0/24"` |
+| multi_az                | bool        | Specifies whether the RDS is multi-AZ                                                            | no       | `false`          |
+| storage_type            | string      | Database's storage type                                                                          | no       | `"gp2"`          |
+| backup_retention_period | number      | The number of days to retain backups for                                                         | no       | `14`             |
+| backup_window           | string      | Daily time range for when backup creation is run                                                 | no       | `03:00-04:00`    |
+| publicly_accessible     | bool        | Enable/Disable depending on whether db needs to be publicly accessible                           | no       | `true`           |
+| apply_immediately       | bool        | Specifies whether db modifications are applied immediately or during the next maintenance window | no       | `true`           |
+| tags                    | map(string) | Map of tags to assign to the RDS instance and related resources                                  | no       | `{}`             |
+| vpc_cidr_block          | string      | CIDR blocj for the VPC                                                                           | no       | `"10.0.0.0/24"`  |
 
-#### Outputs
+##### Outputs
 
 | Output               | Type   | Description                                                                  |
-|----------------------| ------ |------------------------------------------------------------------------------|
+| -------------------- | ------ | ---------------------------------------------------------------------------- |
 | db_connection_string | string | Connection String that can be used to connect to created/updated db instance |
 | hostname             | string | Hostname of the RDS instance                                                 |
 | port                 | string | Port on which database is listening on                                       |
 | engine               | object | Database engine                                                              |
 | db_username          | string | Main username for the database                                               |
-
 
 #### Lambda
 
@@ -493,42 +495,44 @@ module "auto-scaling-group" {
   }]
   permissions_boundary_arn = "arn:aws:iam::123456789012:policy/they-test-boundary"
   allow_all_outbound = false
+  multi_az_nat = true
 }
 
 ```
 
 ##### Inputs
 
-| Variable                 | Type         | Description                                                                                                                          | Required | Default         |
-|--------------------------|--------------|--------------------------------------------------------------------------------------------------------------------------------------|----------|-----------------|
-| name                     | string       | Name of the Auto Scaling group (ASG)                                                                                                 | yes      |                 |
-| ami_id                   | string       | ID of AMI used in EC2 instances of ASG                                                                                               | yes      |                 |
-| instance_type            | string       | Instance type used to deploy instances in ASG                                                                                        | yes      |                 |
-| desired_capacity         | number       | The number of EC2 instances that will be running in the ASG                                                                          | no       | `1`             |
-| min_size                 | number       | The minimum number of EC2 instances in the ASG                                                                                       | no       | `1`             |
-| max_size                 | number       | The maximum number of EC2 instances in the ASG                                                                                       | no       | `1`             |
-| key_name                 | string       | Name of key pair used for the instances                                                                                              | no       | `null`          |
-| user_data_file_name      | string       | The name of the local file in the working directory with the user data used in the instances of the ASG                              | no       | `null`          |
-| user_data                | string       | User data to provide when launching instances of ASG. Use this to provide plain text instead of user_data_file_name.                 | no       | `null`          |
-| availability_zones       | list(string) | List of availability zones (AZs) names. A subnet is created for every AZ and the ASG instances are deployed across the different AZs | yes      |                 |
-| vpc_cidr_block           | string       | The CIDR block of private IP addresses of the VPC. The subnets will be located within this CIDR block.                               | no       | `"10.0.0.0/16"` |
-| public_subnets           | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                             | no       | `false`         |
-| certificate_arn          | string       | ARN of certificate used to setup HTTPs in Application Load Balancer                                                                  | no       | `null`          |
-| tags                     | map(string)  | Additional tags for the components of this module                                                                                    | no       | `{}`            |
-| health_check_path        | string       | Destination for the health check request                                                                                             | no       | `"/"`           |
-| policies                 | list(object) | List of policies to attach to the ASG instances via IAM Instance Profile                                                             | no       | `[]`            |
-| policies.\*.name         | string       | Name of the inline policy                                                                                                            | yes      |                 |
-| policies.\*.policy       | string       | Policy document as a JSON formatted string                                                                                           | yes      |                 |
-| permissions_boundary_arn | string       | ARN of the permissions boundary to attach to the IAM Instance Profile                                                                | no       | `null`          |
-| allow_all_outbound       | bool         | Allow all outbound traffic from instances                                                                                            | no       | `false`         |
-| health_check_type        | string       | Controls how the health check for the EC2 instances under the ASG is done                                                            | no       | `"ELB"`         |
+| Variable                 | Type         | Description                                                                                                                                   | Required | Default         |
+| ------------------------ | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------- |
+| name                     | string       | Name of the Auto Scaling group (ASG)                                                                                                          | yes      |                 |
+| ami_id                   | string       | ID of AMI used in EC2 instances of ASG                                                                                                        | yes      |                 |
+| instance_type            | string       | Instance type used to deploy instances in ASG                                                                                                 | yes      |                 |
+| desired_capacity         | number       | The number of EC2 instances that will be running in the ASG                                                                                   | no       | `1`             |
+| min_size                 | number       | The minimum number of EC2 instances in the ASG                                                                                                | no       | `1`             |
+| max_size                 | number       | The maximum number of EC2 instances in the ASG                                                                                                | no       | `1`             |
+| key_name                 | string       | Name of key pair used for the instances                                                                                                       | no       | `null`          |
+| user_data_file_name      | string       | The name of the local file in the working directory with the user data used in the instances of the ASG                                       | no       | `null`          |
+| user_data                | string       | User data to provide when launching instances of ASG. Use this to provide plain text instead of user_data_file_name.                          | no       | `null`          |
+| availability_zones       | list(string) | List of availability zones (AZs) names. A subnet is created for every AZ and the ASG instances are deployed across the different AZs          | yes      |                 |
+| vpc_cidr_block           | string       | The CIDR block of private IP addresses of the VPC. The subnets will be located within this CIDR block.                                        | no       | `"10.0.0.0/16"` |
+| public_subnets           | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                                      | no       | `false`         |
+| certificate_arn          | string       | ARN of certificate used to setup HTTPs in Application Load Balancer                                                                           | no       | `null`          |
+| tags                     | map(string)  | Additional tags for the components of this module                                                                                             | no       | `{}`            |
+| health_check_path        | string       | Destination for the health check request                                                                                                      | no       | `"/"`           |
+| policies                 | list(object) | List of policies to attach to the ASG instances via IAM Instance Profile                                                                      | no       | `[]`            |
+| policies.\*.name         | string       | Name of the inline policy                                                                                                                     | yes      |                 |
+| policies.\*.policy       | string       | Policy document as a JSON formatted string                                                                                                    | yes      |                 |
+| permissions_boundary_arn | string       | ARN of the permissions boundary to attach to the IAM Instance Profile                                                                         | no       | `null`          |
+| allow_all_outbound       | bool         | Allow all outbound traffic from instances                                                                                                     | no       | `false`         |
+| health_check_type        | string       | Controls how the health check for the EC2 instances under the ASG is done                                                                     | no       | `"ELB"`         |
+| multi_az_nat             | bool         | Specify true to deploy a NAT Gateway in each availability zone (AZ) of the deployment. Otherwise, only a single NAT Gateway will be deployed. | no       | `false`         |
 
 ##### Outputs
 
-| Output      | Type   | Description                                          |
-|-------------| ------ |------------------------------------------------------|
-| alb_dns     | string | DNS of the Application Load Balancer for the ASG     |
-| alb_zone_id | string | Zone ID of the application load balancer for the ASG |
+| Output      | Type   | Description                                         |
+| ----------- | ------ | --------------------------------------------------- |
+| alb_dns     | string | DNS of the Application Load Balancer of the ASG     |
+| alb_zone_id | string | Zone ID of the Application Load Balancer of the ASG |
 
 #### GitHub OpenID role
 
@@ -567,7 +571,7 @@ module "github_action_role" {
 ##### Inputs
 
 | Variable                          | Type         | Description                                                                                                                                                                                                   | Required | Default |
-|-----------------------------------|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
+| --------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
 | name                              | string       | Name of the role                                                                                                                                                                                              | yes      |         |
 | repo                              | string       | Repository that is authorized to assume this role                                                                                                                                                             | yes      |         |
 | policies                          | list(object) | List of additional inline policies to attach to the app                                                                                                                                                       | no       | `[]`    |
@@ -644,7 +648,7 @@ module "function_app" {
     name = "node"
     version = "~18"
   }
-  
+
   environment = {
     ENV_VAR_1 = "value1"
     ENV_VAR_2 = "value2"
@@ -693,7 +697,7 @@ module "function_app" {
 ##### Inputs
 
 | Variable                                           | Type         | Description                                                                                                             | Required | Default                                |
-|----------------------------------------------------|--------------|-------------------------------------------------------------------------------------------------------------------------| -------- |----------------------------------------|
+| -------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------- |
 | name                                               | string       | Name of the function app                                                                                                | yes      |                                        |
 | source_dir                                         | string       | Directory containing the function code                                                                                  | yes      |                                        |
 | location                                           | string       | The Azure region where the resources should be created                                                                  | yes      |                                        |
@@ -741,7 +745,7 @@ module "function_app" {
 ##### Outputs
 
 | Output            | Type         | Description                        |
-|-------------------|--------------|------------------------------------|
+| ----------------- | ------------ | ---------------------------------- |
 | id                | string       | The ID of the Function App         |
 | build             | string       | Build output                       |
 | archive_file_path | string       | Path to the generated archive file |
@@ -849,7 +853,7 @@ module "vm" {
   name                = "they-test-vm"
   resource_group_name = "they-dev"
 
-  vm_hostname       = "vm" 
+  vm_hostname       = "vm"
   vm_os             = "linux"
   vm_size           = "Standard_B2s"
   vm_username       = "they"
@@ -864,7 +868,7 @@ module "vm" {
     sku       = "22_04-lts-gen2"
     version   = "latest"
   }
-  
+
   network = {
     preexisting_name = "they-dev-vnet"
     address_space    = ["10.0.0.0/16"]
@@ -876,7 +880,7 @@ module "vm" {
     next_hop_type  = "Internet"
   }]
   public_ip = true
-  
+
   allow_ssh = true
   allow_rdp = true
   security_rules = [{
@@ -895,7 +899,7 @@ module "vm" {
 ##### Inputs
 
 | Variable                              | Type         | Description                                                                                      | Required | Default                                                                                |
-|---------------------------------------|--------------|--------------------------------------------------------------------------------------------------|----------|----------------------------------------------------------------------------------------|
+| ------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------ | -------- | -------------------------------------------------------------------------------------- |
 | name                                  | string       | Name of the vm and related resources                                                             | yes      |                                                                                        |
 | resource_group_name                   | string       | The name of the resource group in which to create the resources                                  | yes      |                                                                                        |
 | vm_hostname                           | string       | Hostname of the vm                                                                               | no       | `var.name`                                                                             |
@@ -903,7 +907,7 @@ module "vm" {
 | vm_size                               | string       | The size of the VM to create                                                                     | no       | `"Standard_B2s"`                                                                       |
 | vm_username                           | string       | The username for the VM admin user                                                               | no       | `"they"`                                                                               |
 | vm_password                           | string       | The password of the VM admin user                                                                | yes      |                                                                                        |
-| vm_public_ssh_key                     | string       | Public SSH key to use for the VM, required for linux VMs                                         | yes*     |                                                                                        |
+| vm_public_ssh_key                     | string       | Public SSH key to use for the VM, required for linux VMs                                         | yes\*    |                                                                                        |
 | custom_data                           | string       | The custom data to setup the VM                                                                  | no       | `null`                                                                                 |
 | vm_image                              | object       | The image to use for the VM                                                                      | no       | see sub fields                                                                         |
 | vm_image.publisher                    | string       | Publisher of the VM image                                                                        | no       | `"Canonical"`                                                                          |
@@ -933,11 +937,10 @@ module "vm" {
 | security_rules.destination_port_range | string       | Destination port range of the security rule                                                      | yes      |                                                                                        |
 | tags                                  | map(string)  | Map of tags to assign to the resources                                                           | no       | `{}`                                                                                   |
 
-
 ##### Outputs
 
 | Output                    | Type   | Description                      |
-|---------------------------|--------|----------------------------------|
+| ------------------------- | ------ | -------------------------------- |
 | public_ip                 | string | Public ip if enabled             |
 | network_name              | string | Name of the network              |
 | subnet_id                 | string | Id of the subnet                 |
