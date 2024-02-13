@@ -1,10 +1,14 @@
 # --- RESOURCES / MODULES ---
 
+locals {
+  api_key = "secret-test-api-gateway-key"
+}
+
 module "lambda_api_gateway_with_access_key" {
   # source = "github.com/THEY-Consulting/they-terraform//aws/lambda/gateway"
   source = "../../../aws/lambda/gateway"
 
-  name = "they-test-api-gateway-with-access-key"
+  name = "${terraform.workspace}-they-test-api-gateway-with-access-key"
   endpoints = [
     {
       path          = "protected"
@@ -21,7 +25,7 @@ module "lambda_api_gateway_with_access_key" {
     }
   ]
   api_key = {
-    value = "secret-test-api-gateway-key"
+    value = local.api_key
   }
 }
 
