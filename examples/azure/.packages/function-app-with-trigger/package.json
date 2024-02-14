@@ -6,7 +6,7 @@
     "build": "tsc"
   },
   "devDependencies": {
-    "@azure/functions": "3.5.1",
+    "@azure/functions": "4.0.1",
     "@types/node": "^20.9.2",
     "typescript": "5.2.2"
   }

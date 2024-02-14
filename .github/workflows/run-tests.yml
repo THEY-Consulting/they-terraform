@@ -8,6 +8,11 @@ permissions:
   id-token: write
   contents: read
 
+# currently only one can run at a time
+concurrency:
+  group: test
+  cancel-in-progress: false
+
 jobs:
   deploy:
     name: Test
@@ -47,4 +52,3 @@ jobs:
             terraform test
             cd $cwd
           done
-

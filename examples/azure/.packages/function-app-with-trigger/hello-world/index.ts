@@ -1,8 +1,9 @@
-import type { AzureFunction, Context } from '@azure/functions';
+import { app, EventGridEvent, InvocationContext } from '@azure/functions';
 
-const handler: AzureFunction = async (context: Context, event): Promise<void> => {
-  const trigger = event.data.url;
-  context.log(`Hello World triggered by ${trigger}!`);
+const main = async (event: EventGridEvent, context: InvocationContext) => {
+  context.log('Event:', event);
 };
 
-export default handler;
+app.eventGrid('hello-world', {
+  handler: main,
+});
