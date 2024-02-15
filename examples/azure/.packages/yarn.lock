@@ -16,6 +16,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@azure/functions@npm:4.0.1":
+  version: 4.0.1
+  resolution: "@azure/functions@npm:4.0.1"
+  dependencies:
+    long: ^4.0.0
+    undici: ^5.13.0
+  checksum: 1aefbab740b70c6d274fe75e287051ac6593b6d39156952491c68c0b4cf93d1b5d8dda48a8e2ae17ae359b4b2b252255555b39904f132ef8be870ac511fcf073
+  languageName: node
+  linkType: hard
+
 "@azure/functions@npm:^4.1.0":
   version: 4.1.0
   resolution: "@azure/functions@npm:4.1.0"
@@ -215,7 +225,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@they/example-typescript-function-app-with-trigger@workspace:function-app-with-trigger"
   dependencies:
-    "@azure/functions": 3.5.1
+    "@azure/functions": 4.0.1
     "@types/node": ^20.9.2
     typescript: 5.2.2
   languageName: unknown
