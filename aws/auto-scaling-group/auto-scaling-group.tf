@@ -25,6 +25,8 @@ resource "aws_autoscaling_group" "asg" {
   dynamic "tag" {
     for_each = merge(data.aws_default_tags.current.tags, var.tags, {
       Name = var.name
+      # used to trigger refreshs based on tags. see: https://github.com/hashicorp/terraform-provider-aws/issues/16849#issuecomment-764941664
+      LaunchTemplateVersion = aws_launch_template.launch_template.latest_version
     })
     content {
       key                 = tag.key
@@ -32,6 +34,11 @@ resource "aws_autoscaling_group" "asg" {
       propagate_at_launch = true # Enables propagation of the tag to
       # Amazon EC2 instances launched via this ASG.
     }
+  }
+
+  instance_refresh {
+    strategy = "Rolling"
+    triggers = ["tag"]
   }
 
 }
