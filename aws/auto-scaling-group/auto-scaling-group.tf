@@ -25,8 +25,12 @@ resource "aws_autoscaling_group" "asg" {
   dynamic "tag" {
     for_each = merge(data.aws_default_tags.current.tags, var.tags, {
       Name = var.name
-      # used to trigger refreshs based on tags. see: https://github.com/hashicorp/terraform-provider-aws/issues/16849#issuecomment-764941664
+      # Allows enforcing instance_refresh when the launch_template changes. Only
+      # works when instance_refresh trigger "tag" is set. A somewhat similar
+      # approach/solution was proposed here:
+      # https://github.com/hashicorp/terraform-provider-aws/issues/16849#issuecomment-764941664
       LaunchTemplateVersion = aws_launch_template.launch_template.latest_version
+      NewTag                = "ok"
     })
     content {
       key                 = tag.key
