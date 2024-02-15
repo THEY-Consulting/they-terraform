@@ -30,7 +30,6 @@ resource "aws_autoscaling_group" "asg" {
       # approach/solution was proposed here:
       # https://github.com/hashicorp/terraform-provider-aws/issues/16849#issuecomment-764941664
       LaunchTemplateVersion = aws_launch_template.launch_template.latest_version
-      NewTag                = "ok"
     })
     content {
       key                 = tag.key
