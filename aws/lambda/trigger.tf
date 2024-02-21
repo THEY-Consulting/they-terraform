@@ -3,7 +3,7 @@
 resource "aws_cloudwatch_event_rule" "cw_event_rule" {
   count = var.cron_trigger != null ? 1 : 0
 
-  name                = var.cron_trigger.name
+  name                = coalesce(var.cron_trigger.name, "trigger-${var.name}")
   description         = var.cron_trigger.description
   schedule_expression = var.cron_trigger.schedule
 
@@ -13,7 +13,7 @@ resource "aws_cloudwatch_event_rule" "cw_event_rule" {
 resource "aws_cloudwatch_event_target" "cw_event_target" {
   count = var.cron_trigger != null ? 1 : 0
 
-  target_id = var.cron_trigger.name
+  target_id = coalesce(var.cron_trigger.name, "target-${var.name}")
   arn       = aws_lambda_function.lambda_func.arn
   rule      = aws_cloudwatch_event_rule.cw_event_rule.0.name
   input = jsonencode({
@@ -24,7 +24,7 @@ resource "aws_cloudwatch_event_target" "cw_event_target" {
 resource "aws_lambda_permission" "cron_trigger_lambda_func_permission" {
   count = var.cron_trigger != null ? 1 : 0
 
-  statement_id  = "allow-execution-${var.cron_trigger.name}"
+  statement_id  = "allow-execution-${aws_cloudwatch_event_rule.cw_event_rule.0.name}"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.lambda_func.function_name
   principal     = "events.amazonaws.com"

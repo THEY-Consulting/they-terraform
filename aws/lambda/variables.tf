@@ -48,7 +48,7 @@ variable "cloudwatch" {
 variable "cron_trigger" {
   description = "Cron trigger configuration."
   type = object({
-    name        = string
+    name        = optional(string)
     description = optional(string)
     schedule    = string
     input       = optional(string) // Valid JSON text passed to the target.
