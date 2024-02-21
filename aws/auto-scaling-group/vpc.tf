@@ -115,7 +115,7 @@ resource "aws_route_table" "rt_private_subnets" {
   # forward internet traffic to the internet gateway.
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_nat_gateway.natgw[count.index].id
+    nat_gateway_id = aws_nat_gateway.natgw[count.index].id
   }
 
   tags = merge(var.tags, {
