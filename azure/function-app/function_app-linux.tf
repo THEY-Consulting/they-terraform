@@ -19,7 +19,7 @@ resource "azurerm_linux_function_app" "function_app" {
       "languageWorkers:node:arguments" = "--max-old-space-size=1024"
     } : {},
     var.storage_trigger != null ? {
-      TriggerStorageConnection = data.azurerm_storage_account.trigger_storage_account.0.primary_connection_string
+      TriggerStorageConnection = local.trigger_storage_account.primary_connection_string
     } : {},
     var.identity != null ? {
       AZURE_CLIENT_ID = data.azurerm_user_assigned_identity.identity.0.client_id
