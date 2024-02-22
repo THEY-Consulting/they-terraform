@@ -19,7 +19,9 @@
  * For ease of use, we provide a local variable that contains the correct storage account data source.
  */
 data "azurerm_storage_account" "trigger_storage_account_managed" {
-  count = var.storage_trigger != null && var.storage_trigger.trigger_storage_account_name == null ? 1 : 0
+  count = var.storage_trigger != null ? (
+    var.storage_trigger.trigger_storage_account_name == null ? 1 : 0
+  ) : 0
 
   name                = data.azurerm_storage_account.storage_account.name
   resource_group_name = data.azurerm_storage_account.storage_account.resource_group_name
@@ -29,7 +31,9 @@ data "azurerm_storage_account" "trigger_storage_account_managed" {
   ]
 }
 data "azurerm_storage_account" "trigger_storage_account_external" {
-  count = var.storage_trigger != null && var.storage_trigger.trigger_storage_account_name != null ? 1 : 0
+  count = var.storage_trigger != null ? (
+    var.storage_trigger.trigger_storage_account_name != null ? 1 : 0
+  ) : 0
 
   name                = var.storage_trigger.trigger_storage_account_name
   resource_group_name = var.storage_trigger.trigger_resource_group_name
