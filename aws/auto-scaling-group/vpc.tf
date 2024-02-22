@@ -114,7 +114,7 @@ resource "aws_route_table" "rt_private_subnets" {
   # NAT gateway lies within a public subnet that can 
   # forward internet traffic to the internet gateway.
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.natgw[count.index].id
   }
 
