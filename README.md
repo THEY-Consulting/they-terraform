@@ -242,7 +242,7 @@ module "lambda" {
 ##### Inputs
 
 | Variable                      | Type         | Description                                                                                                                        | Required | Default                    |
-| ----------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------- |
+| ----------------------------- | ------------ |------------------------------------------------------------------------------------------------------------------------------------|----------|----------------------------|
 | name                          | string       | Name of the lambda function                                                                                                        | yes      |                            |
 | description                   | string       | Description of the lambda function                                                                                                 | yes      |                            |
 | source_dir                    | string       | Directory containing the lambda function                                                                                           | yes      |                            |
@@ -264,7 +264,7 @@ module "lambda" {
 | cloudwatch                    | object       | CloudWatch configuration                                                                                                           | no       | see sub fields             |
 | cloudwatch.retention_in_days  | number       | Retention for the CloudWatch log group                                                                                             | no       | `30`                       |
 | cron_trigger                  | object       | Configuration to trigger the lambda through a cron schedule                                                                        | no       | `null`                     |
-| cron_trigger.name             | string       | Name of the trigger                                                                                                                | (yes)    |                            |
+| cron_trigger.name             | string       | Name of the trigger, must be unique for each lambda                                                                                | no       | `null`                     |
 | cron_trigger.description      | string       | Description of the trigger                                                                                                         | no       | `null`                     |
 | cron_trigger.schedule         | string       | Schedule expression for the trigger                                                                                                | (yes)    |                            |
 | cron_trigger.input            | string       | Valid JSON test passed to the trigger target                                                                                       | no       | `null`                     |
