@@ -99,7 +99,7 @@ The location of all resources is always determined by the `region` of your aws `
 module "rds_postgres_database" {
   source = "github.com/THEY-Consulting/they-terraform//aws/database/rds"
 
-  db_name        = "app" # DBName must begin with a letter and contain only alphanumeric characters
+  db_identifier  = "dev-they-terraform-products" # Unique name used to identify your database in the aws console
   engine         = "postgres"
   engine_version = "15.5"
 
@@ -130,12 +130,12 @@ module "rds_postgres_database" {
 
 | Variable                | Type        | Description                                                                                      | Required | Default          |
 | ----------------------- | ----------- | ------------------------------------------------------------------------------------------------ | -------- | ---------------- |
-| db_name                 | string      | Name of the database                                                                             | no       | `"app"`          |
+| db_identifier           | string      | Unique name used to identify your database in the aws console                                    | yes      |                  |
 | engine                  | string      | Engine of the database                                                                           | no       | `"postgres"`     |
 | engine_version          | string      | Database's engine version                                                                        | no       | `"15.5"`         |
 | user_name               | string      | Main username for the database                                                                   | no       | `"psql"`         |
 | password                | string      | Password of the main username for the database                                                   | yes      |                  |
-| allocated_storage       | number      | Allocated storage for the DB in GBs.                                                             | no       | `5`              |
+| allocated_storage       | number      | Allocated storage for the DB in GBs                                                              | no       | `5`              |
 | max_allocated_storage   | number      | Upper limit to which the RDS can automatically scale the storage of the db instance              | no       | `30`             |
 | instance_class          | string      | Instance class of database                                                                       | no       | `"db.t4g.micro"` |
 | multi_az                | bool        | Specifies whether the RDS is multi-AZ                                                            | no       | `false`          |
@@ -146,6 +146,7 @@ module "rds_postgres_database" {
 | apply_immediately       | bool        | Specifies whether db modifications are applied immediately or during the next maintenance window | no       | `true`           |
 | tags                    | map(string) | Map of tags to assign to the RDS instance and related resources                                  | no       | `{}`             |
 | vpc_cidr_block          | string      | CIDR blocj for the VPC                                                                           | no       | `"10.0.0.0/24"`  |
+| skip_final_snapshot     | bool        | Creates final DB snapshot when deleting the database. If true, no snapshot is created            | no       | `false`          |
 
 ##### Outputs
 
@@ -242,7 +243,7 @@ module "lambda" {
 ##### Inputs
 
 | Variable                      | Type         | Description                                                                                                                        | Required | Default                    |
-| ----------------------------- | ------------ |------------------------------------------------------------------------------------------------------------------------------------|----------|----------------------------|
+| ----------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------- |
 | name                          | string       | Name of the lambda function                                                                                                        | yes      |                            |
 | description                   | string       | Description of the lambda function                                                                                                 | yes      |                            |
 | source_dir                    | string       | Directory containing the lambda function                                                                                           | yes      |                            |

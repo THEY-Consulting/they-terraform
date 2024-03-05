@@ -1,6 +1,5 @@
 resource "aws_db_instance" "main" {
-  db_name    = var.db_name
-  identifier = "${terraform.workspace}-${var.tags.Project}-${var.db_name}"
+  identifier = var.db_identifier
 
   engine                     = var.engine
   engine_version             = var.engine_version
@@ -23,7 +22,7 @@ resource "aws_db_instance" "main" {
   db_subnet_group_name   = aws_db_subnet_group.main.name
   vpc_security_group_ids = [aws_security_group.main.id]
 
-  skip_final_snapshot = true
+  skip_final_snapshot = var.skip_final_snapshot
   publicly_accessible = var.publicly_accessible
   apply_immediately   = var.apply_immediately
   tags                = var.tags

@@ -1,7 +1,6 @@
-variable "db_name" {
-  description = "The name of the database."
+variable "db_identifier" {
+  description = "Unique name used to identify your database in the aws console"
   type        = string
-  default     = "app"
 }
 
 variable "engine" {
@@ -48,6 +47,12 @@ variable "instance_class" {
 
 variable "multi_az" {
   description = "Specifies if the RDS instance is multi-AZ."
+  type        = bool
+  default     = false
+}
+
+variable "skip_final_snapshot" {
+  description = "Determines whether a final DB snapshot is created before the DB instance is deleted. If true is specified, no DBSnapshot is created."
   type        = bool
   default     = false
 }
