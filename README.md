@@ -130,7 +130,7 @@ module "rds_postgres_database" {
 
 | Variable                | Type        | Description                                                                                      | Required | Default          |
 | ----------------------- | ----------- | ------------------------------------------------------------------------------------------------ | -------- | ---------------- |
-| db_identifier           | string      | Unique name used to identify your database in the aws console                                    | yes      |                |
+| db_identifier           | string      | Unique name used to identify your database in the aws console                                    | yes      |                  |
 | engine                  | string      | Engine of the database                                                                           | no       | `"postgres"`     |
 | engine_version          | string      | Database's engine version                                                                        | no       | `"15.5"`         |
 | user_name               | string      | Main username for the database                                                                   | no       | `"psql"`         |
