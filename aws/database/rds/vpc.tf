@@ -15,7 +15,7 @@ resource "aws_subnet" "instances_subnets" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
-    Name = "${var.db_name}-subnet-${count.index}"
+    Name = "${var.db_identifier}-subnet-${count.index}"
   }
 }
 
