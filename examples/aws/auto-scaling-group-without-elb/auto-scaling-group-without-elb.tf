@@ -23,7 +23,3 @@ module "auto-scaling-group" {
 
 # --- OUTPUT ---
 
-output "alb_dns" {
-  value = module.auto-scaling-group.alb_dns
-}
-
