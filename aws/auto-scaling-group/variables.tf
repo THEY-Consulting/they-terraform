@@ -55,6 +55,12 @@ variable "tags" {
   default     = {}
 }
 
+variable "loadbalancer_disabled" {
+  description = "Indicates whether the load balancer is to be disabled. By default enabled"
+  type        = bool
+  default     = false
+}
+
 variable "availability_zones" {
   description = "List of availability zones (AZs). A subnet is created for every AZ and the ASG instances are deployed across the different AZs."
   type        = list(string)
