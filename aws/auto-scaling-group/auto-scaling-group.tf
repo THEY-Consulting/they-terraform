@@ -6,7 +6,7 @@ resource "aws_autoscaling_group" "asg" {
   desired_capacity     = var.desired_capacity
   min_size             = var.min_size
   max_size             = var.max_size
-  target_group_arns    = [aws_lb_target_group.tg.arn]
+  target_group_arns    = var.loadbalancer_disabled ? [] : [aws_lb_target_group.tg.arn]
   health_check_type    = var.health_check_type
   termination_policies = ["OldestInstance"]
 

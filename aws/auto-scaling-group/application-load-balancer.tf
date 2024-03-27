@@ -1,4 +1,5 @@
 resource "aws_lb" "lb" {
+  count              = var.loadbalancer_disabled ? 0 : 1
   name               = var.name
   load_balancer_type = "application"
   security_groups    = [aws_security_group.sg.id]
@@ -13,14 +14,14 @@ resource "aws_lb_listener" "lb_listener_only_http" {
   # Forward HTTP to target group, if a certificate is
   # provided, HTTP traffic will be redirected to HTTPs
   # with another resource.
-  count             = var.certificate_arn == null ? 1 : 0
-  load_balancer_arn = aws_lb.lb.arn
+  count             =  var.loadbalancer_disabled || var.certificate_arn != null ? 0 : 1
+  load_balancer_arn = aws_lb.lb[0].arn #Because aws_lb.lb has "count" set, its attributes must be accessed on specific instances.
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.tg.arn
+    target_group_arn = var.loadbalancer_disabled ? null : aws_lb_target_group.tg.arn
   }
 }
 
@@ -28,7 +29,7 @@ resource "aws_lb_listener" "lb_listener_redirect_http" {
   # Redirect HTTP traffic to HTTPs if a certificate was
   # provided.
   count             = var.certificate_arn != null ? 1 : 0
-  load_balancer_arn = aws_lb.lb.arn
+  load_balancer_arn = var.loadbalancer_disabled ? null : aws_lb.lb[0].arn #see line 18
   port              = "80"
   protocol          = "HTTP"
 
@@ -47,14 +48,14 @@ resource "aws_lb_listener" "lb_listener_https" {
   # Do not create an HTTPs listener,
   # if no certificate_arn is provided.
   count             = var.certificate_arn != null ? 1 : 0
-  load_balancer_arn = aws_lb.lb.arn
+  load_balancer_arn = var.loadbalancer_disabled ? null : aws_lb.lb[0].arn # see line 18/32 
   port              = "443"
   protocol          = "HTTPS"
   certificate_arn   = var.certificate_arn
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.tg.arn
+    target_group_arn = var.loadbalancer_disabled ? null : aws_lb_target_group.tg.arn
   }
 }
 
