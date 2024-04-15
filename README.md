@@ -527,6 +527,7 @@ module "auto-scaling-group" {
 | allow_all_outbound       | bool         | Allow all outbound traffic from instances                                                                                                     | no       | `false`         |
 | health_check_type        | string       | Controls how the health check for the EC2 instances under the ASG is done                                                                     | no       | `"ELB"`         |
 | multi_az_nat             | bool         | Specify true to deploy a NAT Gateway in each availability zone (AZ) of the deployment. Otherwise, only a single NAT Gateway will be deployed. | no       | `false`         |
+| loadbalancer_disabled    | bool         | Specify true to use the ASG without an ELB. By default, an ELB will be used.                                                                  | no       | `false`         |
 
 ##### Outputs
 
