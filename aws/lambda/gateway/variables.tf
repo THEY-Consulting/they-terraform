@@ -20,6 +20,12 @@ variable "stage_name" {
   default     = "dev"
 }
 
+variable "base_path" {
+  description = "The base path to use for the api gateway."
+  type        = string
+  default     = null
+}
+
 variable "endpoints" {
   description = "The endpoints to create for the api gateway."
   type = list(object({

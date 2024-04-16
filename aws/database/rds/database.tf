@@ -22,9 +22,9 @@ resource "aws_db_instance" "main" {
   db_subnet_group_name   = aws_db_subnet_group.main.name
   vpc_security_group_ids = [aws_security_group.main.id]
 
-  skip_final_snapshot = var.skip_final_snapshot
+  skip_final_snapshot       = var.skip_final_snapshot
   final_snapshot_identifier = "${var.db_identifier}-${formatdate("DD-MMM-YYYY", timestamp())}"
-  publicly_accessible = var.publicly_accessible
-  apply_immediately   = var.apply_immediately
-  tags                = var.tags
+  publicly_accessible       = var.publicly_accessible
+  apply_immediately         = var.apply_immediately
+  tags                      = var.tags
 }

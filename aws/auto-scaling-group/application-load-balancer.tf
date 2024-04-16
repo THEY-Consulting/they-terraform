@@ -14,7 +14,7 @@ resource "aws_lb_listener" "lb_listener_only_http" {
   # Forward HTTP to target group, if a certificate is
   # provided, HTTP traffic will be redirected to HTTPs
   # with another resource.
-  count             =  var.loadbalancer_disabled || var.certificate_arn != null ? 0 : 1
+  count             = var.loadbalancer_disabled || var.certificate_arn != null ? 0 : 1
   load_balancer_arn = aws_lb.lb[0].arn #Because aws_lb.lb has "count" set, its attributes must be accessed on specific instances.
   port              = "80"
   protocol          = "HTTP"
