@@ -537,7 +537,7 @@ module "auto-scaling-group" {
 | alb_dns     | string | DNS of the Application Load Balancer of the ASG     |
 | alb_zone_id | string | Zone ID of the Application Load Balancer of the ASG |
 
-#### Azure OpenID
+#### Azure OpenID role
 
 ```hcl
 module "azure_openid" {
@@ -595,6 +595,7 @@ module "azure_openid" {
 |--------------------| ------ |---------------------------------|
 | role_name          | string | The name of the role            |
 | role_arn           | string | The ARN of the role             |
+| identity_name      | string | Name of the azure identity      |
 | identity_client_id | string | Client Id of the azure identity |
 
 #### GitHub OpenID role
