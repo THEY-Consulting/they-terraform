@@ -14,6 +14,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [API Gateway (REST)](#api-gateway-rest)
     - [S3 Bucket](#s3-bucket)
     - [Auto Scaling group](#auto-scaling-group)
+    - [Azure OpenID role](#azure-openid-role)
     - [GitHub OpenID role](#github-openid-role)
     - [setup-tfstate](#setup-tfstate)
   - [Azure](#azure)
@@ -535,6 +536,66 @@ module "auto-scaling-group" {
 | ----------- | ------ | --------------------------------------------------- |
 | alb_dns     | string | DNS of the Application Load Balancer of the ASG     |
 | alb_zone_id | string | Zone ID of the Application Load Balancer of the ASG |
+
+#### Azure OpenID
+
+```hcl
+module "azure_openid" {
+  source = "github.com/THEY-Consulting/they-terraform//aws/openid/azure"
+
+  name = "they-test"
+
+  azure_resource_group_name = "they-dev"
+  azure_location            = "Germany West Central"
+  azure_identity_name = "existing-identity-name"
+  
+  policies = [
+    {
+      name = "they-test-policy"
+      policy = jsonencode({
+        Version : "2012-10-17",
+        Statement : [
+          {
+            Effect : "Allow",
+            Action : [
+              "dynamodb:Query",
+            ],
+            Resource : [
+              "arn:aws:dynamodb:::table/they-test-table",
+            ]
+          }
+        ]
+      })
+    },
+  ],
+  inline = true
+  boundary_policy_arn = "arn:aws:iam::123456789012:policy/they-test-boundary"
+  INSECURE_allowAccountToAssumeRole = false # Do not enable this in production!
+}
+```
+
+##### Inputs
+
+| Variable                          | Type         | Description                                                                                                                                                                                                   | Required | Default |
+|-----------------------------------| ------------ |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
+| name                              | string       | Name of the role                                                                                                                                                                                              | yes      |         |
+| azure_resource_group_name         | string       | The Azure resource group                                                                                                                                                                                      | yes      |         |
+| azure_location                    | string       | The Azure region                                                                                                                                                                                              | yes      |         |
+| azure_identity_name               | string       | Name of an existing azure identity, if not provided, a new one will be created                                                                                                                                | no       | `null`  |
+| policies                          | list(object) | List of additional inline policies to attach to the app                                                                                                                                                       | no       | `[]`    |
+| policies.\*.name                  | string       | Name of the inline policy                                                                                                                                                                                     | yes      |         |
+| policies.\*.policy                | string       | Policy document as a JSON formatted string                                                                                                                                                                    | yes      |         |
+| inline                            | bool         | If true, the policies will be created as inline policies. If false, they will be created as managed policies. Changing this will not necessarily remove the old policies correctly, check in the AWS console! | no       | `true`  |
+| boundary_policy_arn               | string       | ARN of a boundary policy to attach to the app                                                                                                                                                                 | no       | `null`  |
+| INSECURE_allowAccountToAssumeRole | bool         | Set to true if you want to allow the account to assume the role. This is insecure and should only be used for testing. Do not enable this in production!                                                      | no       | `false` |
+
+##### Outputs
+
+| Output             | Type   | Description                     |
+|--------------------| ------ |---------------------------------|
+| role_name          | string | The name of the role            |
+| role_arn           | string | The ARN of the role             |
+| identity_client_id | string | Client Id of the azure identity |
 
 #### GitHub OpenID role
 
