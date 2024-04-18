@@ -299,6 +299,10 @@ module "lambda" {
 #### API Gateway (REST)
 
 ```hcl
+data "aws_s3_object" "truststore" {
+  bucket = "they-test-api-gateway-with-domain-assets"
+  key    = "certificates/truststore.pem"
+}
 module "api_gateway" {
   source = "github.com/THEY-Consulting/they-terraform//aws/lambda/gateway"
 
@@ -333,9 +337,11 @@ module "api_gateway" {
   }
 
   domain = {
-    certificate_arn = "some:certificate:arn"
-    zone_name       = "they-code.de."
-    domain          = "they-test-lambda.they-code.de"
+    certificate_arn       = "some:certificate:arn"
+    s3_truststore_uri     = "s3://they-test-api-gateway-with-domain-assets/certificates/truststore.pem"
+    s3_truststore_version = data.aws_s3_object.truststore.version_id
+    zone_name             = "they-code.de."
+    domain                = "they-test-lambda.they-code.de"
   }
 
   redeployment_trigger = "v1.0.0"
@@ -350,7 +356,7 @@ module "api_gateway" {
 ##### Inputs
 
 | Variable                                  | Type         | Description                                                                                                                                                                                                 | Required | Default                                                   |
-| ----------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------- |
+| ----------------------------------------- | ------------ |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| -------- | --------------------------------------------------------- |
 | name                                      | string       | Name of the api gateway                                                                                                                                                                                     | yes      |                                                           |
 | description                               | string       | Description of the api gateway                                                                                                                                                                              | no       | `""`                                                      |
 | stage_name                                | string       | Stage to use for the api gateway                                                                                                                                                                            | no       | `"dev"`                                                   |
@@ -380,6 +386,7 @@ module "api_gateway" {
 | domain.certificate_arn                    | string       | ARN of the certificate that is used (required if s3_truststore_uri is not set)                                                                                                                              | no       |                                                           |
 | domain.domain                             | string       | Domain                                                                                                                                                                                                      | (yes)    |                                                           |
 | domain.s3_truststore_uri                  | string       | URI to truststore.pem used for verification of client certs (required if certificate_arn is not set)                                                                                                        | no       |                                                           |
+| domain.s3_truststore_version              | string       | version of truststore.pem used for verification of client certs (required if multiple versions of a trustore.pem exist)                                                                                     | no       |                                                           |
 | domain.zone_name                          | string       | Domain zone name                                                                                                                                                                                            | (yes)    |                                                           |
 | redeployment_trigger                      | string       | A unique string to force a redeploy of the api gateway. If not set manually, the module will use the configurations for endpoints, api_key, and authorizer config to decide if a redeployment is necessary. | (yes)    |                                                           |
 | tags                                      | map(string)  | Map of tags to assign to the Lambda Function and related resources                                                                                                                                          | no       | `{}`                                                      |
