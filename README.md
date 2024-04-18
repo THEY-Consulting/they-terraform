@@ -299,6 +299,10 @@ module "lambda" {
 #### API Gateway (REST)
 
 ```hcl
+data "aws_s3_object" "truststore" {
+  bucket = "they-test-api-gateway-with-domain-assets"
+  key    = "certificates/truststore.pem"
+}
 module "api_gateway" {
   source = "github.com/THEY-Consulting/they-terraform//aws/lambda/gateway"
 
@@ -333,9 +337,11 @@ module "api_gateway" {
   }
 
   domain = {
-    certificate_arn = "some:certificate:arn"
-    zone_name       = "they-code.de."
-    domain          = "they-test-lambda.they-code.de"
+    certificate_arn       = "some:certificate:arn"
+    s3_truststore_uri     = "s3://they-test-api-gateway-with-domain-assets/certificates/truststore.pem"
+    s3_truststore_version = data.aws_s3_object.truststore.version_id
+    zone_name             = "they-code.de."
+    domain                = "they-test-lambda.they-code.de"
   }
 
   redeployment_trigger = "v1.0.0"
