@@ -25,6 +25,7 @@ resource "aws_api_gateway_domain_name" "api_gateway_domain_name_mtls" {
 
   mutual_tls_authentication {
     truststore_uri = var.domain.s3_truststore_uri
+    truststore_version = var.domain.s3_truststore_version
   }
   domain_name = var.domain.domain
 }

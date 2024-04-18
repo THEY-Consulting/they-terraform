@@ -68,10 +68,11 @@ variable "authorizer" {
 variable "domain" {
   description = "The domain configuration to use for the api gateway."
   type = object({
-    certificate_arn   = optional(string)
-    s3_truststore_uri = optional(string)
-    zone_name         = string
-    domain            = string
+    certificate_arn       = optional(string)
+    s3_truststore_uri     = optional(string)
+    s3_truststore_version = optional(string)
+    zone_name             = string
+    domain                = string
   })
   default = null
 
