@@ -146,7 +146,7 @@ module "rds_postgres_database" {
 | publicly_accessible     | bool        | Enable/Disable depending on whether db needs to be publicly accessible                           | no       | `true`           |
 | apply_immediately       | bool        | Specifies whether db modifications are applied immediately or during the next maintenance window | no       | `true`           |
 | tags                    | map(string) | Map of tags to assign to the RDS instance and related resources                                  | no       | `{}`             |
-| vpc_cidr_block          | string      | CIDR blocj for the VPC                                                                           | no       | `"10.0.0.0/24"`  |
+| vpc_cidr_block          | string      | CIDR block for the VPC                                                                           | no       | `"10.0.0.0/24"`  |
 | skip_final_snapshot     | bool        | Creates final DB snapshot when deleting the database. If true, no snapshot is created            | no       | `false`          |
 
 ##### Outputs
@@ -356,7 +356,7 @@ module "api_gateway" {
 ##### Inputs
 
 | Variable                                  | Type         | Description                                                                                                                                                                                                 | Required | Default                                                   |
-| ----------------------------------------- | ------------ |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| -------- | --------------------------------------------------------- |
+| ----------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------- |
 | name                                      | string       | Name of the api gateway                                                                                                                                                                                     | yes      |                                                           |
 | description                               | string       | Description of the api gateway                                                                                                                                                                              | no       | `""`                                                      |
 | stage_name                                | string       | Stage to use for the api gateway                                                                                                                                                                            | no       | `"dev"`                                                   |
@@ -555,7 +555,7 @@ module "azure_openid" {
   azure_resource_group_name = "they-dev"
   azure_location            = "Germany West Central"
   azure_identity_name = "existing-identity-name"
-  
+
   policies = [
     {
       name = "they-test-policy"
@@ -584,7 +584,7 @@ module "azure_openid" {
 ##### Inputs
 
 | Variable                          | Type         | Description                                                                                                                                                                                                   | Required | Default |
-|-----------------------------------| ------------ |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
+| --------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
 | name                              | string       | Name of the role                                                                                                                                                                                              | yes      |         |
 | azure_resource_group_name         | string       | The Azure resource group                                                                                                                                                                                      | yes      |         |
 | azure_location                    | string       | The Azure region                                                                                                                                                                                              | yes      |         |
@@ -599,7 +599,7 @@ module "azure_openid" {
 ##### Outputs
 
 | Output             | Type   | Description                     |
-|--------------------| ------ |---------------------------------|
+| ------------------ | ------ | ------------------------------- |
 | role_name          | string | The name of the role            |
 | role_arn           | string | The ARN of the role             |
 | identity_name      | string | Name of the azure identity      |
