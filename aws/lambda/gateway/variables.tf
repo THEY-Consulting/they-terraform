@@ -39,6 +39,18 @@ variable "endpoints" {
   }))
 }
 
+variable "logging_level" {
+  description = "Set the logging level for the api gateway."
+  type        = string
+  default     = "INFO"
+}
+
+variable "metrics_enabled" {
+  description = "Enables metrics for the api gateway."
+  type        = bool
+  default     = true
+}
+
 variable "api_key" {
   description = "The api key configuration to use for the api gateway."
   type = object({

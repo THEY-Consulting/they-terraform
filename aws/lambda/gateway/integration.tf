@@ -27,6 +27,18 @@ resource "aws_api_gateway_method" "method" {
   api_key_required = var.api_key != null && var.endpoints[count.index].api_key_required != false
 }
 
+resource "aws_api_gateway_method_settings" "method_settings" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  stage_name  = aws_api_gateway_stage.stage.stage_name
+  method_path = "*/*"
+
+  settings {
+    metrics_enabled = var.metrics_enabled
+    logging_level   = var.logging_level
+  }
+}
+
+
 resource "aws_api_gateway_integration" "integration" {
   count = length(var.endpoints)
 

@@ -309,6 +309,8 @@ module "api_gateway" {
   name = "they-test-api-gateway"
   description = "Test API Gateway"
   stage_name = "dev"
+  logging_level = "INFO"
+  metrics_enabled = true
 
   endpoints = [
     {
@@ -356,7 +358,7 @@ module "api_gateway" {
 ##### Inputs
 
 | Variable                                  | Type         | Description                                                                                                                                                                                                 | Required | Default                                                   |
-| ----------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------- |
+|-------------------------------------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| -------- |-----------------------------------------------------------|
 | name                                      | string       | Name of the api gateway                                                                                                                                                                                     | yes      |                                                           |
 | description                               | string       | Description of the api gateway                                                                                                                                                                              | no       | `""`                                                      |
 | stage_name                                | string       | Stage to use for the api gateway                                                                                                                                                                            | no       | `"dev"`                                                   |
@@ -368,6 +370,8 @@ module "api_gateway" {
 | endpoints.\*.authorization                | string       | Type of authorization used for the method (`NONE`, `CUSTOM`, `AWS_IAM`, `COGNITO_USER_POOLS`)                                                                                                               | no       | `"None"` or `"CUSTOM"` if `authorizer` is set             |
 | endpoints.\*.authorizer_id                | string       | Authorizer id to be used when the authorization is `CUSTOM` or `COGNITO_USER_POOLS`                                                                                                                         | no       | `null` or authorizer id if `authorizer` is set            |
 | endpoints.\*.api_key_required             | bool         | Specify if the method requires an API key                                                                                                                                                                   | no       | `true` if `api_key` is set, otherwise `false`             |
+| logging_level                             | string       | Set the logging level for the api gateway                                                                                                                                                                   | no       | `"INFO"`                                                  |
+| metrics_enabled                           | bool         | Enables metrics for the api gateway                                                                                                                                                                         | no       | `true`                                                    |
 | api_key                                   | object       | Api key configuration to use for the api gateway                                                                                                                                                            | no       | `null`                                                    |
 | api_key.name                              | string       | Specify if the method requires an API key                                                                                                                                                                   | no       | `"${var.name}-api-key"`                                   |
 | api_key.value                             | string       | API key                                                                                                                                                                                                     | (yes)    |                                                           |
