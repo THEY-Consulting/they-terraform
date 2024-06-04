@@ -543,10 +543,11 @@ module "auto-scaling-group" {
 
 ##### Outputs
 
-| Output      | Type   | Description                                         |
-| ----------- | ------ | --------------------------------------------------- |
-| alb_dns     | string | DNS of the Application Load Balancer of the ASG     |
-| alb_zone_id | string | Zone ID of the Application Load Balancer of the ASG |
+| Output          | Type         | Description                                         |
+|-----------------|--------------|-----------------------------------------------------|
+| alb_dns         | string       | DNS of the Application Load Balancer of the ASG     |
+| alb_zone_id     | string       | Zone ID of the Application Load Balancer of the ASG |
+| nat_gateway_ips | list(string) | Public IPs of the NAT gateways                      |
 
 #### Azure OpenID role
 

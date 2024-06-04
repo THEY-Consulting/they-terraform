@@ -1,5 +1,5 @@
 variable "name" {
-  description = "Name of the database."
+  description = "Name of the vm."
   type        = string
 }
 

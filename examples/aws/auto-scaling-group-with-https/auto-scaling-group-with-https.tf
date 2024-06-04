@@ -31,3 +31,7 @@ module "auto-scaling-group" {
 output "alb_dns" {
   value = module.auto-scaling-group.alb_dns
 }
+
+output "nat_gateway_ips" {
+  value = module.auto-scaling-group.nat_gateway_ips
+}
