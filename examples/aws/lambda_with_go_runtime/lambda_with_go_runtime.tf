@@ -16,9 +16,10 @@ module "lambda_with_go_runtime" {
     # The AWS runtime requires that the executable be named `bootstrap`.
     # The `lambda.norpc` tag is not required, but it creates a smaller
     # binary and decreases the Lambda's cold start time.
-    command   = "env GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -o bootstrap main.go"
+    command   = "env GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -o ./dist/bootstrap main.go"
     build_dir = "."
   }
+  is_bundle = true
 
 }
 

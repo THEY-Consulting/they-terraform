@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambdacontext"
 )
 
-// Lambda function will parse received event into this
+// The Lambda function will parse received events into this
 // data structure.
 type Event struct {
 	Name string `json:"name"`
