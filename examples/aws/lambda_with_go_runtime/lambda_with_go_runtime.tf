@@ -10,11 +10,13 @@ module "lambda_with_go_runtime" {
   handler       = "main"
   architectures = ["arm64"]
   # AWS deprecated the Go-specific runtime.
-  runtime = "provided.al2"
+  runtime = "provided.al2023"
   build = {
     enabled   = true
     # The AWS runtime requires that the executable be named `bootstrap`.
-    command   = "env GOOS=linux GOARCH=arm64 go build -o bootstrap main.go"
+    # The `lambda.norpc` tag is not required, but it creates a smaller
+    # binary and decreases the Lambda's cold start time.
+    command   = "env GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -o bootstrap main.go"
     build_dir = "."
   }
 
