@@ -9,7 +9,6 @@ module "lambda_with_go_runtime" {
   source_dir    = "./src"
   handler       = "main"
   architectures = ["arm64"]
-  # AWS deprecated the Go-specific runtime.
   runtime = "provided.al2023"
   build = {
     enabled   = true
