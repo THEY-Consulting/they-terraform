@@ -32,7 +32,7 @@ func HandleRequest(ctx context.Context, event *Event) (Response, error) {
 		return Response{Status: "error", Message: errorMessage}, fmt.Errorf("%s", errorMessage)
 	}
 
-	// Logs directly to CloudWatch.
+	// Any logging that is done can be inspected via cloudwatch.
 	log.Printf("Lambda function was invoked. RequestID: %s", lctx.AwsRequestID)
 
 	message := fmt.Sprintf("Hello %s!", event.Name)
