@@ -9,3 +9,8 @@ module "container-apps" {
 }
 
 # --- OUTPUT ---
+output "fqdm" {
+  value = module.container-apps.fqdm
+}
+
+
