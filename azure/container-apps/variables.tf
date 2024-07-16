@@ -13,3 +13,8 @@ variable "location" {
   description = "The Azure region where the resources should be created."
   type        = string
 }
+
+variable "container_registry_server" {
+  description = "The server URL of the container registry."
+  type        = string
+}
