@@ -22,6 +22,9 @@ resource "azurerm_windows_function_app" "function_app" {
     var.identity != null ? {
       AZURE_CLIENT_ID = data.azurerm_user_assigned_identity.identity.0.client_id
     } : {},
+    {
+      STORAGE_ACCOUNT_NAME = data.azurerm_storage_account.storage_account.name
+    },
     var.environment
   )
 
