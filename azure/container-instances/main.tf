@@ -19,7 +19,6 @@ resource "azurerm_container_group" "backend" {
   location            = azurerm_resource_group.resource_group.location
   resource_group_name = azurerm_resource_group.resource_group.name
   ip_address_type     = "Public"
-  dns_name_label      = "aci-label"
   os_type             = "Linux"
 
   #identity {
