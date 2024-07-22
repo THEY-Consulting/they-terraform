@@ -28,3 +28,15 @@ variable "password" {
   description = "The password for the container registry."
   type        = string
 }
+
+variable "environment_variables_backend" {
+  description = "Environment variables for the container."
+  type        = map(string)
+  default     = {}
+}
+
+variable "environment_variables_frontend" {
+  description = "Environment variables for the container."
+  type        = map(string)
+  default     = {}
+}
