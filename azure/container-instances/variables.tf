@@ -29,14 +29,69 @@ variable "password" {
   type        = string
 }
 
-variable "environment_variables_backend" {
-  description = "Environment variables for the container."
+variable "ip_address_type" {
+  description = "The type of IP address that should be used."
+  type        = string
+  default     = "Public" 
+}
+
+variable "os_type" {
+  description = "The os type that should be used."
+  type        = string
+  default     = "Linux" 
+}
+
+variable "acr_resource_group" {
+  description = "Resource group where the container registry is located."
+  type        = string
+}
+
+variable "exposed_port" {
+  description = "The port that should be exposed."
+  type        = number
+}
+
+variable "protocol" {
+  description = "The protocol that should be used."
+  type        = string
+  default = "TCP"
+}
+
+variable "tags" {
+  description = "Additional tags for container instances."
   type        = map(string)
   default     = {}
 }
 
-variable "environment_variables_frontend" {
-  description = "Environment variables for the container."
-  type        = map(string)
-  default     = {}
+variable "containers" {
+  description = "List of containers to be included in the container group"
+  type = list(object({
+    name   = string
+    image  = string
+    cpu    = string
+    memory = string
+    environment_variables = map(string)
+    ports  = object({
+      port     = number
+      protocol = string
+      scheme   = string
+    })
+    liveness_probe      = optional(object({
+      path                = string
+      port                = number
+      initial_delay_seconds = number
+      period_seconds      = number
+      success_threshold   = number
+      failure_threshold   = number
+    }))
+    readiness_probe     = optional(object({
+      path                = string
+      port                = number
+      initial_delay_seconds = number
+      period_seconds      = number
+      success_threshold   = number
+      failure_threshold   = number
+    }))
+  }))
+  default = []
 }
