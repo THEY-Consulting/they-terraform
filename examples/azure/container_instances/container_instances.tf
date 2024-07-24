@@ -10,7 +10,7 @@ module "container-instances" {
   username            = "testbdb"
   password            = "somepass"
   acr_resource_group = "MSO-test"
-  exposed_port = 3000
+  #exposed_port = 3000
   tags = {
     environment = "testing"
   }
@@ -31,7 +31,7 @@ module "container-instances" {
       protocol = "TCP"
     }
     #liveness_probe = {
-    #  path = "<checkPATH>"
+    #  path = "/"
     #  port = 3000
     #  initial_delay_seconds = 100
     #  period_seconds      = 5
@@ -59,9 +59,9 @@ module "container-instances" {
 }
 
 # --- OUTPUT ---
-#output "frontend" {
-#  value = module.container-instances.frontend_fqdn
-#}
+output "frontend" {
+  value = module.container-instances.frontend_fqdn
+}
 
 
 

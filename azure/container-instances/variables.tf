@@ -22,11 +22,13 @@ variable "container_registry_server" {
 variable "username" {
   description = "The username for the container registry."
   type        = string
+  sensitive = true
 }
 
 variable "password" {
   description = "The password for the container registry."
   type        = string
+  sensitive = true
 }
 
 variable "ip_address_type" {
@@ -46,10 +48,10 @@ variable "acr_resource_group" {
   type        = string
 }
 
-variable "exposed_port" {
-  description = "The port that should be exposed."
-  type        = number
-}
+#variable "exposed_port" {
+#  description = "The port that should be exposed."
+#  type        = number
+#}
 
 variable "protocol" {
   description = "The protocol that should be used."
@@ -74,7 +76,6 @@ variable "containers" {
     ports  = object({
       port     = number
       protocol = string
-      scheme   = string
     })
     liveness_probe      = optional(object({
       path                = string

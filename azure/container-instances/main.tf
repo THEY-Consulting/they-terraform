@@ -15,9 +15,13 @@ resource "azurerm_container_group" "container_group" {
   ip_address_type     = var.ip_address_type
   os_type             = var.os_type 
   exposed_port = [{
-      port     = var.exposed_port
-      protocol = var.protocol
-    }]
+      port     = 3000 #var.exposed_port
+      protocol = "TCP"#var.protocol
+    },{
+     port     = 8181 #var.exposed_port
+      protocol = "TCP"#var.protocol
+    }
+    ]
 
   image_registry_credential {
     server   =  data.azurerm_container_registry.acr.login_server #var.container_registry_server
