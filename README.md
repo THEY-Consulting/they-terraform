@@ -1023,6 +1023,110 @@ module "vm" {
 | network_security_group_id | string | Id of the network security group |
 | vm_username               | string | Admin username                   |
 
+#### Container Instances
+
+```hcl
+module "container-instances" {
+  # source = "github.com/THEY-Consulting/they-terraform//azure/container-instances"
+  source = "../../../azure/container-instances"
+
+  name                = "they-test-container-instances"
+  location            = "Germany West Central"
+  container_registry_server =  "testbdb.azurecr.io"
+  username            = "User"
+  password            = "PassworD"
+  acr_resource_group = "resource_name"
+  dns_a_record_name = "dns_name"
+  dns_resource_group = "they-dev"
+  dns_record_ttl = 300
+  dns_zone_name = "they-azure.de"
+  exposed_port = [{
+      port     = 3000 
+      protocol = "TCP"
+    },{
+     port     = 8181 
+      protocol = "TCP"
+    }
+    ]
+  tags = {
+    environment = "testing"
+  }
+  containers = [
+  {
+    name   = "frontend-test"
+    image  = "${module.container-instances.container_registry_server}/frontend-test:latest"
+    cpu    = "2"
+    memory = "4"
+    environment_variables = {
+      REACT_APP_API_BASE_URL = "https://localhost:8181/api"
+      REACT_APP_ENV   = "demo"
+      REACT_APP_AUTH0_DOMAIN = "Domain"
+      REACT_APP_AUTH0_CLIENT_ID = "client_id"
+    }
+    ports  = {
+      port     = 3000
+      protocol = "TCP"
+    }
+    #liveness_probe = {
+    #  path = "/"
+    #  port = 3000
+    #  initial_delay_seconds = 100
+    #  period_seconds      = 5
+    #  failure_threshold = 3
+    #  success_threshold = 1
+    #  #timeout_seconds = 10
+    #}
+  },
+  {
+    name   = "backend-test"
+    image  = "${module.container-instances.container_registry_server}/backend-test:latest"
+    cpu    = "1"
+    memory = "2"
+    environment_variables = {
+      SPRING_PROFILES_ACTIVE = "local,no-auth"
+      #SPRING_DATASOURCE_URL = "dummy"
+      #SPRING_DATASOURCE_PASSWORD = "dummy"
+    }
+    ports  = {
+      port     = 8181
+      protocol = "TCP"
+    }
+  }
+]
+}
+```
+
+##### Inputs
+
+| Variable                              | Type         | Description                                                                                      | Required | Default                                                                                |
+| ------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------ | -------- | -------------------------------------------------------------------------------------- |
+| name                                  | string       | Name of the resources                                                             | yes      |                                                                                        |
+| resource_group_name                   | string       | The name of the resource group in which to create the resources                                  | yes      |                                                                                        |
+| dns_resource_group                    | string       | Resource group where the DNS zone is located.                                             | no       |                                                                              |
+| dns_a_record_name                     | string       | The name of the DNS A record.                                                 | no       |                                                                             |
+| dns_zone_name                         | string       | The name of the DNS zone.                                                               | no       |                                                                       |
+| dns_record_ttl                        | number       | The TTL of the DNS record                                                               | yes       | `300`                                                                                 |
+| location                              | string       | The Azure region where the resources should be created.                                           | no       |                                                                          |
+| registry_credential                    | object       | The credentials for the container registry.                                                      | no       |                                                                          |
+| ip_address_type                       | string         | The type of IP address that should be used.                                                                       | yes       | `Public`                                                                                |
+| os_type                              | string | The os type that should be used.                                                             | yes       | `Linux`                                                                                   |
+| exposed_port                              | list(object) | The list of ports that should be exposed.                                                            | no       | `[]`                                                                                   |
+| containers.name                   | string       | Name of the container                                                                        | yes      |                                                                                        |
+| containers.image            | string       | Image of the container                                                              | yes       |                                                                                   |
+| containers.cpu              | string       | The required number of CPU cores of the containers                                                                    | yes       |                                                                            |
+| containers.memory                 | string       | The required memory of the containers in GB                                                                      | yes       |                                                                              |
+| containers.environment_variables               | map(string)       | A list of environment variables to be set on the container                                                                | no      |                                                                                        |
+| containers.ports               | object       | A set of public ports for the container                                                                    | no       |                                                                                |
+| containers.liveness_probe      | object       | The definition of a liveness probe for this container                                                           | no       |                                                                                   |
+| containers.readiness_probe  | object       | The definition of a readiness probe for this container                                                       | no       |                                                                                   |
+| tags                                  | map(string)  | Map of tags to assign to the resources                                                           | no       | `{}`                                                                                   |
+
+##### Outputs
+
+| Output                    | Type   | Description                      |
+| ------------------------- | ------ | -------------------------------- |
+| container_fdqn            | string | FDQN of the container. It gives a public IP if no DNS is indicated            |
+
 ## Contributing
 
 ### Prerequisites
