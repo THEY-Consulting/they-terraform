@@ -1,12 +1,35 @@
 variable "name" {
-  description = "Name of project"
+  description = "Name of resources"
   type        = string
 }
 
-variable "log_retention" {
-  description = "Amount of days for log retention"
+variable "resource_group_name" {
+  description = "Name of resource group"
+  type        = string
+}
+
+variable "dns_resource_group" {
+  description = "Resource group where the DNS zone is located."
+  type        = string
+  default = null
+}
+
+variable "dns_a_record_name" {
+  description = "The name of the DNS A record."
+  type        = string
+  default = null
+}
+
+variable "dns_zone_name" {
+  description = "The name of the DNS zone."
+  type        = string
+  default = null
+}
+
+variable "dns_record_ttl" {
+  description = "The TTL of the DNS record."
   type        = number
-  default     = 30
+  default     = 300
 }
 
 variable "location" {
@@ -14,21 +37,13 @@ variable "location" {
   type        = string
 }
 
-variable "container_registry_server" {
-  description = "The server URL of the container registry."
-  type        = string
-}
-
-variable "username" {
-  description = "The username for the container registry."
-  type        = string
-  sensitive = true
-}
-
-variable "password" {
-  description = "The password for the container registry."
-  type        = string
-  sensitive = true
+variable "registry_credential" {
+description = "The credentials for the container registry."
+  type = list(object({
+    username = string
+    password = string
+    server   = string
+  }))
 }
 
 variable "ip_address_type" {
@@ -43,20 +58,13 @@ variable "os_type" {
   default     = "Linux" 
 }
 
-variable "acr_resource_group" {
-  description = "Resource group where the container registry is located."
-  type        = string
-}
-
-#variable "exposed_port" {
-#  description = "The port that should be exposed."
-#  type        = number
-#}
-
-variable "protocol" {
-  description = "The protocol that should be used."
-  type        = string
-  default = "TCP"
+variable "exposed_port" {
+  description = "The port that should be exposed."
+  type        = list(object({
+    port     = number
+    protocol = string
+  }))
+  default = []
 }
 
 variable "tags" {
@@ -72,7 +80,7 @@ variable "containers" {
     image  = string
     cpu    = string
     memory = string
-    environment_variables = map(string)
+    environment_variables = optional(map(string))
     ports  = object({
       port     = number
       protocol = string

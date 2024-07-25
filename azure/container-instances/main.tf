@@ -1,10 +1,10 @@
-data "azurerm_container_registry" "acr" {
-  name                = var.username # maybe change var?
-  resource_group_name = var.acr_resource_group
-}
+#data "azurerm_container_registry" "acr" {
+#  name                = var.username # maybe change var?
+#  resource_group_name = var.acr_resource_group
+#}
 
 resource "azurerm_resource_group" "resource_group" {
-  name     = var.name
+  name     = var.resource_group_name
   location = var.location
 }
 
@@ -14,20 +14,17 @@ resource "azurerm_container_group" "container_group" {
   resource_group_name = azurerm_resource_group.resource_group.name
   ip_address_type     = var.ip_address_type
   os_type             = var.os_type 
-  exposed_port = [{
-      port     = 3000 #var.exposed_port
-      protocol = "TCP"#var.protocol
-    },{
-     port     = 8181 #var.exposed_port
-      protocol = "TCP"#var.protocol
-    }
-    ]
+  exposed_port = var.exposed_port
 
-  image_registry_credential {
-    server   =  data.azurerm_container_registry.acr.login_server #var.container_registry_server
-    username = var.username
-    password = var.password
+  dynamic "image_registry_credential" {
+  for_each = var.registry_credential[*]
+
+  content {
+    username = var.registry_credential.username
+    password = var.registry_credential.password
+    server   = var.registry_credential.server
   }
+}
 
 
   dynamic "container" {
@@ -35,7 +32,7 @@ resource "azurerm_container_group" "container_group" {
 
     content {
       name   = container.value.name
-      image  = "${data.azurerm_container_registry.acr.login_server}/${container.value.image}"
+      image  = container.value.image
       cpu    = container.value.cpu
       memory = container.value.memory
       environment_variables = container.value.environment_variables
