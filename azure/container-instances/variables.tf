@@ -38,12 +38,13 @@ variable "location" {
 }
 
 variable "registry_credential" {
-description = "The credentials for the container registry."
-  type = list(object({
+  description = "The credentials for the container registry."
+  type = object({
     username = string
     password = string
     server   = string
-  }))
+  })
+  default = null
 }
 
 variable "ip_address_type" {
