@@ -1,32 +1,45 @@
 # --- RESOURCES / MODULES ---
 
 module "container-instances" {
-  # source = "github.com/THEY-Consulting/they-terraform//azure/container-apps"
+  # source = "github.com/THEY-Consulting/they-terraform//azure/container-instances"
   source = "../../../azure/container-instances"
 
   name                = "${terraform.workspace}-they-test-container-instances"
+  resource_group_name = "${terraform.workspace}-they-test-container-instances"
   location            = "Germany West Central"
-  container_registry_server =  "testbdb.azurecr.io"
-  username            = "testbdb"
-  password            = "somepass"
-  acr_resource_group = "MSO-test"
-  #exposed_port = 3000
+  registry_credential = {
+    server   = "servername"
+    username = "testbdb"
+    password = "password"
+  }
+  dns_a_record_name = terraform.workspace
+  dns_resource_group = "dns_name"
+  dns_record_ttl = 300
+  dns_zone_name = "dns.de"
+  exposed_port = [{
+      port     = 3000 
+      protocol = "TCP"
+    },{
+     port     = 8181 
+      protocol = "TCP"
+    }
+    ]
   tags = {
     environment = "testing"
   }
   containers = [
   {
     name   = "frontend-test"
-    image  = "frontend-test:latest"
+    image  = "servername/frontend-test:latest"
     cpu    = "2"
     memory = "4"
     environment_variables = {
       REACT_APP_API_BASE_URL = "https://localhost:8181/api"
       REACT_APP_ENV   = "demo"
       REACT_APP_AUTH0_DOMAIN = "domain"
-      REACT_APP_AUTH0_CLIENT_ID = "someclientid"
+      REACT_APP_AUTH0_CLIENT_ID = "client"
     }
-    ports  = { // Adjusted to be a single object
+    ports  = {
       port     = 3000
       protocol = "TCP"
     }
@@ -42,15 +55,15 @@ module "container-instances" {
   },
   {
     name   = "backend-test"
-    image  = "backend-test:latest"
+    image  = "servername/backend-test:latest"
     cpu    = "1"
     memory = "2"
     environment_variables = {
       SPRING_PROFILES_ACTIVE = "local,no-auth"
-      #SPRING_DATASOURCE_URL = "dummy"
-      #SPRING_DATASOURCE_PASSWORD = "dummy"
+      #SPRING_DATASOURCE_URL = "jdbc:postgresql://localhost:5432/mitglieder-verwaltung"
+      #SPRING_DATASOURCE_PASSWORD = "pass"
     }
-    ports  = { // Adjusted to be a single object
+    ports  = {
       port     = 8181
       protocol = "TCP"
     }
@@ -59,8 +72,8 @@ module "container-instances" {
 }
 
 # --- OUTPUT ---
-output "frontend" {
-  value = module.container-instances.frontend_fqdn
+output "container-fdqn" {
+  value = module.container-instances.container_fqdn
 }
 
 
