@@ -1,13 +1,3 @@
-#data "azurerm_container_registry" "acr" {
-#  name                = var.username # maybe change var?
-#  resource_group_name = var.acr_resource_group
-#}
-
-resource "azurerm_resource_group" "resource_group" {
-  name     = var.resource_group_name
-  location = var.location
-}
-
 resource "azurerm_container_group" "container_group" {
   name                = var.name
   location            = azurerm_resource_group.resource_group.location
@@ -15,6 +5,13 @@ resource "azurerm_container_group" "container_group" {
   ip_address_type     = var.ip_address_type
   os_type             = var.os_type 
   exposed_port = var.exposed_port
+
+  diagnostics {
+    log_analytics {
+      workspace_id = azurerm_log_analytics_workspace.log_analytics_workspace.workspace_id
+      workspace_key = azurerm_log_analytics_workspace.log_analytics_workspace.primary_shared_key
+    }
+  }
 
   dynamic "image_registry_credential" {
   for_each = var.registry_credential[*]
@@ -24,8 +21,7 @@ resource "azurerm_container_group" "container_group" {
     password = var.registry_credential.password
     server   = var.registry_credential.server
   }
-}
-
+  }
 
   dynamic "container" {
     for_each = var.containers

@@ -37,6 +37,11 @@ variable "location" {
   type        = string
 }
 
+variable log_retention {
+  description = "The number of days to retain logs in the log analytics workspace."
+  type        = number
+  default     = 30
+}
 variable "registry_credential" {
   description = "The credentials for the container registry."
   type = object({
