@@ -37,6 +37,18 @@ variable "location" {
   type        = string
 }
 
+variable "enable_log_analytics" {
+  description = "Enables the creation of the resource log analytics workspace for the container group."
+  type        = bool
+  default     = false
+}
+
+variable "sku_log_analytics" {
+  description = "The SKU of the log analytics workspace."
+  type        = string
+  default     = "PerGB2018"
+}
+
 variable log_retention {
   description = "The number of days to retain logs in the log analytics workspace."
   type        = number
@@ -91,21 +103,34 @@ variable "containers" {
       port     = number
       protocol = string
     })
-    liveness_probe      = optional(object({
-      path                = string
-      port                = number
-      initial_delay_seconds = number
-      period_seconds      = number
-      success_threshold   = number
-      failure_threshold   = number
+     readiness_probe = optional(object({
+      exec = optional(list(string))
+      http_get = optional(object({
+        path         = optional(string)
+        port         = optional(number)
+        scheme       = optional(string)
+        http_headers = optional(map(string))
+      }))
+      initial_delay_seconds = optional(number)
+      period_seconds        = optional(number)
+      failure_threshold     = optional(number)
+      success_threshold     = optional(number)
+      timeout_seconds       = optional(number)
     }))
-    readiness_probe     = optional(object({
-      path                = string
-      port                = number
-      initial_delay_seconds = number
-      period_seconds      = number
-      success_threshold   = number
-      failure_threshold   = number
+
+    liveness_probe = optional(object({
+      exec = optional(list(string))
+      http_get = optional(object({
+        path         = optional(string)
+        port         = optional(number)
+        scheme       = optional(string)
+        http_headers = optional(map(string))
+      }))
+      initial_delay_seconds = optional(number)
+      period_seconds        = optional(number)
+      failure_threshold     = optional(number)
+      success_threshold     = optional(number)
+      timeout_seconds       = optional(number)
     }))
   }))
   default = []

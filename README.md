@@ -1027,69 +1027,69 @@ module "vm" {
 
 ```hcl
 module "container-instances" {
-  # source = "github.com/THEY-Consulting/they-terraform//azure/container-instances"
-  source = "../../../azure/container-instances"
+  source = "github.com/THEY-Consulting/they-terraform//azure/container-instances"
 
   name                = "they-test-container-instances"
   location            = "Germany West Central"
-  container_registry_server =  "testbdb.azurecr.io"
-  username            = "User"
-  password            = "PassworD"
   acr_resource_group = "resource_name"
+  enable_log_analytics = true
+  registry_credential = {
+    server   = "test.azurecr.io"
+    username = "User"
+    password = "PassworD"
+  }
   dns_a_record_name = "dns_name"
   dns_resource_group = "they-dev"
   dns_record_ttl = 300
-  dns_zone_name = "they-azure.de"
+  dns_zone_name = "dns-zone.com"
   exposed_port = [{
       port     = 3000 
       protocol = "TCP"
     },{
-     port     = 8181 
+     port     = 80 
       protocol = "TCP"
     }
     ]
   tags = {
-    environment = "testing"
+    environment = "test"
   }
   containers = [
   {
     name   = "frontend-test"
-    image  = "${module.container-instances.container_registry_server}/frontend-test:latest"
+    image  = "test.azurecr.io/frontend-test:latest"
     cpu    = "2"
     memory = "4"
     environment_variables = {
-      REACT_APP_API_BASE_URL = "https://localhost:8181/api"
-      REACT_APP_ENV   = "demo"
-      REACT_APP_AUTH0_DOMAIN = "Domain"
-      REACT_APP_AUTH0_CLIENT_ID = "client_id"
+      ENV1_API_URL= "https://localhost:80/api"
+      ENV2   = "demo"
     }
     ports  = {
       port     = 3000
       protocol = "TCP"
     }
-    #liveness_probe = {
-    #  path = "/"
-    #  port = 3000
-    #  initial_delay_seconds = 100
-    #  period_seconds      = 5
-    #  failure_threshold = 3
-    #  success_threshold = 1
-    #  #timeout_seconds = 10
-    #}
+    
   },
   {
     name   = "backend-test"
-    image  = "${module.container-instances.container_registry_server}/backend-test:latest"
+    image  = "test.azurecr.io/backend-test:latest"
     cpu    = "1"
     memory = "2"
     environment_variables = {
-      SPRING_PROFILES_ACTIVE = "local,no-auth"
-      #SPRING_DATASOURCE_URL = "dummy"
-      #SPRING_DATASOURCE_PASSWORD = "dummy"
+      ENV1 = "test"
     }
     ports  = {
-      port     = 8181
+      port     = 80
       protocol = "TCP"
+    },
+    liveness_probe = {
+      http_get = {
+        path = "/health"
+        port = 80    
+      }
+      initial_delay_seconds = 100
+      period_seconds      = 5
+      failure_threshold = 3
+      success_threshold = 1
     }
   }
 ]
@@ -1107,6 +1107,9 @@ module "container-instances" {
 | dns_zone_name                         | string       | The name of the DNS zone.                                                               | no       |                                                                       |
 | dns_record_ttl                        | number       | The TTL of the DNS record                                                               | yes       | `300`                                                                                 |
 | location                              | string       | The Azure region where the resources should be created.                                           | no       |                                                                          |
+| enable_log_analytics                  | bool       | Enables the creation of the resource log analytics workspace for the container group.                                           |      no  | `false`                                                                         |
+| sku_log_analytics                     | string       | The SKU of the log analytics workspace.                                           | no       | `PerGB2018`                                                                         |
+| log_retention                         | number       | The number of days to retain logs in the log analytics workspace.                                           | no       | `30`                                                                          |
 | registry_credential                    | object       | The credentials for the container registry.                                                      | no       |                                                                          |
 | ip_address_type                       | string         | The type of IP address that should be used.                                                                       | yes       | `Public`                                                                                |
 | os_type                              | string | The os type that should be used.                                                             | yes       | `Linux`                                                                                   |
@@ -1125,7 +1128,7 @@ module "container-instances" {
 
 | Output                    | Type   | Description                      |
 | ------------------------- | ------ | -------------------------------- |
-| container_fdqn            | string | FDQN of the container. It gives a public IP if no DNS is indicated            |
+| container_endpoint        | string | Endpoint of the container. It gives a public IP if no DNS is indicated            |
 
 ## Contributing
 

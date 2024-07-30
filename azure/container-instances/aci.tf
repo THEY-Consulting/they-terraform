@@ -6,10 +6,13 @@ resource "azurerm_container_group" "container_group" {
   os_type             = var.os_type 
   exposed_port = var.exposed_port
 
-  diagnostics {
-    log_analytics {
-      workspace_id = azurerm_log_analytics_workspace.log_analytics_workspace.workspace_id
-      workspace_key = azurerm_log_analytics_workspace.log_analytics_workspace.primary_shared_key
+  dynamic "diagnostics" {
+    for_each = var.enable_log_analytics ? [1] : []
+    content {
+      log_analytics {
+        workspace_id  = azurerm_log_analytics_workspace.log_analytics_workspace[0].workspace_id
+        workspace_key = azurerm_log_analytics_workspace.log_analytics_workspace[0].primary_shared_key
+      }
     }
   }
 
@@ -38,33 +41,45 @@ resource "azurerm_container_group" "container_group" {
         protocol = container.value.ports.protocol
       }
 
-      dynamic "liveness_probe" {
-        for_each = container.value.liveness_probe != null ? [container.value.liveness_probe] : []
-        content {
-          http_get {
-            path   = liveness_probe.value.path
-            port   = liveness_probe.value.port
-            scheme = liveness_probe.value.scheme
-          }
-          initial_delay_seconds = liveness_probe.value.initial_delay_seconds
-          period_seconds        = liveness_probe.value.period_seconds
-          success_threshold = liveness_probe.value.success_threshold
-          failure_threshold = liveness_probe.value.failure_threshold
-        }
-      }
-
       dynamic "readiness_probe" {
         for_each = container.value.readiness_probe != null ? [container.value.readiness_probe] : []
         content {
-          http_get {
-            path   = readiness_probe.value.path
-            port   = readiness_probe.value.port
-            scheme = readiness_probe.value.scheme
+          exec = readiness_probe.value.exec
+          dynamic "http_get" {
+            for_each = readiness_probe.value.http_get[*]
+            content {
+              path         = http_get.value.path
+              port         = http_get.value.port
+              scheme       = http_get.value.scheme
+              http_headers = http_get.value.http_headers
+            }
           }
           initial_delay_seconds = readiness_probe.value.initial_delay_seconds
           period_seconds        = readiness_probe.value.period_seconds
-          success_threshold = readiness_probe.value.success_threshold
-          failure_threshold = readiness_probe.value.failure_threshold
+          failure_threshold     = readiness_probe.value.failure_threshold
+          success_threshold     = readiness_probe.value.success_threshold
+          timeout_seconds       = readiness_probe.value.timeout_seconds
+        }
+      }
+
+      dynamic "liveness_probe" {
+        for_each = container.value.liveness_probe != null ? [container.value.liveness_probe] : []
+        content {
+          exec = liveness_probe.value.exec
+          dynamic "http_get" {
+            for_each = liveness_probe.value.http_get[*]
+            content {
+              path         = http_get.value.path
+              port         = http_get.value.port
+              scheme       = http_get.value.scheme
+              http_headers = http_get.value.http_headers
+            }
+          }
+          initial_delay_seconds = liveness_probe.value.initial_delay_seconds
+          period_seconds        = liveness_probe.value.period_seconds
+          failure_threshold     = liveness_probe.value.failure_threshold
+          success_threshold     = liveness_probe.value.success_threshold
+          timeout_seconds       = liveness_probe.value.timeout_seconds
         }
       }
     }
@@ -73,5 +88,3 @@ resource "azurerm_container_group" "container_group" {
   tags = var.tags
 }
 
-
-# TODO: change to Workload profile, we are currently using Consumption profile.
