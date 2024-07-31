@@ -6,3 +6,4 @@ resource "azurerm_log_analytics_workspace" "log_analytics_workspace" {
   sku                 = var.sku_log_analytics
   retention_in_days   = var.log_retention
 }
+
