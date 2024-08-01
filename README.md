@@ -21,6 +21,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [Function app](#function-app)
     - [MSSQL Database](#mssql-database)
     - [VM](#vm)
+    - [Container Instances](#container-instances)
 - [Contributing](#contributing)
   - [Prerequisites](#prerequisites-1)
   - [Environment Variables](#environment-variables)
@@ -1031,7 +1032,6 @@ module "container-instances" {
 
   name                = "they-test-container-instances"
   location            = "Germany West Central"
-  acr_resource_group = "resource_name"
   enable_log_analytics = true
   registry_credential = {
     server   = "test.azurecr.io"
@@ -1040,13 +1040,13 @@ module "container-instances" {
   }
   dns_a_record_name = "dns_name"
   dns_resource_group = "they-dev"
-  dns_record_ttl = 300
+  dns_record_ttl = 400
   dns_zone_name = "dns-zone.com"
   exposed_port = [{
       port     = 3000 
       protocol = "TCP"
     },{
-     port     = 80 
+      port     = 80 
       protocol = "TCP"
     }
     ]
@@ -1102,18 +1102,18 @@ module "container-instances" {
 | ------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------ | -------- | -------------------------------------------------------------------------------------- |
 | name                                  | string       | Name of the resources                                                             | yes      |                                                                                        |
 | resource_group_name                   | string       | The name of the resource group in which to create the resources                                  | yes      |                                                                                        |
-| dns_resource_group                    | string       | Resource group where the DNS zone is located.                                             | no       |                                                                              |
-| dns_a_record_name                     | string       | The name of the DNS A record.                                                 | no       |                                                                             |
-| dns_zone_name                         | string       | The name of the DNS zone.                                                               | no       |                                                                       |
-| dns_record_ttl                        | number       | The TTL of the DNS record                                                               | yes       | `300`                                                                                 |
-| location                              | string       | The Azure region where the resources should be created.                                           | no       |                                                                          |
-| enable_log_analytics                  | bool       | Enables the creation of the resource log analytics workspace for the container group.                                           |      no  | `false`                                                                         |
-| sku_log_analytics                     | string       | The SKU of the log analytics workspace.                                           | no       | `PerGB2018`                                                                         |
-| log_retention                         | number       | The number of days to retain logs in the log analytics workspace.                                           | no       | `30`                                                                          |
-| registry_credential                    | object       | The credentials for the container registry.                                                      | no       |                                                                          |
-| ip_address_type                       | string         | The type of IP address that should be used.                                                                       | yes       | `Public`                                                                                |
-| os_type                              | string | The os type that should be used.                                                             | yes       | `Linux`                                                                                   |
-| exposed_port                              | list(object) | The list of ports that should be exposed.                                                            | no       | `[]`                                                                                   |
+| dns_resource_group                    | string       | Resource group where the DNS zone is located                                             | no       |     `null`                                                                         |
+| dns_a_record_name                     | string       | The name of the DNS A record                                                 | no       |  `null`                                                                           |
+| dns_zone_name                         | string       | The name of the DNS zone                                                               | no       | `null`                                                                      |
+| dns_record_ttl                        | number       | The TTL of the DNS record                                                               | no       | `300`                                                                                 |
+| location                              | string       | The Azure region where the resources should be created                                           | yes       |                                                                          |
+| enable_log_analytics                  | bool       | Enables the creation of the resource log analytics workspace for the container group                                           |      no  | `false`                                                                         |
+| sku_log_analytics                     | string       | The SKU of the log analytics workspace                                           | no       | `PerGB2018`                                                                         |
+| log_retention                         | number       | The number of days to retain logs in the log analytics workspace                                           | no       | `30`                                                                          |
+| registry_credential                    | object       | The credentials for the container registry                                                      | no       |  `null`                                                                        |
+| ip_address_type                       | string         | The type of IP address that should be used                                                    | yes       | `Public`                                                                                |
+| os_type                              | string | The os type that should be used                                                             | yes       | `Linux`                                                                                   |
+| exposed_port                              | list(object) | The list of ports that should be exposed                                                            | no       | `[]`                                                                                   |
 | containers.name                   | string       | Name of the container                                                                        | yes      |                                                                                        |
 | containers.image            | string       | Image of the container                                                              | yes       |                                                                                   |
 | containers.cpu              | string       | The required number of CPU cores of the containers                                                                    | yes       |                                                                            |
