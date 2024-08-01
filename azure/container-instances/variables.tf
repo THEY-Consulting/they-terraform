@@ -11,19 +11,19 @@ variable "resource_group_name" {
 variable "dns_resource_group" {
   description = "Resource group where the DNS zone is located."
   type        = string
-  default = null
+  default     = null
 }
 
 variable "dns_a_record_name" {
   description = "The name of the DNS A record."
   type        = string
-  default = null
+  default     = null
 }
 
 variable "dns_zone_name" {
   description = "The name of the DNS zone."
   type        = string
-  default = null
+  default     = null
 }
 
 variable "dns_record_ttl" {
@@ -49,7 +49,7 @@ variable "sku_log_analytics" {
   default     = "PerGB2018"
 }
 
-variable log_retention {
+variable "log_retention" {
   description = "The number of days to retain logs in the log analytics workspace."
   type        = number
   default     = 30
@@ -67,18 +67,18 @@ variable "registry_credential" {
 variable "ip_address_type" {
   description = "The type of IP address that should be used."
   type        = string
-  default     = "Public" 
+  default     = "Public"
 }
 
 variable "os_type" {
   description = "The os type that should be used."
   type        = string
-  default     = "Linux" 
+  default     = "Linux"
 }
 
 variable "exposed_port" {
   description = "The port that should be exposed."
-  type        = list(object({
+  type = list(object({
     port     = number
     protocol = string
   }))
@@ -94,16 +94,16 @@ variable "tags" {
 variable "containers" {
   description = "List of containers to be included in the container group"
   type = list(object({
-    name   = string
-    image  = string
-    cpu    = string
-    memory = string
+    name                  = string
+    image                 = string
+    cpu                   = string
+    memory                = string
     environment_variables = optional(map(string))
-    ports  = object({
+    ports = object({
       port     = number
       protocol = string
     })
-     readiness_probe = optional(object({
+    readiness_probe = optional(object({
       exec = optional(list(string))
       http_get = optional(object({
         path         = optional(string)

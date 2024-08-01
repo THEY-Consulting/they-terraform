@@ -3,8 +3,8 @@ resource "azurerm_container_group" "container_group" {
   location            = azurerm_resource_group.resource_group.location
   resource_group_name = azurerm_resource_group.resource_group.name
   ip_address_type     = var.ip_address_type
-  os_type             = var.os_type 
-  exposed_port = var.exposed_port
+  os_type             = var.os_type
+  exposed_port        = var.exposed_port
 
   dynamic "diagnostics" {
     for_each = var.enable_log_analytics ? [1] : []
@@ -17,23 +17,23 @@ resource "azurerm_container_group" "container_group" {
   }
 
   dynamic "image_registry_credential" {
-  for_each = var.registry_credential[*]
+    for_each = var.registry_credential[*]
 
-  content {
-    username = var.registry_credential.username
-    password = var.registry_credential.password
-    server   = var.registry_credential.server
-  }
+    content {
+      username = var.registry_credential.username
+      password = var.registry_credential.password
+      server   = var.registry_credential.server
+    }
   }
 
   dynamic "container" {
     for_each = var.containers
 
     content {
-      name   = container.value.name
-      image  = container.value.image
-      cpu    = container.value.cpu
-      memory = container.value.memory
+      name                  = container.value.name
+      image                 = container.value.image
+      cpu                   = container.value.cpu
+      memory                = container.value.memory
       environment_variables = container.value.environment_variables
 
       ports {
