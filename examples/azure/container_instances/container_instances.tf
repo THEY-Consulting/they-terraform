@@ -4,10 +4,11 @@ module "container-instances" {
   # source = "github.com/THEY-Consulting/they-terraform//azure/container-instances"
   source = "../../../azure/container-instances"
 
-  name                 = "${terraform.workspace}-they-test-container-instances"
-  resource_group_name  = "${terraform.workspace}-they-test-container-instances"
-  location             = "Germany West Central"
-  enable_log_analytics = true
+  name                      = "${terraform.workspace}-they-test-container-instances"
+  create_new_resource_group = true
+  resource_group_name       = "${terraform.workspace}-they-test-container-instances"
+  location                  = "Germany West Central"
+  enable_log_analytics      = true
   tags = {
     environment = "testing"
   }

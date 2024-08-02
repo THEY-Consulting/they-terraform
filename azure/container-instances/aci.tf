@@ -1,7 +1,7 @@
 resource "azurerm_container_group" "container_group" {
   name                = var.name
-  location            = azurerm_resource_group.resource_group.location
-  resource_group_name = azurerm_resource_group.resource_group.name
+  location            = local.resource_group_location
+  resource_group_name = local.resource_group_name
   ip_address_type     = var.ip_address_type
   os_type             = var.os_type
   exposed_port        = var.exposed_port
