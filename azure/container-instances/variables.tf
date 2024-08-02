@@ -8,6 +8,12 @@ variable "resource_group_name" {
   type        = string
 }
 
+variable "create_new_resource_group" {
+  description = "If true, a new resource group with the name `resource_group_name` that houses all resources will be created."
+  type        = bool
+  default     = false
+}
+
 variable "dns_resource_group" {
   description = "Resource group where the DNS zone is located."
   type        = string
