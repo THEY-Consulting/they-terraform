@@ -9,7 +9,7 @@ variable "resource_group_name" {
 }
 
 variable "create_new_resource_group" {
-  description = "If true, a new resource group with the name `resource_group_name` that houses all resources will be created."
+  description = "If true, a new resource group with the name `resource_group_name` that encompasses all resources will be created. Otherwise the deployment will use an existing resource group named `resource_group_name`."
   type        = bool
   default     = false
 }

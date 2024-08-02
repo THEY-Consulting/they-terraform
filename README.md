@@ -359,7 +359,7 @@ module "api_gateway" {
 ##### Inputs
 
 | Variable                                  | Type         | Description                                                                                                                                                                                                 | Required | Default                                                   |
-|-------------------------------------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| -------- |-----------------------------------------------------------|
+| ----------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------- |
 | name                                      | string       | Name of the api gateway                                                                                                                                                                                     | yes      |                                                           |
 | description                               | string       | Description of the api gateway                                                                                                                                                                              | no       | `""`                                                      |
 | stage_name                                | string       | Stage to use for the api gateway                                                                                                                                                                            | no       | `"dev"`                                                   |
@@ -545,7 +545,7 @@ module "auto-scaling-group" {
 ##### Outputs
 
 | Output          | Type         | Description                                         |
-|-----------------|--------------|-----------------------------------------------------|
+| --------------- | ------------ | --------------------------------------------------- |
 | alb_dns         | string       | DNS of the Application Load Balancer of the ASG     |
 | alb_zone_id     | string       | Zone ID of the Application Load Balancer of the ASG |
 | nat_gateway_ips | list(string) | Public IPs of the NAT gateways                      |
@@ -1031,6 +1031,8 @@ module "container-instances" {
   source = "github.com/THEY-Consulting/they-terraform//azure/container-instances"
 
   name                = "they-test-container-instances"
+  resource_group_name = "they-terraform-test"
+  create_new_resource_group = true
   location            = "Germany West Central"
   enable_log_analytics = true
   registry_credential = {
@@ -1043,10 +1045,10 @@ module "container-instances" {
   dns_record_ttl = 400
   dns_zone_name = "dns-zone.com"
   exposed_port = [{
-      port     = 3000 
+      port     = 3000
       protocol = "TCP"
     },{
-      port     = 80 
+      port     = 80
       protocol = "TCP"
     }
     ]
@@ -1067,7 +1069,7 @@ module "container-instances" {
       port     = 3000
       protocol = "TCP"
     }
-    
+
   },
   {
     name   = "backend-test"
@@ -1084,7 +1086,7 @@ module "container-instances" {
     liveness_probe = {
       http_get = {
         path = "/health"
-        port = 80    
+        port = 80
       }
       initial_delay_seconds = 100
       period_seconds      = 5
@@ -1098,37 +1100,38 @@ module "container-instances" {
 
 ##### Inputs
 
-| Variable                              | Type         | Description                                                                                      | Required | Default                                                                                |
-| ------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------ | -------- | -------------------------------------------------------------------------------------- |
-| name                                  | string       | Name of the resources                                                             | yes      |                                                                                        |
-| resource_group_name                   | string       | The name of the resource group in which to create the resources                                  | yes      |                                                                                        |
-| dns_resource_group                    | string       | Resource group where the DNS zone is located                                             | no       |     `null`                                                                         |
-| dns_a_record_name                     | string       | The name of the DNS A record                                                 | no       |  `null`                                                                           |
-| dns_zone_name                         | string       | The name of the DNS zone                                                               | no       | `null`                                                                      |
-| dns_record_ttl                        | number       | The TTL of the DNS record                                                               | no       | `300`                                                                                 |
-| location                              | string       | The Azure region where the resources should be created                                           | yes       |                                                                          |
-| enable_log_analytics                  | bool       | Enables the creation of the resource log analytics workspace for the container group                                           |      no  | `false`                                                                         |
-| sku_log_analytics                     | string       | The SKU of the log analytics workspace                                           | no       | `PerGB2018`                                                                         |
-| log_retention                         | number       | The number of days to retain logs in the log analytics workspace                                           | no       | `30`                                                                          |
-| registry_credential                    | object       | The credentials for the container registry                                                      | no       |  `null`                                                                        |
-| ip_address_type                       | string         | The type of IP address that should be used                                                    | yes       | `Public`                                                                                |
-| os_type                              | string | The os type that should be used                                                             | yes       | `Linux`                                                                                   |
-| exposed_port                              | list(object) | The list of ports that should be exposed                                                            | no       | `[]`                                                                                   |
-| containers.name                   | string       | Name of the container                                                                        | yes      |                                                                                        |
-| containers.image            | string       | Image of the container                                                              | yes       |                                                                                   |
-| containers.cpu              | string       | The required number of CPU cores of the containers                                                                    | yes       |                                                                            |
-| containers.memory                 | string       | The required memory of the containers in GB                                                                      | yes       |                                                                              |
-| containers.environment_variables               | map(string)       | A list of environment variables to be set on the container                                                                | no      |                                                                                        |
-| containers.ports               | object       | A set of public ports for the container                                                                    | no       |                                                                                |
-| containers.liveness_probe      | object       | The definition of a liveness probe for this container                                                           | no       |                                                                                   |
-| containers.readiness_probe  | object       | The definition of a readiness probe for this container                                                       | no       |                                                                                   |
-| tags                                  | map(string)  | Map of tags to assign to the resources                                                           | no       | `{}`                                                                                   |
+| Variable                         | Type         | Description                                                                                                                                                                  | Required | Default     |
+| -------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------- |
+| name                             | string       | Name of the resources                                                                                                                                                        | yes      |             |
+| resource_group_name              | string       | The name of the resource group in which to create the resources                                                                                                              | yes      |             |
+| create_new_resource_group        | bool         | If true, a new resource group with the name `resource_group_name` will be created. Otherwise the deployment will use an existing resource group named `resource_group_name`. | no       | `false`     |
+| dns_resource_group               | string       | Resource group where the DNS zone is located                                                                                                                                 | no       | `null`      |
+| dns_a_record_name                | string       | The name of the DNS A record                                                                                                                                                 | no       | `null`      |
+| dns_zone_name                    | string       | The name of the DNS zone                                                                                                                                                     | no       | `null`      |
+| dns_record_ttl                   | number       | The TTL of the DNS record                                                                                                                                                    | no       | `300`       |
+| location                         | string       | The Azure region where the resources should be created                                                                                                                       | yes      |             |
+| enable_log_analytics             | bool         | Enables the creation of the resource log analytics workspace for the container group                                                                                         | no       | `false`     |
+| sku_log_analytics                | string       | The SKU of the log analytics workspace                                                                                                                                       | no       | `PerGB2018` |
+| log_retention                    | number       | The number of days to retain logs in the log analytics workspace                                                                                                             | no       | `30`        |
+| registry_credential              | object       | The credentials for the container registry                                                                                                                                   | no       | `null`      |
+| ip_address_type                  | string       | The type of IP address that should be used                                                                                                                                   | yes      | `Public`    |
+| os_type                          | string       | The os type that should be used                                                                                                                                              | yes      | `Linux`     |
+| exposed_port                     | list(object) | The list of ports that should be exposed                                                                                                                                     | no       | `[]`        |
+| containers.name                  | string       | Name of the container                                                                                                                                                        | yes      |             |
+| containers.image                 | string       | Image of the container                                                                                                                                                       | yes      |             |
+| containers.cpu                   | string       | The required number of CPU cores of the containers                                                                                                                           | yes      |             |
+| containers.memory                | string       | The required memory of the containers in GB                                                                                                                                  | yes      |             |
+| containers.environment_variables | map(string)  | A list of environment variables to be set on the container                                                                                                                   | no       |             |
+| containers.ports                 | object       | A set of public ports for the container                                                                                                                                      | no       |             |
+| containers.liveness_probe        | object       | The definition of a liveness probe for this container                                                                                                                        | no       |             |
+| containers.readiness_probe       | object       | The definition of a readiness probe for this container                                                                                                                       | no       |             |
+| tags                             | map(string)  | Map of tags to assign to the resources                                                                                                                                       | no       | `{}`        |
 
 ##### Outputs
 
-| Output                    | Type   | Description                      |
-| ------------------------- | ------ | -------------------------------- |
-| container_endpoint        | string | Endpoint of the container. It gives a public IP if no DNS is indicated            |
+| Output             | Type   | Description                                                            |
+| ------------------ | ------ | ---------------------------------------------------------------------- |
+| container_endpoint | string | Endpoint of the container. It gives a public IP if no DNS is indicated |
 
 ## Contributing
 
