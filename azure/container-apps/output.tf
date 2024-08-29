@@ -1,8 +1,4 @@
-output "backend_fqdn" { //this shouldnt be relevant for the actual app
-  value = azurerm_container_app.backend.latest_revision_fqdn
-}
-
-output "frontend_fqdn" {
-  value = azurerm_container_app.frontend.latest_revision_fqdn
+output "container_app_fqdn" {
+  value = { for app in azurerm_container_app.container_app : app.name => app.latest_revision_fqdn }
 }
 

@@ -1,119 +1,96 @@
-data "azurerm_container_registry" "acr_test_bdb" {
-  name                = "testbdb"
-  resource_group_name = "MSO-test"
-}
-resource "azurerm_resource_group" "resource_group" {
-  name     = var.name
-  location = var.location
-}
-
-resource "azurerm_user_assigned_identity" "assigned_identity" {
-  name                = "managed-identity-test"
-  resource_group_name = azurerm_resource_group.resource_group.name
-  location            = azurerm_resource_group.resource_group.location
-}
-
-resource "azurerm_log_analytics_workspace" "log_analytics_workspace" {
-  name                = var.name
-  location            = azurerm_resource_group.resource_group.location
-  resource_group_name = azurerm_resource_group.resource_group.name
-  sku                 = "PerGB2018" # TODO: Check this field later!
-  retention_in_days   = var.log_retention
-}
-
 resource "azurerm_container_app_environment" "app_environment" {
   name                       = var.name
-  location                   = azurerm_resource_group.resource_group.location
-  resource_group_name        = azurerm_resource_group.resource_group.name
+  location                   = local.resource_group_location
+  resource_group_name        = local.resource_group_name
   log_analytics_workspace_id = azurerm_log_analytics_workspace.log_analytics_workspace.id
 }
-resource "azurerm_container_app" "backend" {
-  name                         = "${var.name}-be"
+
+resource "azurerm_container_app" "container_app" {
+  for_each = var.container_apps
+
   container_app_environment_id = azurerm_container_app_environment.app_environment.id
-  resource_group_name          = azurerm_resource_group.resource_group.name
-  revision_mode                = "Single" # TODO: Check this field later!
-  ingress {
-    external_enabled = true
-    target_port = 8181 #test for backend
-    traffic_weight {
-      percentage = 100
-      latest_revision = true
+  name                         = each.value.name
+  resource_group_name          = local.resource_group_name
+  revision_mode                = each.value.revision_mode
+  workload_profile_name        = each.value.workload_profile_name
+
+  dynamic "identity" {
+    for_each = each.value.identity == null ? [] : [each.value.identity]
+
+    content {
+      type         = identity.value.type
+      identity_ids = identity.value.identity_ids
     }
   }
+  dynamic "ingress" {
+    for_each = each.value.ingress == null ? [] : [each.value.ingress]
 
-  identity {
-    type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.assigned_identity.id]
-  }
+    content {
+      target_port                = ingress.value.target_port
+      allow_insecure_connections = ingress.value.allow_insecure_connections
+      external_enabled           = ingress.value.external_enabled
+      dynamic "traffic_weight" {
+        for_each = ingress.value.traffic_weight == null ? [] : [ingress.value.traffic_weight]
 
-  registry {
-    identity = azurerm_user_assigned_identity.assigned_identity.id
-    server   = var.container_registry_server
-  }
-
-  template {
-    container {
-      # TODO: Modify this field.
-      name   = "backend-test"
-      # TODO: Modify this field.
-      image  = "${data.azurerm_container_registry.acr_test_bdb.login_server}/backend-test:latest"
-      cpu    = 0.5
-      memory = "1.0Gi"
-    }
-  }
-}
-
-#frontend
-resource "azurerm_container_app" "frontend" {
-  name                         = "${var.name}-fe"
-  container_app_environment_id = azurerm_container_app_environment.app_environment.id
-  resource_group_name          = azurerm_resource_group.resource_group.name
-  revision_mode                = "Single" # TODO: Check this field later!
-  ingress {
-    external_enabled = true
-    target_port = 3000 #test for frontend
-    traffic_weight {
-      percentage = 100
-      latest_revision = true
-    }
-  }
-
-  identity {
-    type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.assigned_identity.id]
-  }
-
-  registry {
-    identity = azurerm_user_assigned_identity.assigned_identity.id
-    server   = var.container_registry_server
-  }
-
-  template {
-    container {
-      # TODO: Modify this field.
-      name   = "frontend-test"
-      # TODO: Modify this field.
-      image  = "${data.azurerm_container_registry.acr_test_bdb.login_server}/frontend-test:latest"
-      cpu    = 2
-      memory = "4.0Gi" #NOTE: to prevent following error: FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory
-
-      env {
-        name  = "REACT_APP_API_BASE_URL"
-        value = "http://backend-test:8181"
+        content {
+          percentage      = traffic_weight.value.percentage
+          label           = traffic_weight.value.label
+          latest_revision = traffic_weight.value.latest_revision
+          revision_suffix = traffic_weight.value.revision_suffix
+        }
       }
-
-      env {
-        name  = "REACT_APP_ENV" 
-        value = "ANOTHER_ENV_VAR_VALUE"
+      transport = ingress.value.transport
+      dynamic "ip_security_restriction" {
+        for_each = ingress.value.ip_security_restrictions == null ? [] : ingress.value.ip_security_restrictions
+        content {
+          action           = ip_security_restriction.value.action
+          ip_address_range = ip_security_restriction.value.ip_address_range
+          name             = ip_security_restriction.value.name
+          description      = ip_security_restriction.value.description
+        }
       }
     }
   }
-}
+  dynamic "registry" {
+    for_each = each.value.registry == null ? [] : each.value.registry
 
-resource "azurerm_role_assignment" "acr_pull" {
-  principal_id         = azurerm_user_assigned_identity.assigned_identity.principal_id
-  role_definition_name = "AcrPull"
-  scope                = data.azurerm_container_registry.acr_test_bdb.id
+    content {
+      server               = registry.value.server
+      identity             = registry.value.identity
+      password_secret_name = registry.value.password_secret_name
+      username             = registry.value.username
+    }
+  }
+
+  secret {
+    name  = each.value.secret.name
+    value = each.value.secret.value
+  }
+  template {
+    max_replicas = each.value.template.max_replicas
+    min_replicas = each.value.template.min_replicas
+
+    dynamic "container" {
+      for_each = each.value.template.containers
+
+      content {
+        cpu    = container.value.cpu
+        image  = container.value.image
+        memory = container.value.memory
+        name   = container.value.name
+
+        dynamic "env" {
+          for_each = container.value.env == null ? [] : container.value.env
+
+          content {
+            name        = env.value.name
+            secret_name = env.value.secret_name
+            value       = env.value.value
+          }
+        }
+      }
+    }
+  }
 }
 
 
