@@ -3,6 +3,12 @@ variable "name" {
   type        = string
 }
 
+variable "create_new_resource_group" {
+  description = "If true, a new resource group with the name `resource_group_name` that encompasses all resources will be created. Otherwise the deployment will use an existing resource group named `resource_group_name`."
+  type        = bool
+  default     = false
+}
+
 variable "resource_group_name" {
   description = "Name of resource group"
   type        = string
@@ -19,16 +25,13 @@ variable "location" {
   type        = string
 }
 
-variable "container_registry_server" { // DO WE NEED THIS STILL?
+// TODO: This variable can probably be removed. 
+// First test with a deployment if there is no problem in removing
+// this variable.
+variable "container_registry_server" {
   description = "The server URL of the container registry."
   type        = string
   default     = null
-}
-
-variable "create_new_resource_group" {
-  description = "If true, a new resource group with the name `resource_group_name` that encompasses all resources will be created. Otherwise the deployment will use an existing resource group named `resource_group_name`."
-  type        = bool
-  default     = false
 }
 
 variable "sku_log_analytics" {

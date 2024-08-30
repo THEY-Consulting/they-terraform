@@ -29,6 +29,7 @@ resource "azurerm_container_app" "container_app" {
       target_port                = ingress.value.target_port
       allow_insecure_connections = ingress.value.allow_insecure_connections
       external_enabled           = ingress.value.external_enabled
+      transport                  = ingress.value.transport
       dynamic "traffic_weight" {
         for_each = ingress.value.traffic_weight == null ? [] : [ingress.value.traffic_weight]
 
@@ -39,7 +40,6 @@ resource "azurerm_container_app" "container_app" {
           revision_suffix = traffic_weight.value.revision_suffix
         }
       }
-      transport = ingress.value.transport
       dynamic "ip_security_restriction" {
         for_each = ingress.value.ip_security_restrictions == null ? [] : ingress.value.ip_security_restrictions
         content {
