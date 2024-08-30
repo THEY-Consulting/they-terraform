@@ -92,6 +92,4 @@ resource "azurerm_container_app" "container_app" {
     }
   }
 }
-
-
 # TODO: change to Workload profile, we are currently using Consumption profile.

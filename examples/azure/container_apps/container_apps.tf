@@ -96,7 +96,3 @@ module "container-apps" {
 output "container_app_fqdns" {
   value = module.container-apps.container_app_fqdn
 }
-
-
-
-
