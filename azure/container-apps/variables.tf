@@ -34,6 +34,15 @@ variable "container_registry_server" {
   default     = null
 }
 
+variable "dns_zone" {
+  description = "DNS zone config required if you want to link the deployed app to a subdomain in the given dns zone. Does not create a dns zone, only a subdomain."
+  type = object({
+    existing_dns_zone_name                = string
+    existing_dns_zone_resource_group_name = string
+  })
+  default = null
+}
+
 variable "sku_log_analytics" {
   description = "The SKU of the log analytics workspace."
   type        = string
@@ -43,6 +52,7 @@ variable "sku_log_analytics" {
 variable "container_apps" {
   type = map(object({
     name                  = string
+    subdomain             = optional(string) # only specify the subdomain part here. E.g. "test" for the dns zone "example.com" would result in test.example.com
     tags                  = optional(map(string))
     revision_mode         = string
     workload_profile_name = optional(string)
