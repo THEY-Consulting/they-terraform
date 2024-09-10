@@ -1,4 +1,4 @@
-output "custom_domain_urls" {
+output "container_apps_urls" {
   value = var.dns_zone != null ? {
     for app_name, app in var.container_apps :
     app_name => "${app.subdomain}.${var.dns_zone.existing_dns_zone_name}"

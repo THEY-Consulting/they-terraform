@@ -9,6 +9,13 @@ variable "create_new_resource_group" {
   default     = false
 }
 
+variable "enable_log_analytics" {
+  description = "If true, a log analytics workspace will be created."
+  type        = bool
+  default     = false
+
+}
+
 variable "resource_group_name" {
   description = "Name of resource group"
   type        = string
@@ -98,6 +105,8 @@ variable "container_apps" {
     }))
 
     secret = optional(object({
+      #TODO: do we need the key_vault attributes here? 
+      # see https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/container_app#secret
       name  = string
       value = string
     }))
