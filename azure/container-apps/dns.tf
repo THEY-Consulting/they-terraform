@@ -2,15 +2,36 @@
 # NOTE: current bug in terraform provider azure makes it impossible to modify/destroy resources after the binding, so it is
 # necessary to delete binding manually in azure portal before destroying the resource
 # https://github.com/hashicorp/terraform-provider-azurerm/pull/25972
+//resource "null_resource" "create_certificate_binding" {
+//  for_each = var.dns_zone != null ? var.container_apps : {}
+//
+//  provisioner "local-exec" {
+//    command = "az containerapp hostname bind --hostname ${each.value.subdomain}.${var.dns_zone.existing_dns_zone_name} -g ${local.resource_group_name} -n ${azurerm_container_app.container_app[each.key].name} --environment ${azurerm_container_app_environment.app_environment.name} --validation-method CNAME"
+//  }
+//
+//  depends_on = [azurerm_container_app.container_app, azurerm_container_app_custom_domain.main]
+//}
+
+//also creates binding from custom domain to container app, but for bringing your own certificate
+//NOTE: explore if "azapi_resource" helps somehow
 resource "null_resource" "create_certificate_binding" {
   for_each = var.dns_zone != null ? var.container_apps : {}
 
   provisioner "local-exec" {
-    command = "az containerapp hostname bind --hostname ${each.value.subdomain}.${var.dns_zone.existing_dns_zone_name} -g ${local.resource_group_name} -n ${azurerm_container_app.container_app[each.key].name} --environment ${azurerm_container_app_environment.app_environment.name} --validation-method CNAME"
+    command = "az containerapp hostname bind --hostname ${each.value.subdomain}.${var.dns_zone.existing_dns_zone_name} -g ${local.resource_group_name} -n ${azurerm_container_app.container_app[each.key].name} --environment ${azurerm_container_app_environment.app_environment.name} --thumbprint ${azurerm_container_app_environment_certificate.example.thumbprint}"
   }
 
-  depends_on = [azurerm_container_app.container_app, azurerm_container_app_custom_domain.main]
+  depends_on = [azurerm_container_app.container_app, azurerm_container_app_custom_domain.main, azurerm_container_app_environment_certificate.example]
 }
+
+//workaround to assigne managed identity to container app environment: as of now, the azurerm_container_app_environment does not support managed identity
+resource "null_resource" "assign_managed_identity" {
+  provisioner "local-exec" {
+    command = "az containerapp env identity assign --name ${azurerm_container_app_environment.app_environment.name} --resource-group ${local.resource_group_name} --system-assigned"
+  }
+  depends_on = [azurerm_container_app_environment.app_environment]
+}
+
 
 data "azurerm_dns_zone" "main" {
   count               = var.dns_zone != null ? 1 : 0

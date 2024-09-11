@@ -32,15 +32,6 @@ variable "location" {
   type        = string
 }
 
-// TODO: This variable can probably be removed. 
-// First test with a deployment if there is no problem in removing
-// this variable.
-variable "container_registry_server" {
-  description = "The server URL of the container registry."
-  type        = string
-  default     = null
-}
-
 variable "dns_zone" {
   description = "DNS zone config required if you want to link the deployed app to a subdomain in the given dns zone. Does not create a dns zone, only a subdomain."
   type = object({
