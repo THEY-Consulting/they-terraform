@@ -9,6 +9,23 @@ variable "create_new_resource_group" {
   default     = false
 }
 
+variable "key_vault_name" {
+  description = "Name of the key vault"
+  type        = string
+}
+
+variable "key_vault_resource_group_name" {
+  description = "Name of the resource group where the key vault is located"
+  type        = string
+  default     = null
+}
+
+variable "key_vault_secret_name" {
+  description = "Name of the key vault secret"
+  type        = string
+
+}
+
 variable "environment_certificate_name" {
   description = "value of the environment certificate name"
   type        = string
@@ -17,6 +34,7 @@ variable "environment_certificate_name" {
 variable "environment_certificate_blob_path" {
   description = "value of the environment certificate blob path"
   type        = string
+  default     = null
 }
 
 variable "enable_log_analytics" {
@@ -64,6 +82,8 @@ variable "container_apps" {
     tags                  = optional(map(string))
     revision_mode         = string
     workload_profile_name = optional(string)
+    cors_enabled          = optional(bool, false)
+    cors_allowed_origins  = optional(string) //TODO: maybe make this a list?
 
     template = object({
       containers = set(object({

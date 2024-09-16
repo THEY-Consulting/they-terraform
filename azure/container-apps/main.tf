@@ -5,11 +5,19 @@ resource "azurerm_container_app_environment" "app_environment" {
   log_analytics_workspace_id = var.enable_log_analytics ? azurerm_log_analytics_workspace.log_analytics_workspace[0].id : null
 }
 
-//TODO: how to fetch the path from somewhere else? Maybe Fileshare? or create secret (still wouldnt know how)?
+
+data "azurerm_key_vault" "key_vault" {
+  name                = var.key_vault_name
+  resource_group_name = var.key_vault_resource_group_name
+}
+data "azurerm_key_vault_secret" "secret" {
+  name         = var.key_vault_secret_name
+  key_vault_id = data.azurerm_key_vault.key_vault.id
+}
 resource "azurerm_container_app_environment_certificate" "example" {
   name                         = var.environment_certificate_name
   container_app_environment_id = azurerm_container_app_environment.app_environment.id
-  certificate_blob_base64      = sensitive(filebase64(var.environment_certificate_blob_path))
+  certificate_blob_base64      = data.azurerm_key_vault_secret.secret.value //sensitive(filebase64(var.environment_certificate_blob_path)) 
   certificate_password         = ""
 }
 

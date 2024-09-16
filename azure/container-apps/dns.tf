@@ -32,6 +32,21 @@ resource "null_resource" "assign_managed_identity" {
   depends_on = [azurerm_container_app_environment.app_environment]
 }
 
+//Enables cors for container apps to specific origins
+resource "null_resource" "cors_enabled" {
+  for_each = {
+    for k, v in var.container_apps : k => v
+    if v.cors_enabled == true
+  }
+
+  provisioner "local-exec" {
+    command = "az containerapp ingress cors enable -n ${azurerm_container_app.container_app[each.key].name} -g ${local.resource_group_name} --allowed-origins ${each.value.cors_allowed_origins}"
+  }
+
+  depends_on = [azurerm_container_app.container_app]
+
+}
+
 
 data "azurerm_dns_zone" "main" {
   count               = var.dns_zone != null ? 1 : 0
