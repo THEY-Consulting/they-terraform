@@ -486,6 +486,7 @@ module "auto-scaling-group" {
     environment = var.environment
   }))
   availability_zones = data.aws_availability_zones.azs.names[*] # Use AZs of region defined by provider.
+  vpc_id = "vpc-1234567890"
   vpc_cidr_block = "10.0.0.0/16"
   public_subnets = false
   certificate_arn = data.aws_acm_certificate.certificate.arn
@@ -520,7 +521,7 @@ module "auto-scaling-group" {
 ##### Inputs
 
 | Variable                 | Type         | Description                                                                                                                                   | Required | Default         |
-| ------------------------ | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------- |
+|--------------------------| ------------ |-----------------------------------------------------------------------------------------------------------------------------------------------| -------- |-----------------|
 | name                     | string       | Name of the Auto Scaling group (ASG)                                                                                                          | yes      |                 |
 | ami_id                   | string       | ID of AMI used in EC2 instances of ASG                                                                                                        | yes      |                 |
 | instance_type            | string       | Instance type used to deploy instances in ASG                                                                                                 | yes      |                 |
@@ -531,6 +532,7 @@ module "auto-scaling-group" {
 | user_data_file_name      | string       | The name of the local file in the working directory with the user data used in the instances of the ASG                                       | no       | `null`          |
 | user_data                | string       | User data to provide when launching instances of ASG. Use this to provide plain text instead of user_data_file_name.                          | no       | `null`          |
 | availability_zones       | list(string) | List of availability zones (AZs) names. A subnet is created for every AZ and the ASG instances are deployed across the different AZs          | yes      |                 |
+| vpc_id                   | string       | ID of VPC where the ASG will be deployed. If not provided, a new VPC will be created.                                                         | no       | `null`          |
 | vpc_cidr_block           | string       | The CIDR block of private IP addresses of the VPC. The subnets will be located within this CIDR block.                                        | no       | `"10.0.0.0/16"` |
 | public_subnets           | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                                      | no       | `false`         |
 | certificate_arn          | string       | ARN of certificate used to setup HTTPs in Application Load Balancer                                                                           | no       | `null`          |
@@ -547,11 +549,14 @@ module "auto-scaling-group" {
 
 ##### Outputs
 
-| Output          | Type         | Description                                         |
-| --------------- | ------------ | --------------------------------------------------- |
-| alb_dns         | string       | DNS of the Application Load Balancer of the ASG     |
-| alb_zone_id     | string       | Zone ID of the Application Load Balancer of the ASG |
-| nat_gateway_ips | list(string) | Public IPs of the NAT gateways                      |
+| Output             | Type         | Description                                         |
+|--------------------|--------------|-----------------------------------------------------|
+| alb_dns            | string       | DNS of the Application Load Balancer of the ASG     |
+| alb_zone_id        | string       | Zone ID of the Application Load Balancer of the ASG |
+| nat_gateway_ips    | list(string) | Public IPs of the NAT gateways                      |
+| security_group_id  | string       | ID of the security group                            |
+| private_subnet_ids | list(string) | IDs of the private subnets                          |
+| public_subnet_ids  | list(string) | IDs of the public subnets                           |
 
 #### Azure OpenID role
 

@@ -66,6 +66,12 @@ variable "availability_zones" {
   type        = list(string)
 }
 
+variable "vpc_id" {
+  description = "ID of VPC where the ASG will be deployed. If not provided, a new VPC will be created."
+  type        = string
+  default     = null
+}
+
 variable "vpc_cidr_block" {
   description = "The CIDR block of the VPC. The subnets will be located within this CIDR."
   type        = string
