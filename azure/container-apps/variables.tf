@@ -9,6 +9,16 @@ variable "create_new_resource_group" {
   default     = false
 }
 
+variable "environment_certificate_name" {
+  description = "value of the environment certificate name"
+  type        = string
+}
+
+variable "environment_certificate_blob_path" {
+  description = "value of the environment certificate blob path"
+  type        = string
+}
+
 variable "enable_log_analytics" {
   description = "If true, a log analytics workspace will be created."
   type        = bool

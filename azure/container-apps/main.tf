@@ -7,23 +7,11 @@ resource "azurerm_container_app_environment" "app_environment" {
 
 //TODO: how to fetch the path from somewhere else? Maybe Fileshare? or create secret (still wouldnt know how)?
 resource "azurerm_container_app_environment_certificate" "example" {
-  name                         = "app-env-cert"
+  name                         = var.environment_certificate_name
   container_app_environment_id = azurerm_container_app_environment.app_environment.id
-  certificate_blob_base64      = sensitive(filebase64("pathto/cert.pfx"))
+  certificate_blob_base64      = sensitive(filebase64(var.environment_certificate_blob_path))
   certificate_password         = ""
 }
-
-//CURRENTLY UNUSED RESOURCES
-//data "azurerm_key_vault" "example" {
-//  name                = "bdb-keyvault-elsa"
-//  resource_group_name = "ELS-PROD-DOMAIN" //local.resource_group_name
-//}
-//
-//data "azurerm_key_vault_certificate" "example" {
-//  name         = "wildcard-bankenverband-de"
-//  key_vault_id = data.azurerm_key_vault.example.id
-//}
-
 
 resource "azurerm_container_app" "container_app" {
   for_each = var.container_apps
