@@ -63,6 +63,20 @@ resource "aws_launch_template" "launch_template" {
     }
   }
 
+  dynamic "block_device_mappings" {
+    for_each = var.extra_ebs_volume_size != null ? [var.extra_ebs_volume_size] : []
+
+    content {
+      device_name = "/dev/sdf"
+
+      ebs {
+        volume_size           = var.extra_ebs_volume_size
+        delete_on_termination = true
+        encrypted             = true
+      }
+    }
+  }
+
   lifecycle {
     precondition {
       condition     = var.user_data == null || var.user_data_file_name == null

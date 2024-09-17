@@ -49,6 +49,12 @@ variable "user_data" {
   default     = null # Variable is optional.
 }
 
+variable "extra_ebs_volume_size" {
+  description = "Size of extra EBS volume to attach to instances."
+  type        = number
+  default     = null # Variable is optional.
+}
+
 variable "tags" {
   description = "Additional tags for the Auto Scaling Group."
   type        = map(string)
