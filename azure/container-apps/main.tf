@@ -1,26 +1,3 @@
-resource "azurerm_container_app_environment" "app_environment" {
-  name                       = var.name
-  location                   = local.resource_group_location
-  resource_group_name        = local.resource_group_name
-  log_analytics_workspace_id = var.enable_log_analytics ? azurerm_log_analytics_workspace.log_analytics_workspace[0].id : null
-}
-
-
-data "azurerm_key_vault" "key_vault" {
-  name                = var.key_vault_name
-  resource_group_name = var.key_vault_resource_group_name
-}
-data "azurerm_key_vault_secret" "secret" {
-  name         = var.key_vault_secret_name
-  key_vault_id = data.azurerm_key_vault.key_vault.id
-}
-resource "azurerm_container_app_environment_certificate" "example" {
-  name                         = var.environment_certificate_name
-  container_app_environment_id = azurerm_container_app_environment.app_environment.id
-  certificate_blob_base64      = data.azurerm_key_vault_secret.secret.value //sensitive(filebase64(var.environment_certificate_blob_path)) 
-  certificate_password         = ""
-}
-
 resource "azurerm_container_app" "container_app" {
   for_each = var.container_apps
 
@@ -109,4 +86,19 @@ resource "azurerm_container_app" "container_app" {
   }
 }
 
-# TODO: change to Workload profile, we are currently using Consumption profile.
+//Enables cors for container apps to specific origins
+resource "null_resource" "cors_enabled" {
+  for_each = {
+    for k, v in var.container_apps : k => v
+    if v.cors_enabled == true
+  }
+
+  provisioner "local-exec" {
+    command = "az containerapp ingress cors enable -n ${azurerm_container_app.container_app[each.key].name} -g ${local.resource_group_name} --allowed-origins ${each.value.cors_allowed_origins}"
+  }
+
+  depends_on = [azurerm_container_app.container_app]
+
+}
+
+# TODO: change to Workload profile, we are currently using Consumption Only profile.

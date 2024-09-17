@@ -14,39 +14,17 @@
 
 //also creates binding from custom domain to container app, but for bringing your own certificate
 //NOTE: explore if "azapi_resource" helps somehow
+//NOTE2: currently the managed certificate binding is commented out (see above) because we are mainly using BYOC. 
+//we still won't make it dynamic since we are not sure that this is the definitive version or whether we will be using azapi instead.
 resource "null_resource" "create_certificate_binding" {
   for_each = var.dns_zone != null ? var.container_apps : {}
 
   provisioner "local-exec" {
-    command = "az containerapp hostname bind --hostname ${each.value.subdomain}.${var.dns_zone.existing_dns_zone_name} -g ${local.resource_group_name} -n ${azurerm_container_app.container_app[each.key].name} --environment ${azurerm_container_app_environment.app_environment.name} --thumbprint ${azurerm_container_app_environment_certificate.example.thumbprint}"
+    command = "az containerapp hostname bind --hostname ${each.value.subdomain}.${var.dns_zone.existing_dns_zone_name} -g ${local.resource_group_name} -n ${azurerm_container_app.container_app[each.key].name} --environment ${azurerm_container_app_environment.app_environment.name} --thumbprint ${azurerm_container_app_environment_certificate.app_environment_certificate.thumbprint}"
   }
 
-  depends_on = [azurerm_container_app.container_app, azurerm_container_app_custom_domain.main, azurerm_container_app_environment_certificate.example]
+  depends_on = [azurerm_container_app.container_app, azurerm_container_app_custom_domain.main, azurerm_container_app_environment_certificate.app_environment_certificate]
 }
-
-//workaround to assigne managed identity to container app environment: as of now, the azurerm_container_app_environment does not support managed identity
-resource "null_resource" "assign_managed_identity" {
-  provisioner "local-exec" {
-    command = "az containerapp env identity assign --name ${azurerm_container_app_environment.app_environment.name} --resource-group ${local.resource_group_name} --system-assigned"
-  }
-  depends_on = [azurerm_container_app_environment.app_environment]
-}
-
-//Enables cors for container apps to specific origins
-resource "null_resource" "cors_enabled" {
-  for_each = {
-    for k, v in var.container_apps : k => v
-    if v.cors_enabled == true
-  }
-
-  provisioner "local-exec" {
-    command = "az containerapp ingress cors enable -n ${azurerm_container_app.container_app[each.key].name} -g ${local.resource_group_name} --allowed-origins ${each.value.cors_allowed_origins}"
-  }
-
-  depends_on = [azurerm_container_app.container_app]
-
-}
-
 
 data "azurerm_dns_zone" "main" {
   count               = var.dns_zone != null ? 1 : 0
@@ -60,7 +38,7 @@ resource "azurerm_dns_txt_record" "main" {
   name                = "asuid.${each.value.subdomain}" # asuid. is azure specific and required as prefix
   resource_group_name = data.azurerm_dns_zone.main[0].resource_group_name
   zone_name           = data.azurerm_dns_zone.main[0].name
-  ttl                 = 300
+  ttl                 = var.ttl
 
   record {
     value = azurerm_container_app_environment.app_environment.custom_domain_verification_id
@@ -72,7 +50,7 @@ resource "azurerm_dns_cname_record" "main" {
   name                = each.value.subdomain
   resource_group_name = data.azurerm_dns_zone.main[0].resource_group_name
   zone_name           = data.azurerm_dns_zone.main[0].name
-  ttl                 = 300
+  ttl                 = var.ttl
 
   record = azurerm_container_app.container_app[each.key].latest_revision_fqdn
 }

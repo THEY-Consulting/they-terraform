@@ -60,6 +60,12 @@ variable "location" {
   type        = string
 }
 
+variable "ttl" {
+  description = "The TTL of the DNS record in seconds."
+  type        = number
+  default     = 300
+}
+
 variable "dns_zone" {
   description = "DNS zone config required if you want to link the deployed app to a subdomain in the given dns zone. Does not create a dns zone, only a subdomain."
   type = object({
