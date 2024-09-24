@@ -93,12 +93,17 @@ resource "null_resource" "cors_enabled" {
     if v.cors_enabled == true
   }
 
+  //The idea was to use the wildcard * as allowed methods, since it is apparently allowed according to the documentation
+  // but that produces weird results (in portal it shows as providers.tf, container_apps.tf, etc...)
   provisioner "local-exec" {
-    command = "az containerapp ingress cors enable -n ${azurerm_container_app.container_app[each.key].name} -g ${local.resource_group_name} --allowed-origins ${each.value.cors_allowed_origins}"
+    command = "az containerapp ingress cors enable -n ${azurerm_container_app.container_app[each.key].name} -g ${local.resource_group_name} --allowed-origins ${each.value.cors_allowed_origins} --allowed-methods GET POST PUT DELETE PATCH"
   }
 
-  depends_on = [azurerm_container_app.container_app]
-
+  depends_on = [
+    azurerm_container_app.container_app, azurerm_container_app_custom_domain.main, azurerm_container_app_environment_certificate.app_environment_certificate, null_resource.create_certificate_binding
+  ]
+  // null_resource.create_certificate_binding was added here because otherwise these 2 null resources run in parallel, and in this way 
+  // we prevent the error: (ContainerAppOperationInProgress) Cannot modify a container app 'backend' because there is an active provisioning operation in progress. 
 }
 
 # TODO: change to Workload profile, we are currently using Consumption Only profile.
