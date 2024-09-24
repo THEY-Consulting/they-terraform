@@ -57,11 +57,13 @@ resource "azurerm_dns_cname_record" "main" {
 
 resource "azurerm_container_app_custom_domain" "main" {
   //# TODO?: replace with variable for URL or HOSTNAME
-  for_each                                 = var.dns_zone != null ? var.container_apps : {}
-  name                                     = "${each.value.subdomain}.${var.dns_zone.existing_dns_zone_name}"
-  container_app_id                         = azurerm_container_app.container_app[each.key].id
-  container_app_environment_certificate_id = azurerm_container_app_environment_certificate.app_environment_certificate[each.key].id
-  certificate_binding_type                 = var.certificate_binding_type
+  for_each         = var.dns_zone != null ? var.container_apps : {}
+  name             = "${each.value.subdomain}.${var.dns_zone.existing_dns_zone_name}"
+  container_app_id = azurerm_container_app.container_app[each.key].id
+  container_app_environment_certificate_id = var.unique_environment_certificate != null ? azurerm_container_app_environment_certificate.app_environment_certificate[0].id : azurerm_container_app_environment_certificate.app_environment_certificate[
+    index(keys(var.container_apps), each.key)
+  ].id
+  certificate_binding_type = var.certificate_binding_type
 
   //NOTE: apparently adding this last 2 attributes solved the destroy problem CertificateInUse: Certificate 'app-env-cert' is used by existing custom domains. 
   //TODO: 

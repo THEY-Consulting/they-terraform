@@ -15,20 +15,18 @@ variable "key_vault_name" { //TODO: should this be optional?
   default     = null
 }
 
+variable "unique_environment_certificate" {
+  description = "Used to create a unique environment certificate. To create a certificate per container app, set this to null and specify the key_vault_secret_name in the container app configuration."
+  type = object({
+    name                  = string
+    key_vault_secret_name = string
+    password              = optional(string) //currently not being used
+  })
+  default = null
+}
+
 variable "key_vault_resource_group_name" {
   description = "Name of the resource group where the key vault is located"
-  type        = string
-  default     = null
-}
-
-variable "key_vault_secret_name" { //TODO: do we still need this? (var on container app)
-  description = "Name of the key vault secret"
-  type        = string
-  default     = null
-}
-
-variable "environment_certificate_name" { //TODO: do we still need this?
-  description = "value of the environment certificate name"
   type        = string
   default     = null
 }
@@ -40,12 +38,6 @@ variable "workload_profile" {
     //https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/container_app_environment
   })
   default = null
-}
-
-variable "environment_certificate_blob_path" { //TODO: do we still need this?
-  description = "value of the environment certificate blob path"
-  type        = string
-  default     = null
 }
 
 variable "certificate_binding_type" {

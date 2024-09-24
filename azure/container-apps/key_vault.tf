@@ -4,7 +4,8 @@ data "azurerm_key_vault" "key_vault" {
 }
 
 data "azurerm_key_vault_secret" "secret" {
-  for_each     = var.container_apps
-  name         = each.value.key_vault_secret_name
+  count = var.unique_environment_certificate != null ? 1 : length(var.container_apps)
+
+  name         = var.unique_environment_certificate != null ? var.unique_environment_certificate.key_vault_secret_name : var.container_apps[keys(var.container_apps)[count.index]].key_vault_secret_name
   key_vault_id = data.azurerm_key_vault.key_vault.id
 }

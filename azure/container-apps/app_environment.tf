@@ -14,11 +14,15 @@ resource "azurerm_container_app_environment" "app_environment" {
 }
 
 resource "azurerm_container_app_environment_certificate" "app_environment_certificate" {
-  for_each                     = var.container_apps
-  name                         = "${each.value.name}-certificate"
+  count = var.unique_environment_certificate != null ? 1 : length(var.container_apps)
+
+  name = var.unique_environment_certificate != null ? var.unique_environment_certificate.name : "${var.container_apps[keys(var.container_apps)[count.index]].name}-certificate"
+
   container_app_environment_id = azurerm_container_app_environment.app_environment.id
-  certificate_blob_base64      = data.azurerm_key_vault_secret.secret[each.key].value
-  certificate_password         = "" //TODO: add this as a variable. But for each container app or a general one?
+
+  certificate_blob_base64 = data.azurerm_key_vault_secret.secret[var.unique_environment_certificate != null ? 0 : count.index].value
+
+  certificate_password = "" //var.unique_environment_certificate != null ? var.unique_environment_certificate.password : "" 
 
   timeouts {
     delete = "10m"
