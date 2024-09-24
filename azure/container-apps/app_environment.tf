@@ -3,14 +3,26 @@ resource "azurerm_container_app_environment" "app_environment" {
   location                   = local.resource_group_location
   resource_group_name        = local.resource_group_name
   log_analytics_workspace_id = var.enable_log_analytics ? azurerm_log_analytics_workspace.log_analytics_workspace[0].id : null
-  #TODO: add  workprofile attribute as a variable
+  dynamic "workload_profile" {
+    for_each = var.workload_profile != null ? [var.workload_profile] : []
+
+    content {
+      name                  = workload_profile.value.name
+      workload_profile_type = workload_profile.value.workload_profile_type
+    }
+  }
 }
 
 resource "azurerm_container_app_environment_certificate" "app_environment_certificate" {
-  name                         = var.environment_certificate_name
+  for_each                     = var.container_apps
+  name                         = "${each.value.name}-certificate"
   container_app_environment_id = azurerm_container_app_environment.app_environment.id
-  certificate_blob_base64      = data.azurerm_key_vault_secret.secret.value //sensitive(filebase64(var.environment_certificate_blob_path)) 
-  certificate_password         = ""
+  certificate_blob_base64      = data.azurerm_key_vault_secret.secret[each.key].value
+  certificate_password         = "" //TODO: add this as a variable. But for each container app or a general one?
+
+  timeouts {
+    delete = "10m"
+  }
 }
 
 //workaround to assigne managed identity to container app environment: as of now, the azurerm_container_app_environment does not support managed identity

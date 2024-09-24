@@ -16,15 +16,15 @@
 //NOTE: explore if "azapi_resource" helps somehow
 //NOTE2: currently the managed certificate binding is commented out (see above) because we are mainly using BYOC. 
 //we still won't make it dynamic since we are not sure that this is the definitive version or whether we will be using azapi instead.
-resource "null_resource" "create_certificate_binding" {
-  for_each = var.dns_zone != null ? var.container_apps : {}
-
-  provisioner "local-exec" {
-    command = "az containerapp hostname bind --hostname ${each.value.subdomain}.${var.dns_zone.existing_dns_zone_name} -g ${local.resource_group_name} -n ${azurerm_container_app.container_app[each.key].name} --environment ${azurerm_container_app_environment.app_environment.name} --thumbprint ${azurerm_container_app_environment_certificate.app_environment_certificate.thumbprint}"
-  }
-
-  depends_on = [azurerm_container_app.container_app, azurerm_container_app_custom_domain.main, azurerm_container_app_environment_certificate.app_environment_certificate]
-}
+//resource "null_resource" "create_certificate_binding" {
+//  for_each = var.dns_zone != null ? var.container_apps : {}
+//
+//  provisioner "local-exec" {
+//    command = "az containerapp hostname bind --hostname ${each.value.subdomain}.${var.dns_zone.existing_dns_zone_name} -g ${local.resource_group_name} -n ${azurerm_container_app.container_app[each.key].name} --environment ${azurerm_container_app_environment.app_environment.name} --thumbprint ${azurerm_container_app_environment_certificate.app_environment_certificate.thumbprint}"
+//  }
+//
+//  depends_on = [azurerm_container_app.container_app, azurerm_container_app_custom_domain.main, azurerm_container_app_environment_certificate.app_environment_certificate]
+//}
 
 data "azurerm_dns_zone" "main" {
   count               = var.dns_zone != null ? 1 : 0
@@ -60,8 +60,8 @@ resource "azurerm_container_app_custom_domain" "main" {
   for_each                                 = var.dns_zone != null ? var.container_apps : {}
   name                                     = "${each.value.subdomain}.${var.dns_zone.existing_dns_zone_name}"
   container_app_id                         = azurerm_container_app.container_app[each.key].id
-  container_app_environment_certificate_id = azurerm_container_app_environment_certificate.app_environment_certificate.id
-  certificate_binding_type                 = "SniEnabled"
+  container_app_environment_certificate_id = azurerm_container_app_environment_certificate.app_environment_certificate[each.key].id
+  certificate_binding_type                 = var.certificate_binding_type
 
   //NOTE: apparently adding this last 2 attributes solved the destroy problem CertificateInUse: Certificate 'app-env-cert' is used by existing custom domains. 
   //TODO: 

@@ -9,9 +9,10 @@ variable "create_new_resource_group" {
   default     = false
 }
 
-variable "key_vault_name" {
+variable "key_vault_name" { //TODO: should this be optional?
   description = "Name of the key vault"
   type        = string
+  default     = null
 }
 
 variable "key_vault_resource_group_name" {
@@ -20,21 +21,37 @@ variable "key_vault_resource_group_name" {
   default     = null
 }
 
-variable "key_vault_secret_name" {
+variable "key_vault_secret_name" { //TODO: do we still need this? (var on container app)
   description = "Name of the key vault secret"
   type        = string
-
+  default     = null
 }
 
-variable "environment_certificate_name" {
+variable "environment_certificate_name" { //TODO: do we still need this?
   description = "value of the environment certificate name"
   type        = string
+  default     = null
 }
 
-variable "environment_certificate_blob_path" {
+variable "workload_profile" {
+  type = object({
+    name                  = string
+    workload_profile_type = string // Possible values include Consumption, D4, D8, D16, D32, E4, E8, E16 and E32
+    //https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/container_app_environment
+  })
+  default = null
+}
+
+variable "environment_certificate_blob_path" { //TODO: do we still need this?
   description = "value of the environment certificate blob path"
   type        = string
   default     = null
+}
+
+variable "certificate_binding_type" {
+  description = "value of the certificate binding type"
+  type        = string
+  default     = "SniEnabled"
 }
 
 variable "enable_log_analytics" {
@@ -90,7 +107,7 @@ variable "container_apps" {
     workload_profile_name = optional(string)
     cors_enabled          = optional(bool, false)
     cors_allowed_origins  = optional(string) //TODO: maybe make this a list?
-
+    key_vault_secret_name = optional(string)
     template = object({
       containers = set(object({
         name   = string

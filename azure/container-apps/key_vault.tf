@@ -4,6 +4,7 @@ data "azurerm_key_vault" "key_vault" {
 }
 
 data "azurerm_key_vault_secret" "secret" {
-  name         = var.key_vault_secret_name
+  for_each     = var.container_apps
+  name         = each.value.key_vault_secret_name
   key_vault_id = data.azurerm_key_vault.key_vault.id
 }

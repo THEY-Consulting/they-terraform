@@ -100,7 +100,7 @@ resource "null_resource" "cors_enabled" {
   }
 
   depends_on = [
-    azurerm_container_app.container_app, azurerm_container_app_custom_domain.main, azurerm_container_app_environment_certificate.app_environment_certificate, null_resource.create_certificate_binding
+    azurerm_container_app.container_app, azurerm_container_app_custom_domain.main, azurerm_container_app_environment_certificate.app_environment_certificate, //null_resource.create_certificate_binding
   ]
   // null_resource.create_certificate_binding was added here because otherwise these 2 null resources run in parallel, and in this way 
   // we prevent the error: (ContainerAppOperationInProgress) Cannot modify a container app 'backend' because there is an active provisioning operation in progress. 
