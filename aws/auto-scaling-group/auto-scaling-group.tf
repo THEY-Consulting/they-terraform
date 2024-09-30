@@ -59,7 +59,7 @@ resource "aws_launch_template" "launch_template" {
   dynamic "iam_instance_profile" {
     for_each = length(var.policies) > 0 ? [1] : []
     content {
-      arn = resource.aws_iam_instance_profile.instance_profile[0].arn
+      arn = aws_iam_instance_profile.instance_profile[0].arn
     }
   }
 
