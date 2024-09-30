@@ -1,7 +1,7 @@
 output "arn" {
-  value = "TODO"
+  value = aws_sns_topic.main.arn
 }
 
 output "topic_name" {
-  value = "TODO"
+  value = aws_sns_topic.main.name
 }

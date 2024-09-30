@@ -22,7 +22,8 @@ variable "content_based_deduplication" {
 
 variable "archive_policy" {
   description = "JSON representation of the archive policy. Only available for FIFO topics." # TODO: perhaps add check with type="fifo"..?
-  type        = optional(string)                                                             # JSON encoded string #
+  type        = string
+  default     = null
 }
 
 variable "access_policy" {
@@ -37,7 +38,7 @@ variable "access_policy" {
 variable "sqs_feedback" {
   description = "These settings configure the logging of message delivery status to CloudWatch Logs. If omitted traffic to SQS won't be logged."
   type = object({
-    sample_rate_in_percent = 100
+    sample_rate_in_percent = number
     # TODO: auto generate the roles here
   })
   default = null # TODO: use try..? or set {} as default...?
