@@ -14,7 +14,7 @@ resource "azurerm_container_app_environment" "app_environment" {
 }
 
 resource "azurerm_container_app_environment_certificate" "app_environment_certificate" {
-  count = var.unique_environment_certificate != null ? 1 : length(var.container_apps)
+  count = var.dns_zone == null ? 0 : var.unique_environment_certificate != null ? 1 : length(var.container_apps)
 
   name = var.unique_environment_certificate != null ? var.unique_environment_certificate.name : "${var.container_apps[keys(var.container_apps)[count.index]].name}-certificate"
 
@@ -22,17 +22,16 @@ resource "azurerm_container_app_environment_certificate" "app_environment_certif
 
   certificate_blob_base64 = data.azurerm_key_vault_secret.secret[var.unique_environment_certificate != null ? 0 : count.index].value
 
-  certificate_password = "" //var.unique_environment_certificate != null ? var.unique_environment_certificate.password : "" 
+  certificate_password = var.unique_environment_certificate != null ? var.unique_environment_certificate.password : ""
 
-  timeouts {
-    delete = "10m"
-  }
 }
 
-//workaround to assigne managed identity to container app environment: as of now, the azurerm_container_app_environment does not support managed identity
 resource "null_resource" "assign_managed_identity" {
+  count = var.is_system_assigned ? 1 : 0
+
   provisioner "local-exec" {
     command = "az containerapp env identity assign --name ${azurerm_container_app_environment.app_environment.name} --resource-group ${local.resource_group_name} --system-assigned"
   }
+
   depends_on = [azurerm_container_app_environment.app_environment]
 }

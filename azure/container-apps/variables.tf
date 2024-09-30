@@ -9,7 +9,13 @@ variable "create_new_resource_group" {
   default     = false
 }
 
-variable "key_vault_name" { //TODO: should this be optional?
+variable "is_system_assigned" {
+  description = "If true, a system-assigned managed identity will be created."
+  type        = bool
+  default     = false
+}
+
+variable "key_vault_name" {
   description = "Name of the key vault"
   type        = string
   default     = null
@@ -20,7 +26,7 @@ variable "unique_environment_certificate" {
   type = object({
     name                  = string
     key_vault_secret_name = string
-    password              = optional(string) //currently not being used
+    password              = optional(string, "")
   })
   default = null
 }
