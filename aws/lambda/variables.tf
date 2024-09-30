@@ -68,6 +68,50 @@ variable "bucket_trigger" {
   default = null
 }
 
+variable "sqs_trigger" {
+  description = "SQS trigger configuration."
+  type = object({
+    name = string
+    visibility_timeout = optional(number)
+    message_retention= optional(number)
+    max_message_size = optional(number)
+    access_policy    = optional(string)
+    # ToDo looks sth like this:
+#     {
+#     "Version": "2012-10-17",
+#     "Id": "__default_policy_ID",
+#     "Statement": [
+#       {
+#         "Sid": "__owner_statement",
+#         "Effect": "Allow",
+#         "Principal": {
+#           "AWS": "arn:aws:iam::749963754311:root"
+#         },
+#         "Action": "SQS:*",
+#         "Resource": "arn:aws:sqs:eu-central-1:749963754311:UberallSyncTest.fifo"
+#       },
+#       {
+#         "Sid": "allow sns to send to sqs",
+#         "Effect": "Allow",
+#         "Principal": {
+#           "AWS": "*"
+#         },
+#         "Action": "SQS:SendMessage",
+#         "Resource": "arn:aws:sqs:eu-central-1:749963754311:UberallSyncTest.fifo",
+#         "Condition": {
+#           "ArnLike": {
+#             "aws:SourceArn": "arn:aws:sns:eu-central-1:749963754311:UberallSyncTest.fifo"
+#           }
+#         }
+#       }
+#     ]
+#   }
+    fifo = optional(bool, false)
+    arn  = string
+  })
+  default = null
+}
+
 variable "role_arn" {
   description = "ARN of the role used for executing the lambda function."
   type        = string
