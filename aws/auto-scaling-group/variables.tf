@@ -72,6 +72,12 @@ variable "availability_zones" {
   type        = list(string)
 }
 
+variable "single_availability_zone" {
+  description = "Specify true to deploy all ASG instances in the same zone. Otherwise, the ASG will be deployed across multiple availability zones."
+  type        = bool
+  default     = false
+}
+
 variable "vpc_id" {
   description = "ID of VPC where the ASG will be deployed. If not provided, a new VPC will be created."
   type        = string

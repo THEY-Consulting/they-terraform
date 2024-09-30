@@ -2,7 +2,7 @@ data "aws_default_tags" "current" {}
 
 resource "aws_autoscaling_group" "asg" {
   name                 = var.name
-  vpc_zone_identifier  = aws_subnet.instances_subnets[*].id
+  vpc_zone_identifier  = var.single_availability_zone ? [aws_subnet.instances_subnets[0].id] : aws_subnet.instances_subnets[*].id
   desired_capacity     = var.desired_capacity
   min_size             = var.min_size
   max_size             = var.max_size

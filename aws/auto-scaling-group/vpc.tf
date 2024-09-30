@@ -113,12 +113,16 @@ resource "aws_route_table" "rt_private_subnets" {
     gateway_id = "local"
   }
 
-  # Re-route internet traffic to NAT gateway.
-  # NAT gateway lies within a public subnet that can 
-  # forward internet traffic to the internet gateway.
   route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.natgw[count.index].id
+    cidr_block = "0.0.0.0/0"
+
+    # Re-route internet traffic to NAT gateway in private subnets.
+    # NAT gateway lies within a public subnet that can
+    # forward internet traffic to the internet gateway.
+    nat_gateway_id = var.public_subnets ? null : aws_nat_gateway.natgw[count.index].id
+
+    # Re-route internet traffic to internet gateway in public subnets.
+    gateway_id = var.public_subnets ? aws_internet_gateway.igw.id : null
   }
 
   tags = merge(var.tags, {
