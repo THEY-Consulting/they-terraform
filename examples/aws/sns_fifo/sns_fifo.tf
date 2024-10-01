@@ -14,9 +14,11 @@ module "sns_fifo" {
   name = local.topic_name
   is_fifo= true
   content_based_deduplication = false
-  archive_policy = jsonencode({
-     "MessageRetentionPeriod": 30
-   })
+  #   below is commented out as set archive_policy will prevent deletion via tf
+  #   if needed for prod below is an example of how to set it
+    archive_policy = jsonencode({
+       "MessageRetentionPeriod": 30
+     })
   sqs_feedback = {
     sample_rate_in_percent = 100
   }
