@@ -20,7 +20,7 @@ terraform {
 // default provider that is used when no other provider
 // is specified explicitly
 provider "aws" {
-  region = "eu-west-1"
+  region = "eu-central-1"
 
   default_tags {
     tags = {

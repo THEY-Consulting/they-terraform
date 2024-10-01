@@ -9,26 +9,24 @@ data "aws_caller_identity" "current" {}
 # --- RESOURCES / MODULES ---
 module "sns_fifo" {
   # source = "github.com/THEY-Consulting/they-terraform//aws/sns"
-  source = "../../../aws/sns"
-  description = "this is a test fifo topic"
-  name = local.topic_name
-  is_fifo= true
+  source                      = "../../../aws/sns"
+  description                 = "this is a test fifo topic"
+  name                        = local.topic_name
+  is_fifo                     = true
   content_based_deduplication = false
-  #   below is commented out as set archive_policy will prevent deletion via tf
-  #   if needed for prod below is an example of how to set it
-    archive_policy = jsonencode({
-       "MessageRetentionPeriod": 30
-     })
+  archive_policy = jsonencode({
+    "MessageRetentionPeriod" : 30
+  })
   sqs_feedback = {
     sample_rate_in_percent = 100
   }
   access_policy = jsonencode({
-    Version="2012-10-17",
-    Statement: [
+    Version = "2012-10-17",
+    Statement : [
       {
-        Effect ="Allow",
+        Effect    = "Allow",
         Principal = "*",
-        Action: [
+        Action : [
           "SNS:Publish",
           "SNS:RemovePermission",
           "SNS:SetTopicAttributes",
@@ -52,9 +50,9 @@ module "sns_fifo" {
 
 # --- OUTPUT ---
 output "arn" {
-    value = module.sns_fifo.arn
+  value = module.sns_fifo.arn
 }
 
 output "name" {
-    value = module.sns_fifo.topic_name
+  value = module.sns_fifo.topic_name
 }
