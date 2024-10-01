@@ -12,14 +12,14 @@ module "sns_fifo" {
   source                      = "../../../aws/sns"
   description                 = "this is a test fifo topic"
   name                        = local.topic_name
-  is_fifo                     = true
+  is_fifo                     = false
   content_based_deduplication = false
   archive_policy = jsonencode({
     "MessageRetentionPeriod" : 30
   })
-  sqs_feedback = {
-    sample_rate_in_percent = 100
-  }
+  # sqs_feedback = {
+  #   sample_rate_in_percent = 100
+  # }
   access_policy = jsonencode({
     Version = "2012-10-17",
     Statement : [

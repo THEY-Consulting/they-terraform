@@ -5,6 +5,21 @@ resource "aws_sns_topic" "main" {
   archive_policy                   = var.archive_policy
   policy                           = var.access_policy
   sqs_success_feedback_sample_rate = var.sqs_feedback != null ? var.sqs_feedback.sample_rate_in_percent : null
+  sqs_success_feedback_role_arn    = aws_iam_role.sns_feedback_role.arn
+  sqs_failure_feedback_role_arn    = aws_iam_role.sns_feedback_role.arn
+
+  lifecycle {
+    precondition {
+      condition     = var.is_fifo ? var.is_fifo && endswith(var.name, ".fifo") : true
+      error_message = "FIFO topic name must end with .fifo."
+    }
+
+    precondition {
+      condition     = var.is_fifo ? true : !var.is_fifo && !endswith(var.name, ".fifo")
+      error_message = "Non FIFO topic name must not end with .fifo."
+    }
+
+  }
 
   tags = var.tags
 }
