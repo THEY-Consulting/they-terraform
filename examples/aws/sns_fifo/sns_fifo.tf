@@ -17,9 +17,9 @@ module "sns_fifo" {
   archive_policy = jsonencode({
     "MessageRetentionPeriod" : 30
   })
-  # sqs_feedback = {
-  #   sample_rate_in_percent = 100
-  # }
+  sqs_feedback = {
+    sample_rate_in_percent = 100
+  }
   access_policy = jsonencode({
     Version = "2012-10-17",
     Statement : [

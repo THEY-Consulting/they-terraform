@@ -298,7 +298,7 @@ module "lambda" {
 | build             | object | Build output                                                     |
 | archive_file_path | string | Path to the generated archive file                               |
 
-#### Lambda
+#### SNS
 
 ```hcl
 data "aws_region" "current" {}
