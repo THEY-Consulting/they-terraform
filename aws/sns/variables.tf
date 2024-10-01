@@ -40,6 +40,13 @@ variable "sqs_feedback" {
   default = null
 }
 
+variable "kms_master_key_id" {
+  description = "KMS key id used for encryption."
+  type        = string
+  # Default alias for AWS managed key. See: https://docs.aws.amazon.com/sns/latest/dg/sns-server-side-encryption.html#sse-key-terms
+  default = "alias/aws/sns"
+}
+
 variable "tags" {
   description = "Map of tags to assign to the SNS Topic and related resources."
   type        = map(string)

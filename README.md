@@ -345,16 +345,17 @@ module "sns" {
 
 ##### Inputs
 
-| Variable                    | Type        | Description                                                                                | Required | Default |
-| --------------------------- | ----------- | ------------------------------------------------------------------------------------------ | -------- | ------- |
-| access_policy               | string      | JSON representation of the access policy.                                                  | yes      |         |
-| description                 | string      | Description of the SNS topic                                                               | yes      |         |
-| name                        | string      | Name of the SNS topic                                                                      | yes      |         |
-| archive_policy              | string      | (FIFO only) JSON representation of the archive policy.                                     | no       | `null`  |
-| content_based_deduplication | bool        | Enables or disables deduplication based on the message content                             | no       | `false` |
-| is_fifo                     | bool        | Determines topic type. If `true` created a FIFO topic, otherwise creates a standard topic. | no       | `true`  |
-| sqs_feedback                | object      | Configures logging message delivery status to Cloudwatch.                                  | no       | `null`  |
-| tags                        | map(string) | Map of tags to assign to the Lambda Function and related resources                         | no       | `{}`    |
+| Variable                    | Type        | Description                                                                                | Required | Default         |
+| --------------------------- | ----------- | ------------------------------------------------------------------------------------------ | -------- | --------------- |
+| access_policy               | string      | JSON representation of the access policy.                                                  | yes      |                 |
+| description                 | string      | Description of the SNS topic                                                               | yes      |                 |
+| name                        | string      | Name of the SNS topic                                                                      | yes      |                 |
+| archive_policy              | string      | (FIFO only) JSON representation of the archive policy.                                     | no       | `null`          |
+| content_based_deduplication | bool        | Enables or disables deduplication based on the message content                             | no       | `false`         |
+| is_fifo                     | bool        | Determines topic type. If `true` created a FIFO topic, otherwise creates a standard topic. | no       | `true`          |
+| kms_master_key_id           | string      | KMS key id used for encryption. Defaults to the AWS managed one.                           | no       | `alias/aws/sns` |
+| sqs_feedback                | object      | Configures logging message delivery status to Cloudwatch.                                  | no       | `null`          |
+| tags                        | map(string) | Map of tags to assign to the Lambda Function and related resources                         | no       | `{}`            |
 
 ##### Outputs
 
