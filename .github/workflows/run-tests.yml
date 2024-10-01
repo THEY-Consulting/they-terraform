@@ -52,7 +52,7 @@ jobs:
             terraform test
             cd $cwd
           done
-          cd azure
+          cd ../azure
           cwd=$(pwd)
           dirs=$(find . -maxdepth 2 -name "tests" -o -name "*.tftest.hcl" | sed -r 's|/[^/]+$||' | sort -u)
           for d in $dirs; do
