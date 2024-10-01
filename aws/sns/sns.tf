@@ -25,6 +25,8 @@ resource "aws_sns_topic" "main" {
 }
 
 resource "null_resource" "remove_archive_policy" {
+  count = var.archive_policy != null ? 1 : 0
+
   # We need triggers to be able to access another resource within the local-exec on 'destroy'.
   triggers = {
     topic_arn = aws_sns_topic.main.arn
