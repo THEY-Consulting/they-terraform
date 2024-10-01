@@ -18,7 +18,6 @@ resource "aws_sns_topic" "main" {
       condition     = var.is_fifo ? true : !var.is_fifo && !endswith(var.name, ".fifo")
       error_message = "Non FIFO topic name must not end with .fifo."
     }
-
   }
 
   tags = var.tags

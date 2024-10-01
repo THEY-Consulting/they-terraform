@@ -1,5 +1,5 @@
 variable "name" {
-  description = "Name of the SNS topic. Must end with '.fifo' for a FIFO(First-In-First-Out) topic." # TODO: perhaps add check with type="fifo"
+  description = "Name of the SNS topic. Must end with '.fifo' for a FIFO(First-In-First-Out) topic."
   type        = string
 
 }
@@ -16,19 +16,19 @@ variable "is_fifo" {
 }
 
 variable "content_based_deduplication" {
-  description = "Enable or disable depucliation based on the message content. If enabled no message deduplication id is no longer required when sending messages to this topic."
+  description = "Enables or disables deduplication based on the message content. If enabled no message deduplication id is no longer required when sending messages to this topic."
   type        = bool
   default     = false
 }
 
 variable "archive_policy" {
-  description = "JSON representation of the archive policy. Only available for FIFO topics." # TODO: perhaps add check with type="fifo"..?
+  description = "JSON representation of the archive policy. Only available for FIFO topics."
   type        = string
   default     = null
 }
 
 variable "access_policy" {
-  description = "JSON representation of the access policy. Defines who is authorized to do what with the topic." # TODO: perhaps default to 'whole account'.. Or just require this.
+  description = "JSON representation of the access policy. Defines who is authorized to do what with the topic."
   type        = string
 }
 
