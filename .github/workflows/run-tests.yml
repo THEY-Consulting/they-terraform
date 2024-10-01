@@ -42,9 +42,8 @@ jobs:
 
       - name: Run tests
         run: |
-          cd examples
           cwd=$(pwd)
-          dirs=$(find . -maxdepth 3 -name "tests" -o -name "*.tftest.hcl" | sed -r 's|/[^/]+$||' | sort -u)
+          dirs=$(find . -maxdepth 4 -name "tests" -o -name "*.tftest.hcl" | sed -r 's|/[^/]+$||' | sort -u)
           for d in $dirs; do
             cd $d
             echo "TERRAFORM TEST FOR $d"
