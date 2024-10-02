@@ -48,7 +48,7 @@ variable "dead_letter_queue_config" {
   type = object({
     name                      = string
     max_receive_count         = number
-    message_retention_seconds = number # TODO: should be higher than var.message_retention_seconds!
+    message_retention_seconds = number
   })
   default = null
 }
@@ -58,18 +58,6 @@ variable "sns_topic_arn_for_subscription" {
   type        = string
   default     = null
 }
-
-# TODO: does this exist for SQS..?
-# variable "sqs_feedback" {
-#   description = "These settings configure the logging of message delivery status to CloudWatch Logs. If omitted traffic to SQS won't be logged."
-#   type = object({
-#     sample_rate_in_percent = number
-#   })
-#   default = null
-# }
-
-# TODO: should we even make this configurable now..?
-# sqs_managed_sse_enabled
 
 variable "tags" {
   description = "Map of tags to assign to the SQS queue and related resources."

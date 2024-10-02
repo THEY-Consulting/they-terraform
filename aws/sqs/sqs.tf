@@ -24,6 +24,13 @@ resource "aws_sqs_queue" "dlq" {
     ]
   }
   EOF
+
+  lifecycle {
+    precondition {
+      condition     = var.dead_letter_queue_config.message_retention_seconds > var.message_retention_seconds
+      error_message = "Message retention seconds of DLQ must be higher than of connected SQS"
+    }
+  }
 }
 
 resource "aws_sqs_queue" "main" {
@@ -33,12 +40,24 @@ resource "aws_sqs_queue" "main" {
   message_retention_seconds   = var.message_retention_seconds
   name                        = var.name
   policy                      = var.access_policy
-  redrive_policy = var.dead_letter_queue_config.name != null ? jsonencode({
+  redrive_policy = var.dead_letter_queue_config == null ? "{}" : jsonencode({
     deadLetterTargetArn = aws_sqs_queue.dlq[0].arn
     maxReceiveCount     = var.dead_letter_queue_config.max_receive_count
-  }) : "{}"
+  })
   sqs_managed_sse_enabled    = true
   visibility_timeout_seconds = var.visibility_timeout_seconds
+
+  lifecycle {
+    precondition {
+      condition     = var.is_fifo ? var.is_fifo && endswith(var.name, ".fifo") : true
+      error_message = "FIFO queue name must end with .fifo."
+    }
+
+    precondition {
+      condition     = var.is_fifo ? true : !var.is_fifo && !endswith(var.name, ".fifo")
+      error_message = "Non FIFO queue name must not end with .fifo."
+    }
+  }
 }
 
 resource "aws_sns_topic_subscription" "main" {
