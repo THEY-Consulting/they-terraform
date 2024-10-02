@@ -11,6 +11,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
   - [AWS](#aws)
     - [RDS postgres database](#rds-postgres-database)
     - [Lambda](#lambda)
+    - [SNS](#sns)
     - [API Gateway (REST)](#api-gateway-rest)
     - [S3 Bucket](#s3-bucket)
     - [Auto Scaling group](#auto-scaling-group)
@@ -296,6 +297,72 @@ module "lambda" {
 | invoke_arn        | string | The ARN to be used for invoking Lambda Function from API Gateway |
 | build             | object | Build output                                                     |
 | archive_file_path | string | Path to the generated archive file                               |
+
+#### SNS
+
+```hcl
+data "aws_region" "current" {}
+data "aws_caller_identity" "current" {}
+
+module "sns" {
+  # source = "github.com/THEY-Consulting/they-terraform//aws/sns"
+  source                      = "../../../aws/sns"
+  description                 = "this is a test topic"
+  name                        = local.topic_name
+  is_fifo                     = false
+  content_based_deduplication = false
+  sqs_feedback = {
+    sample_rate_in_percent = 100
+  }
+  access_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement : [
+      {
+        Effect    = "Allow",
+        Principal = "*",
+        Action : [
+          "SNS:Publish",
+          "SNS:RemovePermission",
+          "SNS:SetTopicAttributes",
+          "SNS:DeleteTopic",
+          "SNS:ListSubscriptionsByTopic",
+          "SNS:GetTopicAttributes",
+          "SNS:AddPermission",
+          "SNS:Subscribe"
+        ],
+        Resource = "arn:aws:sns:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:${local.topic_name}",
+      }
+    ]
+  })
+
+
+  tags = {
+    Project   = "they-terraform-examples"
+    CreatedBy = "terraform"
+  }
+}
+```
+
+##### Inputs
+
+| Variable                    | Type        | Description                                                                                | Required | Default         |
+| --------------------------- | ----------- | ------------------------------------------------------------------------------------------ | -------- | --------------- |
+| access_policy               | string      | JSON representation of the access policy.                                                  | yes      |                 |
+| description                 | string      | Description of the SNS topic                                                               | yes      |                 |
+| name                        | string      | Name of the SNS topic                                                                      | yes      |                 |
+| archive_policy              | string      | (FIFO only) JSON representation of the archive policy.                                     | no       | `null`          |
+| content_based_deduplication | bool        | Enables or disables deduplication based on the message content                             | no       | `false`         |
+| is_fifo                     | bool        | Determines topic type. If `true` created a FIFO topic, otherwise creates a standard topic. | no       | `true`          |
+| kms_master_key_id           | string      | KMS key id used for encryption. Defaults to the AWS managed one.                           | no       | `alias/aws/sns` |
+| sqs_feedback                | object      | Configures logging message delivery status to Cloudwatch.                                  | no       | `null`          |
+| tags                        | map(string) | Map of tags to assign to the Lambda Function and related resources                         | no       | `{}`            |
+
+##### Outputs
+
+| Output     | Type   | Description                                               |
+| ---------- | ------ | --------------------------------------------------------- |
+| arn        | string | The Amazon Resource Name (ARN) identifying your SNS topic |
+| topic_name | string | The name of the topic                                     |
 
 #### API Gateway (REST)
 
