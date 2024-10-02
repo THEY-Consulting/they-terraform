@@ -22,7 +22,7 @@ module "sqs" {
     max_receive_count         = 1
     message_retention_seconds = 1209600 # 14 days, must be higher than message_retention_seconds in module
   }
-  sns_topic_arn_for_subscription = "arn:aws:sns:eu-central-1:749963754311:UberallSyncTest.fifo"
+  sns_topic_arn_for_subscription = "arn:aws:sns:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:they-test-sns.fifo"
   access_policy = jsonencode({ Version = "2012-10-17", Statement = [
     {
       Sid    = "AllowAllSQSActionsToCurrentAccount",
