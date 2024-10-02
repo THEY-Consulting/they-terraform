@@ -1,0 +1,53 @@
+data "aws_region" "current" {}
+data "aws_caller_identity" "current" {}
+
+resource "aws_sqs_queue" "dlq" {
+  count                     = var.dead_letter_queue_config != null ? 1 : 0
+  message_retention_seconds = var.dead_letter_queue_config.message_retention_seconds
+  name                      = var.dead_letter_queue_config.name
+  sqs_managed_sse_enabled   = true
+
+  # TODO: maybe use custom variable..?
+  content_based_deduplication = var.content_based_deduplication
+  fifo_queue                  = var.is_fifo
+  max_message_size            = var.max_message_size
+  # allows the 'to be created' sqs to write to the DLQ
+  policy = <<EOF
+  {
+    "Version": "2012-10-17",
+    "Id": "__default_policy_ID",
+    "Statement": [
+      {
+        "Sid": "__owner_statement",
+        "Effect": "Allow",
+        "Action": "SQS:*",
+        "Resource": "arn:aws:sqs:${data.aws_region.current.name}:${data.aws_caller_identity.current.id}:${var.name}"
+      }
+    ]
+  }
+  EOF
+}
+
+resource "aws_sqs_queue" "main" {
+  content_based_deduplication = var.content_based_deduplication
+  fifo_queue                  = var.is_fifo
+  max_message_size            = var.max_message_size
+  message_retention_seconds   = var.message_retention_seconds
+  name                        = var.name
+  policy                      = var.access_policy
+  redrive_policy = var.dead_letter_queue_config.name != null ? jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.dlq[0].arn
+    maxReceiveCount     = var.dead_letter_queue_config.max_receive_count
+  }) : "{}"
+  sqs_managed_sse_enabled    = true
+  visibility_timeout_seconds = var.visibility_timeout_seconds
+  # TODO: maybe use this?
+  # max_message_size        = var.max_message_size == null ? null : var.sqs_trigger.max_message_size
+}
+
+resource "aws_sns_topic_subscription" "main" {
+  count     = var.sns_topic_arn_for_subscription == null ? 0 : 1
+  topic_arn = var.sns_topic_arn_for_subscription
+  protocol  = "sqs"
+  endpoint  = aws_sqs_queue.main.arn
+}

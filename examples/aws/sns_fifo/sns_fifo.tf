@@ -25,7 +25,7 @@ module "sns_fifo" {
     Statement : [
       {
         Effect    = "Allow",
-        Principal = "*",
+        Principal = data.aws_caller_identity.current.arn,
         Action : [
           "SNS:Publish",
           "SNS:RemovePermission",
