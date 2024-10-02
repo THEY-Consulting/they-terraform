@@ -7,18 +7,16 @@ resource "aws_sqs_queue" "dlq" {
   name                      = var.dead_letter_queue_config.name
   sqs_managed_sse_enabled   = true
 
-  # TODO: maybe use custom variable..?
   content_based_deduplication = var.content_based_deduplication
   fifo_queue                  = var.is_fifo
   max_message_size            = var.max_message_size
-  # allows the 'to be created' sqs to write to the DLQ
-  policy = <<EOF
+  policy                      = <<EOF
   {
     "Version": "2012-10-17",
-    "Id": "__default_policy_ID",
+    "Id": "AllowSQSToWriteToDLQ",
     "Statement": [
       {
-        "Sid": "__owner_statement",
+        "Sid": "AllowSQSActions",
         "Effect": "Allow",
         "Action": "SQS:*",
         "Resource": "arn:aws:sqs:${data.aws_region.current.name}:${data.aws_caller_identity.current.id}:${var.name}"
@@ -41,8 +39,6 @@ resource "aws_sqs_queue" "main" {
   }) : "{}"
   sqs_managed_sse_enabled    = true
   visibility_timeout_seconds = var.visibility_timeout_seconds
-  # TODO: maybe use this?
-  # max_message_size        = var.max_message_size == null ? null : var.sqs_trigger.max_message_size
 }
 
 resource "aws_sns_topic_subscription" "main" {
