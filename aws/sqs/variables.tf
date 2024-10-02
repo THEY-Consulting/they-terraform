@@ -32,9 +32,9 @@ variable "max_message_size" {
 }
 
 variable "message_retention_seconds" {
-  description = "The number of seconds Amazon SQS retains a message. "
+  description = "The number of seconds Amazon SQS retains a message. Defaults to 345600 (4 days)"
   type        = number
-  default     = null
+  default     = 345600
 }
 
 variable "visibility_timeout_seconds" {
