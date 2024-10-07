@@ -1,5 +1,5 @@
 locals {
-  queue_name = "they-test-sqs"
+  queue_name = "they-test-sqs.fifo"
 }
 
 # ---- DATA ----
@@ -10,9 +10,9 @@ data "aws_caller_identity" "current" {}
 module "sqs" {
   # source = "github.com/THEY-Consulting/they-terraform//aws/sqs"
   source                      = "../../../aws/sqs"
-  description                 = "this is a test queue"
+  description                 = "this is a test fifo queue"
   name                        = local.queue_name
-  is_fifo                     = false
+  is_fifo                     = true
   content_based_deduplication = false
   max_message_size            = 262144 # 256KB
   message_retention_seconds   = 345600 # 4 days
