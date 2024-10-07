@@ -71,12 +71,6 @@ jobs:
           for d in $dirs; do
             cd $d
             echo "TERRAFORM TEST FOR $d"
-            # Install dependencies
-            if [ -f "yarn.lock" ]; then
-              yarn install
-            elif [ -f "package-lock.json" ]; then
-              npm install
-            fi
             terraform init
             terraform test
             cd $cwd
