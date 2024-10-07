@@ -63,3 +63,36 @@ resource "aws_iam_role" "role" {
 
   tags = var.tags
 }
+
+data "aws_iam_policy_document" "sqs_permissions" {
+  count = var.sqs_trigger != null ? 1 : 0
+
+  statement {
+    sid       = "AllowSQSPermissions"
+    effect    = "Allow"
+    resources = ["arn:aws:sqs:*"]
+
+    actions = [
+      "sqs:ChangeMessageVisibility",
+      "sqs:DeleteMessage",
+      "sqs:GetQueueAttributes",
+      "sqs:ReceiveMessage",
+    ]
+  }
+}
+
+resource "aws_iam_policy" "sqs_permissions" {
+  count = var.sqs_trigger != null ? 1 : 0
+
+  name   = "sqs-permissions-${var.name}"
+  policy = data.aws_iam_policy_document.sqs_permissions[0].json
+}
+
+resource "aws_iam_role_policy_attachment" "sqs_permissions" {
+  count = var.sqs_trigger != null ? 1 : 0
+
+  policy_arn = aws_iam_policy.sqs_permissions[0].arn
+  role       = aws_iam_role.role[0].name
+}
+
+

@@ -63,3 +63,12 @@ resource "aws_lambda_permission" "bucket_trigger_lambda_func_permission" {
   principal     = "s3.amazonaws.com"
   source_arn    = data.aws_s3_bucket.source.0.arn
 }
+
+
+/* SQS EVENT TRIGGER */
+resource "aws_lambda_event_source_mapping" "sqs_trigger_lambda" {
+  count = var.sqs_trigger != null ? 1 : 0
+
+  event_source_arn = var.sqs_trigger.arn
+  function_name    = aws_lambda_function.lambda_func.function_name
+}
