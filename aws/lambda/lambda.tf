@@ -45,5 +45,13 @@ resource "aws_lambda_function" "lambda_func" {
     }
   }
 
+  dynamic "file_system_config" {
+    for_each = var.mount_efs != null ? [var.mount_efs] : []
+    content {
+      arn              = file_system_config.value
+      local_mount_path = "/mnt/efs"
+    }
+  }
+
   tags = var.tags
 }

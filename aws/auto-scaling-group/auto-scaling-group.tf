@@ -2,7 +2,7 @@ data "aws_default_tags" "current" {}
 
 resource "aws_autoscaling_group" "asg" {
   name                 = var.name
-  vpc_zone_identifier  = aws_subnet.instances_subnets[*].id
+  vpc_zone_identifier  = var.single_availability_zone ? [aws_subnet.instances_subnets[0].id] : aws_subnet.instances_subnets[*].id
   desired_capacity     = var.desired_capacity
   min_size             = var.min_size
   max_size             = var.max_size
@@ -59,7 +59,21 @@ resource "aws_launch_template" "launch_template" {
   dynamic "iam_instance_profile" {
     for_each = length(var.policies) > 0 ? [1] : []
     content {
-      arn = resource.aws_iam_instance_profile.instance_profile[0].arn
+      arn = aws_iam_instance_profile.instance_profile[0].arn
+    }
+  }
+
+  dynamic "block_device_mappings" {
+    for_each = var.extra_ebs_volume_size != null ? [var.extra_ebs_volume_size] : []
+
+    content {
+      device_name = "/dev/sdf"
+
+      ebs {
+        volume_size           = var.extra_ebs_volume_size
+        delete_on_termination = true
+        encrypted             = true
+      }
     }
   }
 

@@ -115,6 +115,12 @@ variable "vpc_config" {
   default = null
 }
 
+variable "mount_efs" {
+  description = "ARN of the EFS file system to mount."
+  type        = string
+  default     = null
+}
+
 variable "publish" {
   description = "Whether to publish creation/change as new Lambda Function Version."
   type        = bool

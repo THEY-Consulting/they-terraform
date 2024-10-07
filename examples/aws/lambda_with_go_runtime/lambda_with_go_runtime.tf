@@ -9,9 +9,9 @@ module "lambda_with_go_runtime" {
   source_dir    = "./src"
   handler       = "main"
   architectures = ["arm64"]
-  runtime = "provided.al2023"
+  runtime       = "provided.al2023"
   build = {
-    enabled   = true
+    enabled = true
     # The AWS runtime requires that the executable be named `bootstrap`.
     # The `lambda.norpc` tag is not required, but it creates a smaller
     # binary and decreases the Lambda's cold start time.
