@@ -346,13 +346,13 @@ module "sns" {
 ##### Inputs
 
 | Variable                    | Type        | Description                                                                                | Required | Default         |
-| --------------------------- | ----------- | ------------------------------------------------------------------------------------------ | -------- | --------------- |
+| --------------------------- | ----------- |--------------------------------------------------------------------------------------------| -------- | --------------- |
 | access_policy               | string      | JSON representation of the access policy.                                                  | yes      |                 |
 | description                 | string      | Description of the SNS topic                                                               | yes      |                 |
 | name                        | string      | Name of the SNS topic                                                                      | yes      |                 |
 | archive_policy              | string      | (FIFO only) JSON representation of the archive policy.                                     | no       | `null`          |
 | content_based_deduplication | bool        | Enables or disables deduplication based on the message content                             | no       | `false`         |
-| is_fifo                     | bool        | Determines topic type. If `true` created a FIFO topic, otherwise creates a standard topic. | no       | `true`          |
+| is_fifo                     | bool        | Determines topic type. If `true` creates a FIFO topic, otherwise creates a standard topic. | no       | `true`          |
 | kms_master_key_id           | string      | KMS key id used for encryption. Defaults to the AWS managed one.                           | no       | `alias/aws/sns` |
 | sqs_feedback                | object      | Configures logging message delivery status to Cloudwatch.                                  | no       | `null`          |
 | tags                        | map(string) | Map of tags to assign to the Lambda Function and related resources                         | no       | `{}`            |
@@ -363,6 +363,81 @@ module "sns" {
 | ---------- | ------ | --------------------------------------------------------- |
 | arn        | string | The Amazon Resource Name (ARN) identifying your SNS topic |
 | topic_name | string | The name of the topic                                     |
+
+#### SQS
+
+```hcl
+locals {
+  queue_name = "they-test-sqs"
+}
+
+# ---- DATA ----
+data "aws_region" "current" {}
+data "aws_caller_identity" "current" {}
+
+# --- RESOURCES / MODULES ---
+module "sqs" {
+  # source = "github.com/THEY-Consulting/they-terraform//aws/sqs"
+  source                      = "../../../aws/sqs"
+  description                 = "this is a test queue"
+  name                        = local.queue_name
+  is_fifo                     = false
+  content_based_deduplication = false
+  max_message_size            = 262144 # 256KB
+  message_retention_seconds   = 345600 # 4 days
+  visibility_timeout_seconds  = 30
+  dead_letter_queue_config = {
+    name                      = "${local.queue_name}-dlq"
+    max_receive_count         = 1
+    message_retention_seconds = 1209600 # 14 days, must be higher than message_retention_seconds in module
+  }
+  access_policy = jsonencode({ Version = "2012-10-17", Statement = [
+    {
+      Sid    = "AllowAllSQSActionsToCurrentAccount",
+      Effect = "Allow",
+      Principal = {
+        AWS = data.aws_caller_identity.current.arn
+      },
+      Action   = ["SQS:*"],
+      Resource = "arn:aws:sqs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:${local.queue_name}"
+    }
+  ]
+  })
+
+  tags = {
+    Project   = "they-terraform-examples"
+    CreatedBy = "terraform"
+  }
+}
+
+```
+
+##### Inputs
+
+| Variable                       | Type        | Description                                                                          | Required | Default  |
+|--------------------------------|-------------|--------------------------------------------------------------------------------------|----------|----------|
+| access_policy                  | string      | JSON representation of the access policy.                                            | yes      |          |
+| description                    | string      | Description of the SQS                                                               | yes      |          |
+| name                           | string      | Name of the SQS                                                                      | yes      |          |
+| content_based_deduplication    | bool        | Enables or disables deduplication based on the message content                       | no       | `false`  |
+| is_fifo                        | bool        | Determines SQS type. If `true` creates a FIFO SQS, otherwise creates a standard SQS. | no       | `true`   |
+| max_message_size               | number      | Size-limit of how many bytes a message can be before Amazon SQS rejects it           | no       | `null`   |
+| message_retention_seconds      | number      | Number of seconds Amazon SQS retains a message. Defaults to 345600 (4 days)          | no       | `345600` |
+| visibility_timeout_seconds     | number      | How long a message remains invisible to other consumers while being consumed.        | no       | `null`   |
+| dead_letter_queue_config       | object      | Configuration for the dead letter queue. If provided DLQ will be created.            | no       | `null`   |
+| sns_topic_arn_for_subscription | string      | ARN of the SNS topic that the SQS queue will subscribe to, if provided.              | no       | `null`   |
+| tags                           | map(string) | Map of tags to assign to the Lambda Function and related resources                   | no       | `{}`     |
+
+##### Outputs
+
+| Output                 | Type   | Description                                                                  |
+|------------------------|--------|------------------------------------------------------------------------------|
+| arn                    | string | The Amazon Resource Name (ARN) identifying your SQS                          |
+| queue_name             | string | The name of the SQS created                                                  |
+| topic_subscription_arn | string | The Amazon Resource Name (ARN) of the topic your SQS is subscribed to        |
+| dlq_arn                | string | The Amazon Resource Name (ARN) of the dead letter queue created for your sqs |
+| dlq_queue_name         | string | The name of the dead letter queue created for your SQS                       |
+
 
 #### API Gateway (REST)
 
