@@ -68,6 +68,14 @@ variable "bucket_trigger" {
   default = null
 }
 
+variable "sqs_trigger" {
+    description = "Event trigger configuration."
+    type = object({
+        arn = string
+    })
+    default = null
+}
+
 variable "role_arn" {
   description = "ARN of the role used for executing the lambda function."
   type        = string
