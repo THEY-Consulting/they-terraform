@@ -1,12 +1,6 @@
 variable "name" {
-  description = "Name of project"
+  description = "Name of project, and of the resource group, when a new group is to be created."
   type        = string
-}
-
-variable "create_new_resource_group" {
-  description = "If true, a new resource group with the name `resource_group_name` that encompasses all resources will be created. Otherwise the deployment will use an existing resource group named `resource_group_name`."
-  type        = bool
-  default     = false
 }
 
 variable "is_system_assigned" {
@@ -60,8 +54,9 @@ variable "enable_log_analytics" {
 }
 
 variable "resource_group_name" {
-  description = "Name of resource group"
+  description = "Name of resource group. Set this variable if you do not want to create a new resource group, but rather use an existing one."
   type        = string
+  default     = null
 }
 
 variable "log_retention" {

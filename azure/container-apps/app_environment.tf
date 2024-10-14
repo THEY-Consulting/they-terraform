@@ -1,3 +1,7 @@
+locals {
+  certificate_names = var.unique_environment_certificate != null ? [var.unique_environment_certificate.name] : [for app in var.container_apps : "${app.name}-certificate"]
+}
+
 resource "azurerm_container_app_environment" "app_environment" {
   name                       = var.name
   location                   = local.resource_group_location
@@ -14,9 +18,9 @@ resource "azurerm_container_app_environment" "app_environment" {
 }
 
 resource "azurerm_container_app_environment_certificate" "app_environment_certificate" {
-  count = var.dns_zone == null ? 0 : var.unique_environment_certificate != null ? 1 : length(var.container_apps)
+  count = var.dns_zone == null ? 0 : length(local.certificate_names)
 
-  name = var.unique_environment_certificate != null ? var.unique_environment_certificate.name : "${var.container_apps[keys(var.container_apps)[count.index]].name}-certificate"
+  name = local.certificate_names[count.index]
 
   container_app_environment_id = azurerm_container_app_environment.app_environment.id
 
