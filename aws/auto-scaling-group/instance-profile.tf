@@ -16,22 +16,15 @@ resource "aws_iam_role" "asg_instance_role" {
     ]
   })
 
+  dynamic "inline_policy" {
+    for_each = var.policies
+    content {
+      name   = "${var.name}-${inline_policy.value.name}"
+      policy = inline_policy.value.policy
+    }
+  }
+
   permissions_boundary = var.permissions_boundary_arn
-}
-
-resource "aws_iam_role_policy" "instance_policy" {
-  count = length(var.policies)
-
-  name   = "${var.name}-${var.policies[count.index].name}"
-  role   = aws_iam_role.asg_instance_role[0].name
-  policy = var.policies[count.index].policy
-}
-
-resource "aws_iam_role_policies_exclusive" "example" {
-  count = length(var.policies) > 0 ? 1 : 0
-
-  role_name    = aws_iam_role.asg_instance_role[0].name
-  policy_names = aws_iam_role_policy.instance_policy[*].name
 }
 
 resource "aws_iam_instance_profile" "instance_profile" {

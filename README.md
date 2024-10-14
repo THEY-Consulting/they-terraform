@@ -235,8 +235,6 @@ module "lambda" {
     subnet_ids         = ["subnet-12345678"]
     security_group_ids = ["sg-12345678"]
   }
-  
-  mount_efs = aws_efs_access_point.main.arn
 
   tags = {
     createdBy = "terraform"
@@ -248,7 +246,7 @@ module "lambda" {
 ##### Inputs
 
 | Variable                      | Type         | Description                                                                                                                        | Required | Default                    |
-|-------------------------------|--------------|------------------------------------------------------------------------------------------------------------------------------------|----------|----------------------------|
+| ----------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------- |
 | name                          | string       | Name of the lambda function                                                                                                        | yes      |                            |
 | description                   | string       | Description of the lambda function                                                                                                 | yes      |                            |
 | source_dir                    | string       | Directory containing the lambda function                                                                                           | yes      |                            |
@@ -288,7 +286,6 @@ module "lambda" {
 | vpc_config                    | object       | For network connectivity to AWS resources in a VPC                                                                                 | no       | `null`                     |
 | vpc_config.security_group_ids | list(string) | List of security groups to connect the lambda with                                                                                 | (yes)    |                            |
 | vpc_config.subnet_ids         | list(string) | List of subnets to attach to the lambda                                                                                            | (yes)    |                            |
-| mount_efs                     | string       | ARN of the EFS file system to mount                                                                                                | no       | `null`                     |
 | tags                          | map(string)  | Map of tags to assign to the Lambda Function and related resources                                                                 | no       | `{}`                       |
 
 ##### Outputs
@@ -628,8 +625,6 @@ module "auto-scaling-group" {
     environment = var.environment
   }))
   availability_zones = data.aws_availability_zones.azs.names[*] # Use AZs of region defined by provider.
-  single_availability_zone = false
-  vpc_id = "vpc-1234567890"
   vpc_cidr_block = "10.0.0.0/16"
   public_subnets = false
   certificate_arn = data.aws_acm_certificate.certificate.arn
@@ -664,7 +659,7 @@ module "auto-scaling-group" {
 ##### Inputs
 
 | Variable                 | Type         | Description                                                                                                                                   | Required | Default         |
-|--------------------------|--------------|-----------------------------------------------------------------------------------------------------------------------------------------------|----------|-----------------|
+| ------------------------ | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------- |
 | name                     | string       | Name of the Auto Scaling group (ASG)                                                                                                          | yes      |                 |
 | ami_id                   | string       | ID of AMI used in EC2 instances of ASG                                                                                                        | yes      |                 |
 | instance_type            | string       | Instance type used to deploy instances in ASG                                                                                                 | yes      |                 |
@@ -675,8 +670,6 @@ module "auto-scaling-group" {
 | user_data_file_name      | string       | The name of the local file in the working directory with the user data used in the instances of the ASG                                       | no       | `null`          |
 | user_data                | string       | User data to provide when launching instances of ASG. Use this to provide plain text instead of user_data_file_name.                          | no       | `null`          |
 | availability_zones       | list(string) | List of availability zones (AZs) names. A subnet is created for every AZ and the ASG instances are deployed across the different AZs          | yes      |                 |
-| single_availability_zone | bool         | Specify true to deploy all ASG instances in the same zone. Otherwise, the ASG will be deployed across multiple availability zones             | no       | `false`         |
-| vpc_id                   | string       | ID of VPC where the ASG will be deployed. If not provided, a new VPC will be created.                                                         | no       | `null`          |
 | vpc_cidr_block           | string       | The CIDR block of private IP addresses of the VPC. The subnets will be located within this CIDR block.                                        | no       | `"10.0.0.0/16"` |
 | public_subnets           | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                                      | no       | `false`         |
 | certificate_arn          | string       | ARN of certificate used to setup HTTPs in Application Load Balancer                                                                           | no       | `null`          |
@@ -693,14 +686,11 @@ module "auto-scaling-group" {
 
 ##### Outputs
 
-| Output             | Type         | Description                                         |
-|--------------------|--------------|-----------------------------------------------------|
-| alb_dns            | string       | DNS of the Application Load Balancer of the ASG     |
-| alb_zone_id        | string       | Zone ID of the Application Load Balancer of the ASG |
-| nat_gateway_ips    | list(string) | Public IPs of the NAT gateways                      |
-| security_group_id  | string       | ID of the security group                            |
-| private_subnet_ids | list(string) | IDs of the private subnets                          |
-| public_subnet_ids  | list(string) | IDs of the public subnets                           |
+| Output          | Type         | Description                                         |
+| --------------- | ------------ | --------------------------------------------------- |
+| alb_dns         | string       | DNS of the Application Load Balancer of the ASG     |
+| alb_zone_id     | string       | Zone ID of the Application Load Balancer of the ASG |
+| nat_gateway_ips | list(string) | Public IPs of the NAT gateways                      |
 
 #### Azure OpenID role
 

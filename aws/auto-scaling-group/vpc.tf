@@ -2,24 +2,21 @@ locals {
   # The total maximum value of NAT Gateways is one NAT Gateway for each 
   # availability zone.
   number_of_nat_gateways = var.multi_az_nat ? length(aws_subnet.instances_subnets) : 1
-  vpc_id                 = var.vpc_id == null ? aws_vpc.vpc[0].id : var.vpc_id
 }
 
 resource "aws_vpc" "vpc" {
-  count = var.vpc_id == null ? 1 : 0
-
   cidr_block       = var.vpc_cidr_block
   instance_tenancy = "default"
   tags = merge(var.tags, {
-    Name = var.name
+    Name = "${var.name}"
   })
 }
 
 resource "aws_internet_gateway" "igw" {
-  vpc_id = local.vpc_id
+  vpc_id = aws_vpc.vpc.id
 
   tags = merge(var.tags, {
-    Name = var.name
+    Name = "${var.name}"
   })
 }
 
@@ -27,7 +24,7 @@ resource "aws_internet_gateway" "igw" {
 resource "aws_subnet" "instances_subnets" {
   count = length(var.availability_zones)
 
-  vpc_id                  = local.vpc_id
+  vpc_id                  = aws_vpc.vpc.id
   cidr_block              = cidrsubnet(var.vpc_cidr_block, 4, count.index)
   availability_zone       = var.availability_zones[count.index]
   map_public_ip_on_launch = var.public_subnets # Default is false. 
@@ -40,10 +37,10 @@ resource "aws_subnet" "instances_subnets" {
 resource "aws_security_group" "sg" {
   name        = var.name
   description = "Security group for ASG, HTTP and HTTPS traffic."
-  vpc_id      = local.vpc_id
+  vpc_id      = aws_vpc.vpc.id
 
   tags = {
-    Name = var.name
+    Name = "${var.name}"
   }
 }
 
@@ -105,7 +102,7 @@ resource "aws_route_table" "rt_private_subnets" {
   # Only create as many route tables as NAT Gateways that were created.
   count = length(aws_nat_gateway.natgw)
 
-  vpc_id = local.vpc_id
+  vpc_id = aws_vpc.vpc.id
 
   # Traffic within VPC, e.g. with private subnets.
   route {
@@ -113,16 +110,12 @@ resource "aws_route_table" "rt_private_subnets" {
     gateway_id = "local"
   }
 
+  # Re-route internet traffic to NAT gateway.
+  # NAT gateway lies within a public subnet that can 
+  # forward internet traffic to the internet gateway.
   route {
-    cidr_block = "0.0.0.0/0"
-
-    # Re-route internet traffic to NAT gateway in private subnets.
-    # NAT gateway lies within a public subnet that can
-    # forward internet traffic to the internet gateway.
-    nat_gateway_id = var.public_subnets ? null : aws_nat_gateway.natgw[count.index].id
-
-    # Re-route internet traffic to internet gateway in public subnets.
-    gateway_id = var.public_subnets ? aws_internet_gateway.igw.id : null
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.natgw[count.index].id
   }
 
   tags = merge(var.tags, {
@@ -131,7 +124,7 @@ resource "aws_route_table" "rt_private_subnets" {
 }
 
 resource "aws_route_table" "rt_public_subnets" {
-  vpc_id = local.vpc_id
+  vpc_id = aws_vpc.vpc.id
 
   # Traffic within VPC, e.g. with private subnets.
   route {
@@ -171,7 +164,7 @@ resource "aws_route_table_association" "rta_alb_public_subnets" {
 resource "aws_subnet" "alb_public_subnets" {
   count = length(var.availability_zones)
 
-  vpc_id            = local.vpc_id
+  vpc_id            = aws_vpc.vpc.id
   cidr_block        = cidrsubnet(var.vpc_cidr_block, 4, count.index + length(aws_subnet.instances_subnets))
   availability_zone = var.availability_zones[count.index]
 
@@ -187,7 +180,7 @@ resource "aws_nat_gateway" "natgw" {
   subnet_id     = aws_subnet.alb_public_subnets[count.index].id
 
   tags = merge(var.tags, {
-    Name = var.name
+    Name = "${var.name}"
   })
 
   # Terraform docs recommendation:
