@@ -49,12 +49,6 @@ variable "user_data" {
   default     = null # Variable is optional.
 }
 
-variable "extra_ebs_volume_size" {
-  description = "Size of extra EBS volume to attach to instances."
-  type        = number
-  default     = null # Variable is optional.
-}
-
 variable "tags" {
   description = "Additional tags for the Auto Scaling Group."
   type        = map(string)
@@ -70,18 +64,6 @@ variable "loadbalancer_disabled" {
 variable "availability_zones" {
   description = "List of availability zones (AZs). A subnet is created for every AZ and the ASG instances are deployed across the different AZs."
   type        = list(string)
-}
-
-variable "single_availability_zone" {
-  description = "Specify true to deploy all ASG instances in the same zone. Otherwise, the ASG will be deployed across multiple availability zones."
-  type        = bool
-  default     = false
-}
-
-variable "vpc_id" {
-  description = "ID of VPC where the ASG will be deployed. If not provided, a new VPC will be created."
-  type        = string
-  default     = null
 }
 
 variable "vpc_cidr_block" {

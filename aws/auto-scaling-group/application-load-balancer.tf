@@ -63,7 +63,7 @@ resource "aws_lb_target_group" "tg" {
   name     = var.name
   port     = 80
   protocol = "HTTP"
-  vpc_id   = local.vpc_id
+  vpc_id   = aws_vpc.vpc.id
 
   health_check {
     path = var.health_check_path
