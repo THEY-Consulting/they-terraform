@@ -2,10 +2,8 @@ module "container-apps" {
   #source = "github.com/THEY-Consulting/they-terraform//azure/container-apps"
   source = "../../../azure/container-apps"
 
-  name                      = "${terraform.workspace}-nginx-test-container-apps"
-  location                  = "Germany West Central"
-  create_new_resource_group = true
-  resource_group_name       = "${terraform.workspace}-nginx-test-container-apps"
+  name     = "${terraform.workspace}-nginx-test-container-apps"
+  location = "Germany West Central"
   container_apps = {
     nginx-app = {
       name          = "nginx-app"
