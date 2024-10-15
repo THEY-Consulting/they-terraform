@@ -74,3 +74,37 @@ resource "aws_autoscaling_attachment" "asg_tg_attachment" {
   autoscaling_group_name = aws_autoscaling_group.asg.id
   lb_target_group_arn    = aws_lb_target_group.tg.arn
 }
+
+resource "aws_lb_target_group" "extra" {
+  count = var.loadbalancer_disabled ? 0 : length(var.target_groups)
+
+  name     = "${var.name}-${var.target_groups[count.index].name}"
+  port     = var.target_groups[count.index].port
+  protocol = "HTTP"
+  vpc_id   = local.vpc_id
+
+  health_check {
+    path = var.target_groups[count.index].health_check_path
+  }
+}
+
+resource "aws_autoscaling_attachment" "asg_tg_extra_attachment" {
+  count = length(aws_lb_target_group.extra)
+
+  autoscaling_group_name = aws_autoscaling_group.asg.id
+  lb_target_group_arn    = aws_lb_target_group.extra[count.index].arn
+}
+
+resource "aws_lb_listener" "lb_extra_listener" {
+  count = length(aws_lb_target_group.extra)
+
+  load_balancer_arn = aws_lb.lb[0].arn
+  port              = var.target_groups[count.index].port
+  protocol          = var.certificate_arn != null ? "HTTPS" : "HTTP"
+  certificate_arn   = var.certificate_arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.extra[count.index].arn
+  }
+}

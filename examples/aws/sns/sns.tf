@@ -34,9 +34,9 @@ module "sns" {
           "SNS:Subscribe"
         ],
         Resource = "arn:aws:sns:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:${local.topic_name}",
-        "Condition": {
-          "StringEquals": {
-            "AWS:SourceOwner": data.aws_caller_identity.current.account_id
+        "Condition" : {
+          "StringEquals" : {
+            "AWS:SourceOwner" : data.aws_caller_identity.current.account_id
           }
         },
       }

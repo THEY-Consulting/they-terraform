@@ -108,6 +108,16 @@ variable "health_check_path" {
   default     = "/"
 }
 
+variable "target_groups" {
+  description = "List of additional target groups to attach to the ASG instances and forward traffic to"
+  type = list(object({
+    name              = string
+    port              = number
+    health_check_path = optional(string, "/")
+  }))
+  default = []
+}
+
 variable "policies" {
   description = "List of policies to attach to the ASG instances via IAM Instance Profile"
   type = list(object({
