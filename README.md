@@ -280,6 +280,8 @@ module "lambda" {
 | bucket_trigger.events         | list(string) | List of events that trigger the lambda                                                                                             | (yes)    |                            |
 | bucket_trigger.filter_prefix  | string       | Trigger lambda only for files starting with this prefix                                                                            | no       | `null`                     |
 | bucket_trigger.filter_suffix  | string       | Trigger lambda only for files starting with this suffix                                                                            | no       | `null`                     |
+| sqs_trigger                   | object       | Configuration to trigger lambda through sqs events                                                                                 | no       | `null`                     |
+| sqs_trigger.arn               | string       | ARN of the SQS whose event's can trigger lambda function                                                                           | no       | `null`                     |
 | role_arn                      | string       | ARN of the role used for executing the lambda function, if no role is given a role with cloudwatch access is created automatically | no       | `null`                     |
 | iam_policy                    | list(object) | IAM policies to attach to the lambda role, only works if no custom `role_arn` is set                                               | no       | `[]`                       |
 | iam_policy.\*.name            | string       | Name of the policy                                                                                                                 | (yes)    |                            |
@@ -926,7 +928,7 @@ module "function_app" {
 ##### Inputs
 
 | Variable                                           | Type         | Description                                                                                                             | Required | Default                                |
-| -------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------- |
+|----------------------------------------------------| ------------ |-------------------------------------------------------------------------------------------------------------------------| -------- | -------------------------------------- |
 | name                                               | string       | Name of the function app                                                                                                | yes      |                                        |
 | source_dir                                         | string       | Directory containing the function code                                                                                  | yes      |                                        |
 | location                                           | string       | The Azure region where the resources should be created                                                                  | yes      |                                        |
