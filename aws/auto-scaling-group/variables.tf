@@ -139,6 +139,12 @@ variable "allow_all_outbound" {
   default     = false
 }
 
+variable "allow_ssh_inbound" {
+  description = "Allow ssh inbound traffic from outside the VPC"
+  type        = bool
+  default     = false
+}
+
 variable "multi_az_nat" {
   description = "Specify true to deploy a NAT Gateway in each availability zone (AZ) of the deployment. Otherwise, only a single NAT Gateway will be deployed."
   type        = bool
@@ -149,4 +155,16 @@ variable "health_check_type" {
   description = "Controls how the health check for the EC2 instances under the ASG is done"
   type        = string
   default     = "ELB"
+}
+
+variable "manual_lifecycle" {
+  description = "Specify true to force the asg to wait until lifecycle actions are completed before adding instances to the load balancer"
+  type        = bool
+  default     = false
+}
+
+variable "manual_lifecycle_timeout" {
+  description = "The maximum time, in seconds, that an instance can remain in a Pending:Wait state"
+  type        = number
+  default     = null
 }
