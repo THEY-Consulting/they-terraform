@@ -1275,6 +1275,158 @@ module "container-instances" {
 | ------------------ | ------ | ---------------------------------------------------------------------- |
 | container_endpoint | string | Endpoint of the container. It gives a public IP if no DNS is indicated |
 
+#### Container Apps
+
+```hcl
+module "container-apps" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/container-apps"
+
+  name                      = "they-test-container-apps"
+  location                  = "Germany West Central"
+  create_new_resource_group = true
+  resource_group_name       = "they-test-container-apps"
+  workload_profile = {
+    name                  = "Consumption"
+    workload_profile_type = "Consumption"
+  }
+  unique_environment_certificate = {
+    key_vault_secret_name = "my-cert-secret-name"
+    name                  = "app-env-cert"
+  }
+  enable_log_analytics = true
+  is_system_assigned = true
+  dns_zone = {
+    existing_dns_zone_name                = "they-azure.de"
+    existing_dns_zone_resource_group_name = "they-dev"
+  }
+  container_apps = {
+    backend = {
+      name          = "backend"
+      revision_mode = "Single"
+      subdomain     = "test-backend"
+      cors_enabled          = true
+      cors_allowed_origins  = "https://my-allowed-origin.com"
+      ingress = {
+        allow_insecure_connections = true
+        external_enabled           = true
+        target_port                = 81
+        traffic_weight = {
+          latest_revision = true
+          percentage      = 100
+        }
+      }
+      registry = [{
+        server               = "test.azurecr.io"
+        username             = "User"
+        password_secret_name = "registry-secret"
+      }]
+
+      secret = {
+        name  = "registry-secret"
+        value = "Password"
+      }
+      template = {
+        max_replicas = 3
+        min_replicas = 1
+        containers = [
+          {
+            name   = "backend-test"
+            image  = "test.azurecr.io/backend-test:latest"
+            cpu    = "0.5"
+            memory = "1.0Gi"
+          }
+        ]
+      }
+    },
+    frontend = {
+      name          = "frontend"
+      revision_mode = "Single"
+      subdomain     = "test-frontend"
+      ingress = {
+        allow_insecure_connections = true
+        external_enabled           = true
+        target_port                = 3000
+        traffic_weight = {
+          latest_revision = true
+          percentage      = 100
+        }
+      }
+      registry = [{
+        server               = "test.azurecr.io"
+        username             = "Username"
+        password_secret_name = "registry-secret"
+      }]
+
+      secret = {
+        name  = "registry-secret"
+        value = "Password"
+      }
+      template = {
+        max_replicas = 3
+        min_replicas = 1
+        containers = [
+          {
+            name   = "frontend-test"
+            image  = "test.azurecr.io/frontend-test:latest"
+            cpu    = "2.0"
+            memory = "4.0Gi"
+            env = [
+              {
+                name  = "ENV_BASE_URL"
+                value = "http://example.com"
+              },
+              {
+                name  = "ENV_2"
+                value = "ANOTHER_ENV_VAR_VALUE"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+##### Inputs
+
+| Variable                             | Type         | Description                                                                                                                                                                                       | Required | Default      |
+| ------------------------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------ |
+| name                                 | string       | Name of project. It will also be the name of the resource group, if a resource group is to be created.                                                                                            | yes      |              |
+| resource_group_name                  | string       | The name of the resource group in which to create the resources                                                                                                                                   | yes      |              |
+| key_vault_name                       | string       | The name of the key vault that has the certificates and secrets of each container app.                                                                                                            | no       | `null`       |
+| key_vault_resource_group_name        | string       | The name of the resource group where the key vault is                                                                                                                                             | no       | `null`       |
+| workload_profile                     | object       | An object that defines the workload profile of the environment. Leaving its default value means having a managed environment `Consumption Only`                                                   | no       | `null`       |
+| is_system_assigned                   | bool         | It defines whether a system-assigned managed identity will be created.                                                                                                                            | no       | `false`      |
+| unique_environment_certificate       | object       | If only one certificate is used in the environment for all the container apps, this is the variable to fill. In this case, the variable `container_apps.key_vault_secret_name` must be left blank | no       | `null`       |
+| location                             | string       | The Azure Region where the resource should be created                                                                                                                                             | yes      |              |
+| container_registry_server            | string       | The server URL of the container.                                                                                                                                                                  | no       | `null`       |
+| dns_zone                             | object       | DNS zone config required if you want to link the deployed app to a subdomain in the given dns zone. Does not create a dns zone, only a subdomain.                                                 | no       | `null`       |
+| dns_record_ttl                       | number       | The TTL of the DNS record                                                                                                                                                                         | no       | `300`        |
+| certificate_binding_type             | string       | The Certificate binding type.                                                                                                                                                                     | no       | `SniEnabled` |
+| enable_log_analytics                 | bool         | Enables the creation of the resource log analytics workspace for the container group                                                                                                              | no       | `false`      |
+| sku_log_analytics                    | string       | The SKU of the log analytics workspace                                                                                                                                                            | no       | `PerGB2018`  |
+| container_apps                       | map(object)  | The container apps to deploy                                                                                                                                                                      | yes      |              |
+| container_apps.name                  | string       | Name of the container app                                                                                                                                                                         | yes      |              |
+| container_app.subdomain              | string       | subdomain for the container                                                                                                                                                                       | no       |              |
+| container_apps.tags                  | map(string)  | A mapping of tags to assign to the Container App.                                                                                                                                                 | no       |              |
+| container_apps.revision_mode         | string       | The revisions operational mode for the Container App. Possible values include Single and Multiple. In Single mode, a single revision is in operation at any given time.                           | yes      |              |
+| container_apps.workload_profile_name | string       | The name of the Workload Profile in the Container App Environment to place this Container App.                                                                                                    | no       |              |
+| container_apps.cors_enabled          | bool         | Attribute to indicate if cors must be enabled                                                                                                                                                     | no       |              |
+| container_apps.cors_allowed_origins  | string       | The URL origins allowed.                                                                                                                                                                          | no       |              |
+| container_apps.key_vault_secret_name | string       | The secret name of the certificate for the container app. NOTE: All certificates must be in the same key vault (see var above)                                                                    | no       |              |
+| container_apps.template              | object       | A template block.                                                                                                                                                                                 | yes      |              |
+| container_apps.ingress               | object       | Ingress block                                                                                                                                                                                     | no       |              |
+| container_apps.identity              | object       | Identity block that supports `type` and `identity_ids` as attributes.                                                                                                                             | no       |              |
+| container_apps.secret                | object       | Secret block                                                                                                                                                                                      | no       |              |
+| container_apps.registry              | list(object) | The credentials and information needed to connect to a container registry                                                                                                                         | no       |              |
+
+##### Outputs
+
+| Output              | Type   | Description                                                                                                                                                                      |
+| ------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| container_apps_urls | string | URLs of the container apps. If a custom domain was used, this will be the ouput. Otherwise, the FQDN of the latest revision of each respective Container App will be the output. |
+
 ## Contributing
 
 ### Prerequisites
