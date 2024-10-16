@@ -6,9 +6,7 @@ locals {
 }
 
 resource "aws_vpc" "vpc" {
-  // Unfortunately using `count = var.vpc_id == null ? 1 : 0` results in an error:
-  // The "count" value depends on resource attributes that cannot be determined until apply
-  count = var.use_existing_vpc ? 0 : 1
+  count = var.vpc_id == null ? 1 : 0
 
   cidr_block       = var.vpc_cidr_block
   instance_tenancy = "default"
