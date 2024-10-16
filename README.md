@@ -15,6 +15,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [API Gateway (REST)](#api-gateway-rest)
     - [S3 Bucket](#s3-bucket)
     - [Auto Scaling group](#auto-scaling-group)
+    - [Cloudfront Distribution](#cloudfront-distribution)
     - [Azure OpenID role](#azure-openid-role)
     - [GitHub OpenID role](#github-openid-role)
     - [setup-tfstate](#setup-tfstate)
@@ -731,6 +732,47 @@ module "auto-scaling-group" {
 | security_group_id  | string       | ID of the security group                            |
 | private_subnet_ids | list(string) | IDs of the private subnets                          |
 | public_subnet_ids  | list(string) | IDs of the public subnets                           |
+
+#### Cloudfront Distribution
+
+```hcl
+module "cloudfront_distribution" {
+  #   source = "github.com/THEY-Consulting/they-terraform//aws/cloudfront"
+  source = "../../../aws/cloudfront"
+
+  name                 = "they-test"
+  domain               = "test.they-code.de"
+  certificate_arn      = "some:certificate:arn"
+  attach_domain        = true
+  bucket_name          = "they-test-bucket"
+  attach_bucket_policy = true
+  origin_name          = "s3-origin"
+  origin_path          = "/dev"
+  cloudfront_routing   = "simple"
+}
+```
+
+##### Inputs
+
+| Variable             | Type   | Description                                                           | Required | Default    |
+|----------------------|--------|-----------------------------------------------------------------------|----------|------------|
+| name                 | string | Name of cloudfront distribution                                       | yes      |            |
+| domain               | string | The domain name for the CloudFront distribution                       | yes      |            |
+| certificate_arn      | string | The ARN of the certificate to use for HTTPS                           | yes      |            |
+| attach_domain        | bool   | Whether to attach the domain to the CloudFront distribution           | no       | `true`     |
+| bucket_name          | string | The S3 bucket to use as the origin for the CloudFront distribution    | yes      |            |
+| attach_bucket_policy | bool   | Whether to attach a bucket policy to the S3 bucket                    | no       | `true`     |
+| origin_name          | string | The name of the origin                                                | no       | `"s3"`     |
+| origin_path          | string | The path within the origin                                            | no       | `""`       |
+| cloudfront_routing   | string | The CloudFront routing configuration, valid are `simple` and `branch` | no       | `"simple"` |
+
+##### Outputs
+
+| Output         | Type   | Description                                   |
+|----------------|--------|-----------------------------------------------|
+| domain_name    | string | Domain name of the cloudfront distribution    |
+| hosted_zone_id | string | Hosted zone id of the cloudfront distribution |
+| arn            | string | ARN of the cloudfront distribution            |
 
 #### Azure OpenID role
 
