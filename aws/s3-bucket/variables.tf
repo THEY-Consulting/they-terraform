@@ -19,3 +19,15 @@ variable "prevent_destroy" {
   type        = bool
   default     = true
 }
+
+variable "lifecycle_rules" {
+  description = "List of rules as objects with lifetime (in days) of the S3 objects that are subject to the policy and path prefix. The number must be a non-zero positive integer."
+  type = list(object({
+    name                = string,
+    prefix              = optional(string, ""),
+    days                = optional(number),
+    noncurrent_days     = optional(number),
+    noncurrent_versions = optional(number)
+  }))
+  default = []
+}

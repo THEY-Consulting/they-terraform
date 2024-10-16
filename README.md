@@ -558,6 +558,14 @@ module "s3_bucket" {
   name       = "my-bucket"
   versioning = true
 
+  lifecycle_rules = [{ 
+    name                = "example-rule", 
+    prefix              = "they", 
+    days                = 60, 
+    noncurrent_days     = 30, 
+    noncurrent_versions = 10 
+  }]
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -587,12 +595,18 @@ module "s3_bucket" {
 
 ##### Inputs
 
-| Variable        | Type   | Description                                                                                                                                  | Required | Default |
-| --------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
-| name            | string | Name of the bucket                                                                                                                           | yes      |         |
-| versioning      | bool   | Enable versioning of s3 bucket                                                                                                               | yes      |         |
-| policy          | string | Policy of s3 bucket                                                                                                                          | no       | `null`  |
-| prevent_destroy | bool   | Prevent destroy of s3 bucket. To bypass this protection even if this is enabled, remove the module from your code and run `terraform apply`. | no       | `true`  |
+| Variable                               | Type         | Description                                                                                                                                 | Required | Default |
+|----------------------------------------|--------------|---------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
+| name                                   | string       | Name of the bucket                                                                                                                          | yes      |         |
+| versioning                             | bool         | Enable versioning of s3 bucket                                                                                                              | yes      |         |
+| policy                                 | string       | Policy of s3 bucket                                                                                                                         | no       | `null`  |
+| prevent_destroy                        | bool         | Prevent destroy of s3 bucket. To bypass this protection even if this is enabled, remove the module from your code and run `terraform apply` | no       | `true`  |
+| lifecycle_rules                        | list(object) | List of rules as objects with lifetime (in days) of the S3 objects that are subject to the policy and path prefix                           | no       | `[]`    |
+| lifecycle_rules.\*.name                | string       | Rule name                                                                                                                                   | (yes)    |         |
+| lifecycle_rules.\*.prefix              | string       | Prefix identifying one or more objects to which the rule applies                                                                            | no       | `""`    |
+| lifecycle_rules.\*.days                | number       | The lifetime, in days, of the objects that are subject to the rule. Must be a non-zero positive integer if set                              | no       | `null`  |
+| lifecycle_rules.\*.noncurrent_days     | number       | The number of days an object is noncurrent before Amazon S3 can perform the associated action. Must be a positive integer if set            | no       | `null`  |
+| lifecycle_rules.\*.noncurrent_versions | number       | The number of noncurrent versions Amazon S3 will retain. Must be a non-zero positive integer if set                                         | no       | `null`  |
 
 ##### Outputs
 
