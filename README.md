@@ -646,6 +646,7 @@ module "auto-scaling-group" {
   availability_zones = data.aws_availability_zones.azs.names[*] # Use AZs of region defined by provider.
   single_availability_zone = false
   vpc_id = "vpc-1234567890"
+  use_existing_vpc = true
   vpc_cidr_block = "10.0.0.0/16"
   public_subnets = false
   certificate_arn = data.aws_acm_certificate.certificate.arn
@@ -700,7 +701,8 @@ module "auto-scaling-group" {
 | user_data                          | string       | User data to provide when launching instances of ASG. Use this to provide plain text instead of user_data_file_name                          | no       | `null`          |
 | availability_zones                 | list(string) | List of availability zones (AZs) names. A subnet is created for every AZ and the ASG instances are deployed across the different AZs         | yes      |                 |
 | single_availability_zone           | bool         | Specify true to deploy all ASG instances in the same zone. Otherwise, the ASG will be deployed across multiple availability zones            | no       | `false`         |
-| vpc_id                             | string       | ID of VPC where the ASG will be deployed. If not provided, a new VPC will be created.                                                        | no       | `null`          |
+| vpc_id                             | string       | ID of VPC where the ASG will be deployed. Required if `use_existing_vpc` is set to true                                                      | no       | `null`          |
+| use_existing_vpc                   | bool         | Specify true to use an existing VPC. Otherwise, a new VPC will be created                                                                    | no       | `false`         |
 | vpc_cidr_block                     | string       | The CIDR block of private IP addresses of the VPC. The subnets will be located within this CIDR block.                                       | no       | `"10.0.0.0/16"` |
 | public_subnets                     | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                                     | no       | `false`         |
 | certificate_arn                    | string       | ARN of certificate used to setup HTTPs in Application Load Balancer                                                                          | no       | `null`          |
