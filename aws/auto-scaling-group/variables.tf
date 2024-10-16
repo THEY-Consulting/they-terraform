@@ -79,9 +79,15 @@ variable "single_availability_zone" {
 }
 
 variable "vpc_id" {
-  description = "ID of VPC where the ASG will be deployed. If not provided, a new VPC will be created."
+  description = "ID of VPC where the ASG will be deployed. Required if `use_existing_vpc` is set to true."
   type        = string
   default     = null
+}
+
+variable "use_existing_vpc" {
+  description = "Specify true to use an existing VPC. Otherwise, a new VPC will be created."
+  type        = bool
+  default     = false
 }
 
 variable "vpc_cidr_block" {
