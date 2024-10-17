@@ -35,6 +35,12 @@ variable "s3StateBackend" {
   default     = true
 }
 
+variable "stateLockTableRegion" {
+  description = "Region of the state lock table, if different from the default region."
+  type        = string
+  default     = null
+}
+
 variable "INSECURE_allowAccountToAssumeRole" {
   description = "Set to true if you want to allow the account to assume the role. This is insecure and should only be used for testing. Do not enable this in production!"
   type        = bool

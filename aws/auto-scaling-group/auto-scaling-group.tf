@@ -15,6 +15,16 @@ resource "aws_autoscaling_group" "asg" {
     version = aws_launch_template.launch_template.latest_version
   }
 
+  dynamic "initial_lifecycle_hook" {
+    for_each = var.manual_lifecycle ? [{ name = "setup", default_result = "ABANDON", lifecycle_transition = "autoscaling:EC2_INSTANCE_LAUNCHING" }] : []
+    content {
+      name                 = initial_lifecycle_hook.value.name
+      default_result       = initial_lifecycle_hook.value.default_result
+      lifecycle_transition = initial_lifecycle_hook.value.lifecycle_transition
+      heartbeat_timeout    = var.manual_lifecycle_timeout
+    }
+  }
+
   # AWS Auto Scaling Groups dynamically create and destroy EC2 instances
   # as defined in the ASG's configuration. Because these EC2 instances are created
   # and destroyed by AWS, Terraform does not manage them and is not directly
