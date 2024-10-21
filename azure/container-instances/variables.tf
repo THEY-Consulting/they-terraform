@@ -14,6 +14,13 @@ variable "create_new_resource_group" {
   default     = false
 }
 
+variable "dns_name_label" {
+  description = "The DNS name label for the container group."
+  type        = string
+  default     = null
+
+}
+
 variable "dns_resource_group" {
   description = "Resource group where the DNS zone is located."
   type        = string
@@ -105,10 +112,15 @@ variable "containers" {
     cpu                   = string
     memory                = string
     environment_variables = optional(map(string))
-    ports = object({
+    ports = list(object({
       port     = number
       protocol = string
-    })
+    }))
+    volumes = optional(list(object({
+      name       = string
+      mount_path = string
+      secret     = optional(map(string))
+    })))
     readiness_probe = optional(object({
       exec = optional(list(string))
       http_get = optional(object({
@@ -138,6 +150,8 @@ variable "containers" {
       success_threshold     = optional(number)
       timeout_seconds       = optional(number)
     }))
+
+    commands = optional(list(string))
   }))
   default = []
 }

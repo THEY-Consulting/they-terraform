@@ -5,6 +5,7 @@ resource "azurerm_container_group" "container_group" {
   ip_address_type     = var.ip_address_type
   os_type             = var.os_type
   exposed_port        = var.exposed_port
+  dns_name_label      = var.dns_name_label
 
   dynamic "diagnostics" {
     for_each = var.enable_log_analytics ? [1] : []
@@ -36,10 +37,24 @@ resource "azurerm_container_group" "container_group" {
       memory                = container.value.memory
       environment_variables = container.value.environment_variables
 
-      ports {
-        port     = container.value.ports.port
-        protocol = container.value.ports.protocol
+      dynamic "ports" {
+        for_each = container.value.ports
+        content {
+          port     = ports.value.port
+          protocol = ports.value.protocol
+        }
       }
+
+      dynamic "volume" {
+        for_each = container.value.volumes != null ? container.value.volumes : []
+        content {
+          name       = volume.value.name
+          mount_path = volume.value.mount_path
+          secret     = volume.value.secret
+        }
+      }
+
+      commands = container.value.commands != null ? container.value.commands : []
 
       dynamic "readiness_probe" {
         for_each = container.value.readiness_probe != null ? [container.value.readiness_probe] : []
