@@ -46,11 +46,14 @@ resource "azurerm_container_group" "container_group" {
       }
 
       dynamic "volume" {
-        for_each = container.value.volumes != null ? container.value.volumes : []
+        for_each = container.value.volume != null ? container.value.volume : []
         content {
-          name       = volume.value.name
-          mount_path = volume.value.mount_path
-          secret     = volume.value.secret
+          name                 = volume.value.name
+          mount_path           = volume.value.mount_path
+          secret               = volume.value.secret
+          storage_account_name = volume.value.storage_account_name
+          storage_account_key  = volume.value.storage_account_key
+          share_name           = volume.value.share_name
         }
       }
 

@@ -116,10 +116,13 @@ variable "containers" {
       port     = number
       protocol = string
     }))
-    volumes = optional(list(object({
-      name       = string
-      mount_path = string
-      secret     = optional(map(string))
+    volume = optional(list(object({
+      name                 = string
+      mount_path           = string
+      secret               = optional(map(string))
+      storage_account_name = optional(string)
+      storage_account_key  = optional(string)
+      share_name           = optional(string)
     })))
     readiness_probe = optional(object({
       exec = optional(list(string))
