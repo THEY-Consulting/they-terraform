@@ -89,6 +89,12 @@ variable "os_type" {
   default     = "Linux"
 }
 
+variable "restart_policy" {
+  description = "The restart policy for all containers within the container group."
+  type        = string
+  default     = "Always"
+}
+
 variable "exposed_port" {
   description = "The port that should be exposed."
   type = list(object({

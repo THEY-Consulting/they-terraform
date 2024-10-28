@@ -6,6 +6,7 @@ resource "azurerm_container_group" "container_group" {
   os_type             = var.os_type
   exposed_port        = var.exposed_port
   dns_name_label      = var.dns_name_label
+  restart_policy      = var.restart_policy
 
   dynamic "diagnostics" {
     for_each = var.enable_log_analytics ? [1] : []
