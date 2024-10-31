@@ -1,3 +1,5 @@
+data "aws_region" "current" {}
+
 resource "aws_sns_topic" "main" {
   name                             = var.name
   fifo_topic                       = var.is_fifo
@@ -29,13 +31,14 @@ resource "null_resource" "remove_archive_policy" {
 
   # We need triggers to be able to access another resource within the local-exec on 'destroy'.
   triggers = {
-    topic_arn = aws_sns_topic.main.arn
+    topic_arn   = aws_sns_topic.main.arn
+    region_name = data.aws_region.current.name
   }
 
   # In order to destroy a topic, archive policy needs to be disabled first.
   # Currently not supported https://github.com/hashicorp/terraform-provider-aws/issues/38885
   provisioner "local-exec" {
-    command = "aws sns set-topic-attributes --topic-arn \"${self.triggers.topic_arn}\" --attribute-name ArchivePolicy --attribute-value \"{}\""
+    command = "aws sns set-topic-attributes --topic-arn \"${self.triggers.topic_arn}\" --attribute-name ArchivePolicy --attribute-value \"{}\" --region ${self.triggers.region_name}"
     when    = destroy
   }
 
@@ -84,6 +87,3 @@ resource "aws_iam_role_policy" "sns_feedback_policy" {
     ]
   })
 }
-
-
-
