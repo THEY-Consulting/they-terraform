@@ -98,6 +98,12 @@ variable "domain" {
   }
 }
 
+variable "disable_default_endpoint" {
+  description = "By default, clients can invoke your API with the default https://{api_id}.execute-api.{region}.amazonaws.com endpoint. To require that clients use a custom domain name to invoke your API, disable the default endpoint."
+  type        = bool
+  default     = false
+}
+
 variable "redeployment_trigger" {
   description = "A unique string to force a redeploy of the api gateway. If not set manually, the module will use the configurations for endpoints, api_key, and authorizer config to decide if a redeployment is necessary."
   type        = string
