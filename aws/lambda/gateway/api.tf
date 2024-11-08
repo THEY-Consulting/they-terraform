@@ -1,5 +1,7 @@
 data "aws_api_gateway_rest_api" "main" {
   name = var.name
+
+  depends_on = [aws_api_gateway_rest_api.api]
 }
 
 resource "aws_api_gateway_rest_api" "api" {
