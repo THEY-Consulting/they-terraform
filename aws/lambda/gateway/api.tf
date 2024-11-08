@@ -1,6 +1,7 @@
 resource "aws_api_gateway_rest_api" "api" {
-  name        = var.name
-  description = var.description
+  name                         = var.name
+  description                  = var.description
+  disable_execute_api_endpoint = anytrue([var.disable_default_endpoint, local.use_mtls])
 }
 
 resource "aws_api_gateway_deployment" "deployment" {

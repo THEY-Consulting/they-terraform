@@ -235,7 +235,7 @@ module "lambda" {
     subnet_ids         = ["subnet-12345678"]
     security_group_ids = ["sg-12345678"]
   }
-  
+
   mount_efs = aws_efs_access_point.main.arn
 
   tags = {
@@ -248,7 +248,7 @@ module "lambda" {
 ##### Inputs
 
 | Variable                      | Type         | Description                                                                                                                        | Required | Default                    |
-|-------------------------------|--------------|------------------------------------------------------------------------------------------------------------------------------------|----------|----------------------------|
+| ----------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------- |
 | name                          | string       | Name of the lambda function                                                                                                        | yes      |                            |
 | description                   | string       | Description of the lambda function                                                                                                 | yes      |                            |
 | source_dir                    | string       | Directory containing the lambda function                                                                                           | yes      |                            |
@@ -351,7 +351,7 @@ module "sns" {
 ##### Inputs
 
 | Variable                    | Type        | Description                                                                                | Required | Default         |
-| --------------------------- | ----------- |--------------------------------------------------------------------------------------------| -------- | --------------- |
+| --------------------------- | ----------- | ------------------------------------------------------------------------------------------ | -------- | --------------- |
 | access_policy               | string      | JSON representation of the access policy.                                                  | yes      |                 |
 | description                 | string      | Description of the SNS topic                                                               | yes      |                 |
 | name                        | string      | Name of the SNS topic                                                                      | yes      |                 |
@@ -420,7 +420,7 @@ module "sqs" {
 ##### Inputs
 
 | Variable                       | Type        | Description                                                                          | Required | Default  |
-|--------------------------------|-------------|--------------------------------------------------------------------------------------|----------|----------|
+| ------------------------------ | ----------- | ------------------------------------------------------------------------------------ | -------- | -------- |
 | access_policy                  | string      | JSON representation of the access policy.                                            | yes      |          |
 | description                    | string      | Description of the SQS                                                               | yes      |          |
 | name                           | string      | Name of the SQS                                                                      | yes      |          |
@@ -436,13 +436,12 @@ module "sqs" {
 ##### Outputs
 
 | Output                 | Type   | Description                                                                  |
-|------------------------|--------|------------------------------------------------------------------------------|
+| ---------------------- | ------ | ---------------------------------------------------------------------------- |
 | arn                    | string | The Amazon Resource Name (ARN) identifying your SQS                          |
 | queue_name             | string | The name of the SQS created                                                  |
 | topic_subscription_arn | string | The Amazon Resource Name (ARN) of the topic your SQS is subscribed to        |
 | dlq_arn                | string | The Amazon Resource Name (ARN) of the dead letter queue created for your sqs |
 | dlq_queue_name         | string | The name of the dead letter queue created for your SQS                       |
-
 
 #### API Gateway (REST)
 
@@ -487,7 +486,6 @@ module "api_gateway" {
   }
 
   domain = {
-    certificate_arn       = "some:certificate:arn"
     s3_truststore_uri     = "s3://they-test-api-gateway-with-domain-assets/certificates/truststore.pem"
     s3_truststore_version = data.aws_s3_object.truststore.version_id
     zone_name             = "they-code.de."
@@ -540,6 +538,7 @@ module "api_gateway" {
 | domain.s3_truststore_uri                  | string       | URI to truststore.pem used for verification of client certs (required if certificate_arn is not set)                                                                                                        | no       |                                                           |
 | domain.s3_truststore_version              | string       | version of truststore.pem used for verification of client certs (required if multiple versions of a trustore.pem exist)                                                                                     | no       |                                                           |
 | domain.zone_name                          | string       | Domain zone name                                                                                                                                                                                            | (yes)    |                                                           |
+| disable_default_endpoint                  | string       | Disable the aws generated default endpoint to the created gateway. Can be used to enforce requests only via custom domain. Always `true` if s3_truststore_uri is set.                                       | no       | `false`                                                   |
 | redeployment_trigger                      | string       | A unique string to force a redeploy of the api gateway. If not set manually, the module will use the configurations for endpoints, api_key, and authorizer config to decide if a redeployment is necessary. | (yes)    |                                                           |
 | tags                                      | map(string)  | Map of tags to assign to the Lambda Function and related resources                                                                                                                                          | no       | `{}`                                                      |
 
@@ -666,7 +665,7 @@ module "auto-scaling-group" {
 ##### Inputs
 
 | Variable                 | Type         | Description                                                                                                                                   | Required | Default         |
-|--------------------------|--------------|-----------------------------------------------------------------------------------------------------------------------------------------------|----------|-----------------|
+| ------------------------ | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------- |
 | name                     | string       | Name of the Auto Scaling group (ASG)                                                                                                          | yes      |                 |
 | ami_id                   | string       | ID of AMI used in EC2 instances of ASG                                                                                                        | yes      |                 |
 | instance_type            | string       | Instance type used to deploy instances in ASG                                                                                                 | yes      |                 |
@@ -696,7 +695,7 @@ module "auto-scaling-group" {
 ##### Outputs
 
 | Output             | Type         | Description                                         |
-|--------------------|--------------|-----------------------------------------------------|
+| ------------------ | ------------ | --------------------------------------------------- |
 | alb_dns            | string       | DNS of the Application Load Balancer of the ASG     |
 | alb_zone_id        | string       | Zone ID of the Application Load Balancer of the ASG |
 | nat_gateway_ips    | list(string) | Public IPs of the NAT gateways                      |
@@ -928,7 +927,7 @@ module "function_app" {
 ##### Inputs
 
 | Variable                                           | Type         | Description                                                                                                             | Required | Default                                |
-|----------------------------------------------------| ------------ |-------------------------------------------------------------------------------------------------------------------------| -------- | -------------------------------------- |
+| -------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------- |
 | name                                               | string       | Name of the function app                                                                                                | yes      |                                        |
 | source_dir                                         | string       | Directory containing the function code                                                                                  | yes      |                                        |
 | location                                           | string       | The Azure region where the resources should be created                                                                  | yes      |                                        |
