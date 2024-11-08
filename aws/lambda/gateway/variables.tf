@@ -1,6 +1,7 @@
 locals {
-  use_domain = var.domain == null ? false : true
-  use_mtls   = local.use_domain ? (var.domain.s3_truststore_uri == null ? false : true) : false
+  use_domain               = var.domain == null ? false : true
+  use_mtls                 = local.use_domain ? (var.domain.s3_truststore_uri == null ? false : true) : false
+  disable_default_endpoint = anytrue([var.disable_default_endpoint, local.use_mtls])
 }
 
 variable "name" {
