@@ -1,5 +1,5 @@
 variable "name" {
-  description = "Name of cloudfront distribution."
+  description = "Name of CloudFront distribution."
   type        = string
 }
 

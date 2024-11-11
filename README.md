@@ -15,7 +15,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [API Gateway (REST)](#api-gateway-rest)
     - [S3 Bucket](#s3-bucket)
     - [Auto Scaling group](#auto-scaling-group)
-    - [Cloudfront Distribution](#cloudfront-distribution)
+    - [CloudFront Distribution](#cloudfront-distribution)
     - [Azure OpenID role](#azure-openid-role)
     - [GitHub OpenID role](#github-openid-role)
     - [setup-tfstate](#setup-tfstate)
@@ -596,18 +596,18 @@ module "s3_bucket" {
 
 ##### Inputs
 
-| Variable                               | Type         | Description                                                                                                                                 | Required | Default |
-|----------------------------------------|--------------|---------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
-| name                                   | string       | Name of the bucket                                                                                                                          | yes      |         |
-| versioning                             | bool         | Enable versioning of s3 bucket                                                                                                              | yes      |         |
-| policy                                 | string       | Policy of s3 bucket                                                                                                                         | no       | `null`  |
-| prevent_destroy                        | bool         | Prevent destroy of s3 bucket. To bypass this protection even if this is enabled, remove the module from your code and run `terraform apply` | no       | `true`  |
-| lifecycle_rules                        | list(object) | List of rules as objects with lifetime (in days) of the S3 objects that are subject to the policy and path prefix                           | no       | `[]`    |
-| lifecycle_rules.\*.name                | string       | Rule name                                                                                                                                   | (yes)    |         |
-| lifecycle_rules.\*.prefix              | string       | Prefix identifying one or more objects to which the rule applies                                                                            | no       | `""`    |
-| lifecycle_rules.\*.days                | number       | The lifetime, in days, of the objects that are subject to the rule. Must be a non-zero positive integer if set                              | no       | `null`  |
-| lifecycle_rules.\*.noncurrent_days     | number       | The number of days an object is noncurrent before Amazon S3 can perform the associated action. Must be a positive integer if set            | no       | `null`  |
-| lifecycle_rules.\*.noncurrent_versions | number       | The number of noncurrent versions Amazon S3 will retain. Must be a non-zero positive integer if set                                         | no       | `null`  |
+| Variable                               | Type         | Description                                                                                                                                          | Required | Default |
+|----------------------------------------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
+| name                                   | string       | Name of the bucket                                                                                                                                   | yes      |         |
+| versioning                             | bool         | Enable versioning of s3 bucket                                                                                                                       | yes      |         |
+| policy                                 | string       | Policy of s3 bucket                                                                                                                                  | no       | `null`  |
+| prevent_destroy                        | bool         | Prevent destroy of s3 bucket. To bypass this protection even if this is enabled, remove the module from your code and run `terraform apply`          | no       | `true`  |
+| lifecycle_rules                        | list(object) | List of rules as objects with lifetime (in days) of the S3 objects that are subject to the policy and path prefix                                    | no       | `[]`    |
+| lifecycle_rules.\*.name                | string       | Rule name                                                                                                                                            | (yes)    |         |
+| lifecycle_rules.\*.prefix              | string       | Prefix identifying one or more objects to which the rule applies                                                                                     | no       | `""`    |
+| lifecycle_rules.\*.days                | number       | The lifetime, in days, of the objects that are subject to the rule. Afterwards objects become noncurrent. Must be a non-zero positive integer if set | no       | `null`  |
+| lifecycle_rules.\*.noncurrent_days     | number       | The number of days an object is noncurrent before the object will be deleted. Must be a positive integer if set                                      | no       | `null`  |
+| lifecycle_rules.\*.noncurrent_versions | number       | The number of noncurrent versions Amazon S3 will retain. Must be a non-zero positive integer if set                                                  | no       | `null`  |
 
 ##### Outputs
 
@@ -733,7 +733,7 @@ module "auto-scaling-group" {
 | private_subnet_ids | list(string) | IDs of the private subnets                          |
 | public_subnet_ids  | list(string) | IDs of the public subnets                           |
 
-#### Cloudfront Distribution
+#### CloudFront Distribution
 
 ```hcl
 module "cloudfront_distribution" {
@@ -756,7 +756,7 @@ module "cloudfront_distribution" {
 
 | Variable             | Type   | Description                                                           | Required | Default    |
 |----------------------|--------|-----------------------------------------------------------------------|----------|------------|
-| name                 | string | Name of cloudfront distribution                                       | yes      |            |
+| name                 | string | Name of CloudFront distribution                                       | yes      |            |
 | domain               | string | The domain name for the CloudFront distribution                       | yes      |            |
 | certificate_arn      | string | The ARN of the certificate to use for HTTPS                           | yes      |            |
 | attach_domain        | bool   | Whether to attach the domain to the CloudFront distribution           | no       | `true`     |
@@ -770,9 +770,9 @@ module "cloudfront_distribution" {
 
 | Output         | Type   | Description                                   |
 |----------------|--------|-----------------------------------------------|
-| domain_name    | string | Domain name of the cloudfront distribution    |
-| hosted_zone_id | string | Hosted zone id of the cloudfront distribution |
-| arn            | string | ARN of the cloudfront distribution            |
+| domain_name    | string | Domain name of the CloudFront distribution    |
+| hosted_zone_id | string | Hosted zone id of the CloudFront distribution |
+| arn            | string | ARN of the CloudFront distribution            |
 
 #### Azure OpenID role
 

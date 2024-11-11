@@ -1,4 +1,3 @@
-
 resource "aws_s3_bucket_lifecycle_configuration" "main" {
   count = length(var.lifecycle_rules) > 0 ? 1 : 0
 

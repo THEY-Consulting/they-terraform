@@ -140,7 +140,7 @@ variable "allow_all_outbound" {
 }
 
 variable "allow_ssh_inbound" {
-  description = "Allow ssh inbound traffic from outside the VPC"
+  description = "Allow SSH inbound traffic from outside the VPC"
   type        = bool
   default     = false
 }
@@ -158,7 +158,7 @@ variable "health_check_type" {
 }
 
 variable "manual_lifecycle" {
-  description = "Specify true to force the asg to wait until lifecycle actions are completed before adding instances to the load balancer"
+  description = "Specify true to force the ASG to wait until lifecycle actions are completed before adding instances to the load balancer"
   type        = bool
   default     = false
 }

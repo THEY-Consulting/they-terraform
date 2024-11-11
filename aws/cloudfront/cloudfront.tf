@@ -62,11 +62,4 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
       locations        = []
     }
   }
-
-  # TODO: do we need this?
-  #  logging_config {
-  #    include_cookies = false
-  #    bucket          = "mylogs.s3.amazonaws.com"
-  #    prefix          = "myprefix"
-  #  }
 }
