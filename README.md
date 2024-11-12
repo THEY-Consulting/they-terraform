@@ -15,6 +15,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [API Gateway (REST)](#api-gateway-rest)
     - [S3 Bucket](#s3-bucket)
     - [Auto Scaling group](#auto-scaling-group)
+    - [CloudFront Distribution](#cloudfront-distribution)
     - [Azure OpenID role](#azure-openid-role)
     - [GitHub OpenID role](#github-openid-role)
     - [setup-tfstate](#setup-tfstate)
@@ -558,6 +559,14 @@ module "s3_bucket" {
   name       = "my-bucket"
   versioning = true
 
+  lifecycle_rules = [{ 
+    name                = "example-rule", 
+    prefix              = "they", 
+    days                = 60, 
+    noncurrent_days     = 30, 
+    noncurrent_versions = 10 
+  }]
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -587,12 +596,18 @@ module "s3_bucket" {
 
 ##### Inputs
 
-| Variable        | Type   | Description                                                                                                                                  | Required | Default |
-| --------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
-| name            | string | Name of the bucket                                                                                                                           | yes      |         |
-| versioning      | bool   | Enable versioning of s3 bucket                                                                                                               | yes      |         |
-| policy          | string | Policy of s3 bucket                                                                                                                          | no       | `null`  |
-| prevent_destroy | bool   | Prevent destroy of s3 bucket. To bypass this protection even if this is enabled, remove the module from your code and run `terraform apply`. | no       | `true`  |
+| Variable                               | Type         | Description                                                                                                                                          | Required | Default |
+|----------------------------------------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
+| name                                   | string       | Name of the bucket                                                                                                                                   | yes      |         |
+| versioning                             | bool         | Enable versioning of s3 bucket                                                                                                                       | yes      |         |
+| policy                                 | string       | Policy of s3 bucket                                                                                                                                  | no       | `null`  |
+| prevent_destroy                        | bool         | Prevent destroy of s3 bucket. To bypass this protection even if this is enabled, remove the module from your code and run `terraform apply`          | no       | `true`  |
+| lifecycle_rules                        | list(object) | List of rules as objects with lifetime (in days) of the S3 objects that are subject to the policy and path prefix                                    | no       | `[]`    |
+| lifecycle_rules.\*.name                | string       | Rule name                                                                                                                                            | (yes)    |         |
+| lifecycle_rules.\*.prefix              | string       | Prefix identifying one or more objects to which the rule applies                                                                                     | no       | `""`    |
+| lifecycle_rules.\*.days                | number       | The lifetime, in days, of the objects that are subject to the rule. Afterwards objects become noncurrent. Must be a non-zero positive integer if set | no       | `null`  |
+| lifecycle_rules.\*.noncurrent_days     | number       | The number of days an object is noncurrent before the object will be deleted. Must be a positive integer if set                                      | no       | `null`  |
+| lifecycle_rules.\*.noncurrent_versions | number       | The number of noncurrent versions Amazon S3 will retain. Must be a non-zero positive integer if set                                                  | no       | `null`  |
 
 ##### Outputs
 
@@ -639,6 +654,11 @@ module "auto-scaling-group" {
     environment = "dev"
   }
   health_check_path = "/health"
+  target_groups = [{
+    name = "api"
+    port = 8080
+    health_check_path = "/health"
+  }]
   policies = [{
     name = "ecr_pull"
     policy = jsonencode({
@@ -657,40 +677,50 @@ module "auto-scaling-group" {
   }]
   permissions_boundary_arn = "arn:aws:iam::123456789012:policy/they-test-boundary"
   allow_all_outbound = false
+  allow_ssh_inbound = false
   multi_az_nat = true
+  manual_lifecycle = false
+  manual_lifecycle_timeout = 300
 }
 
 ```
 
 ##### Inputs
 
-| Variable                 | Type         | Description                                                                                                                                   | Required | Default         |
-| ------------------------ | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------- |
-| name                     | string       | Name of the Auto Scaling group (ASG)                                                                                                          | yes      |                 |
-| ami_id                   | string       | ID of AMI used in EC2 instances of ASG                                                                                                        | yes      |                 |
-| instance_type            | string       | Instance type used to deploy instances in ASG                                                                                                 | yes      |                 |
-| desired_capacity         | number       | The number of EC2 instances that will be running in the ASG                                                                                   | no       | `1`             |
-| min_size                 | number       | The minimum number of EC2 instances in the ASG                                                                                                | no       | `1`             |
-| max_size                 | number       | The maximum number of EC2 instances in the ASG                                                                                                | no       | `1`             |
-| key_name                 | string       | Name of key pair used for the instances                                                                                                       | no       | `null`          |
-| user_data_file_name      | string       | The name of the local file in the working directory with the user data used in the instances of the ASG                                       | no       | `null`          |
-| user_data                | string       | User data to provide when launching instances of ASG. Use this to provide plain text instead of user_data_file_name.                          | no       | `null`          |
-| availability_zones       | list(string) | List of availability zones (AZs) names. A subnet is created for every AZ and the ASG instances are deployed across the different AZs          | yes      |                 |
-| single_availability_zone | bool         | Specify true to deploy all ASG instances in the same zone. Otherwise, the ASG will be deployed across multiple availability zones             | no       | `false`         |
-| vpc_id                   | string       | ID of VPC where the ASG will be deployed. If not provided, a new VPC will be created.                                                         | no       | `null`          |
-| vpc_cidr_block           | string       | The CIDR block of private IP addresses of the VPC. The subnets will be located within this CIDR block.                                        | no       | `"10.0.0.0/16"` |
-| public_subnets           | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                                      | no       | `false`         |
-| certificate_arn          | string       | ARN of certificate used to setup HTTPs in Application Load Balancer                                                                           | no       | `null`          |
-| tags                     | map(string)  | Additional tags for the components of this module                                                                                             | no       | `{}`            |
-| health_check_path        | string       | Destination for the health check request                                                                                                      | no       | `"/"`           |
-| policies                 | list(object) | List of policies to attach to the ASG instances via IAM Instance Profile                                                                      | no       | `[]`            |
-| policies.\*.name         | string       | Name of the inline policy                                                                                                                     | yes      |                 |
-| policies.\*.policy       | string       | Policy document as a JSON formatted string                                                                                                    | yes      |                 |
-| permissions_boundary_arn | string       | ARN of the permissions boundary to attach to the IAM Instance Profile                                                                         | no       | `null`          |
-| allow_all_outbound       | bool         | Allow all outbound traffic from instances                                                                                                     | no       | `false`         |
-| health_check_type        | string       | Controls how the health check for the EC2 instances under the ASG is done                                                                     | no       | `"ELB"`         |
-| multi_az_nat             | bool         | Specify true to deploy a NAT Gateway in each availability zone (AZ) of the deployment. Otherwise, only a single NAT Gateway will be deployed. | no       | `false`         |
-| loadbalancer_disabled    | bool         | Specify true to use the ASG without an ELB. By default, an ELB will be used.                                                                  | no       | `false`         |
+| Variable                           | Type         | Description                                                                                                                                  | Required | Default         |
+|------------------------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------|----------|-----------------|
+| name                               | string       | Name of the Auto Scaling group (ASG)                                                                                                         | yes      |                 |
+| ami_id                             | string       | ID of AMI used in EC2 instances of ASG                                                                                                       | yes      |                 |
+| instance_type                      | string       | Instance type used to deploy instances in ASG                                                                                                | yes      |                 |
+| desired_capacity                   | number       | The number of EC2 instances that will be running in the ASG                                                                                  | no       | `1`             |
+| min_size                           | number       | The minimum number of EC2 instances in the ASG                                                                                               | no       | `1`             |
+| max_size                           | number       | The maximum number of EC2 instances in the ASG                                                                                               | no       | `1`             |
+| key_name                           | string       | Name of key pair used for the instances                                                                                                      | no       | `null`          |
+| user_data_file_name                | string       | The name of the local file in the working directory with the user data used in the instances of the ASG                                      | no       | `null`          |
+| user_data                          | string       | User data to provide when launching instances of ASG. Use this to provide plain text instead of user_data_file_name                          | no       | `null`          |
+| availability_zones                 | list(string) | List of availability zones (AZs) names. A subnet is created for every AZ and the ASG instances are deployed across the different AZs         | yes      |                 |
+| single_availability_zone           | bool         | Specify true to deploy all ASG instances in the same zone. Otherwise, the ASG will be deployed across multiple availability zones            | no       | `false`         |
+| vpc_id                             | string       | ID of VPC where the ASG will be deployed. If not provided, a new VPC will be created.                                                        | no       | `null`          |
+| vpc_cidr_block                     | string       | The CIDR block of private IP addresses of the VPC. The subnets will be located within this CIDR block.                                       | no       | `"10.0.0.0/16"` |
+| public_subnets                     | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                                     | no       | `false`         |
+| certificate_arn                    | string       | ARN of certificate used to setup HTTPs in Application Load Balancer                                                                          | no       | `null`          |
+| tags                               | map(string)  | Additional tags for the components of this module                                                                                            | no       | `{}`            |
+| health_check_path                  | string       | Destination for the health check request                                                                                                     | no       | `"/"`           |
+| target_groups                      | list(object) | List of additional target groups to attach to the ASG instances and forward traffic to                                                       | no       | `[]`            |
+| target_groups.\*.name              | string       | Name of the target group                                                                                                                     | (yes)    |                 |
+| target_groups.\*.port              | number       | Port of the target group                                                                                                                     | (yes)    |                 |
+| target_groups.\*.health_check_path | string       | Destination for the health check request for the target group                                                                                | no       | `"/"`           |
+| policies                           | list(object) | List of policies to attach to the ASG instances via IAM Instance Profile                                                                     | no       | `[]`            |
+| policies.\*.name                   | string       | Name of the inline policy                                                                                                                    | yes      |                 |
+| policies.\*.policy                 | string       | Policy document as a JSON formatted string                                                                                                   | yes      |                 |
+| permissions_boundary_arn           | string       | ARN of the permissions boundary to attach to the IAM Instance Profile                                                                        | no       | `null`          |
+| allow_all_outbound                 | bool         | Allow all outbound traffic from instances                                                                                                    | no       | `false`         |
+| allow_ssh_inbound                  | bool         | Allow ssh inbound traffic from outside the VPC                                                                                               | no       | `false`         |
+| health_check_type                  | string       | Controls how the health check for the EC2 instances under the ASG is done                                                                    | no       | `"ELB"`         |
+| multi_az_nat                       | bool         | Specify true to deploy a NAT Gateway in each availability zone (AZ) of the deployment. Otherwise, only a single NAT Gateway will be deployed | no       | `false`         |
+| loadbalancer_disabled              | bool         | Specify true to use the ASG without an ELB. By default, an ELB will be used                                                                  | no       | `false`         |
+| manual_lifecycle                   | bool         | Specify true to force the asg to wait until lifecycle actions are completed before adding instances to the load balancer                     | no       | `false`         |
+| manual_lifecycle_timeout           | number       | The maximum time, in seconds, that an instance can remain in a Pending:Wait state                                                            | no       | `null`          |
 
 ##### Outputs
 
@@ -702,6 +732,47 @@ module "auto-scaling-group" {
 | security_group_id  | string       | ID of the security group                            |
 | private_subnet_ids | list(string) | IDs of the private subnets                          |
 | public_subnet_ids  | list(string) | IDs of the public subnets                           |
+
+#### CloudFront Distribution
+
+```hcl
+module "cloudfront_distribution" {
+  #   source = "github.com/THEY-Consulting/they-terraform//aws/cloudfront"
+  source = "../../../aws/cloudfront"
+
+  name                 = "they-test"
+  domain               = "test.they-code.de"
+  certificate_arn      = "some:certificate:arn"
+  attach_domain        = true
+  bucket_name          = "they-test-bucket"
+  attach_bucket_policy = true
+  origin_name          = "s3-origin"
+  origin_path          = "/dev"
+  cloudfront_routing   = "simple"
+}
+```
+
+##### Inputs
+
+| Variable             | Type   | Description                                                           | Required | Default    |
+|----------------------|--------|-----------------------------------------------------------------------|----------|------------|
+| name                 | string | Name of CloudFront distribution                                       | yes      |            |
+| domain               | string | The domain name for the CloudFront distribution                       | yes      |            |
+| certificate_arn      | string | The ARN of the certificate to use for HTTPS                           | yes      |            |
+| attach_domain        | bool   | Whether to attach the domain to the CloudFront distribution           | no       | `true`     |
+| bucket_name          | string | The S3 bucket to use as the origin for the CloudFront distribution    | yes      |            |
+| attach_bucket_policy | bool   | Whether to attach a bucket policy to the S3 bucket                    | no       | `true`     |
+| origin_name          | string | The name of the origin                                                | no       | `"s3"`     |
+| origin_path          | string | The path within the origin                                            | no       | `""`       |
+| cloudfront_routing   | string | The CloudFront routing configuration, valid are `simple` and `branch` | no       | `"simple"` |
+
+##### Outputs
+
+| Output         | Type   | Description                                   |
+|----------------|--------|-----------------------------------------------|
+| domain_name    | string | Domain name of the CloudFront distribution    |
+| hosted_zone_id | string | Hosted zone id of the CloudFront distribution |
+| arn            | string | ARN of the CloudFront distribution            |
 
 #### Azure OpenID role
 
@@ -794,6 +865,7 @@ module "github_action_role" {
   inline = true
   boundary_policy_arn = "arn:aws:iam::123456789012:policy/they-test-boundary"
   s3StateBackend = true
+  stateLockTableRegion = "eu-central-1"
   INSECURE_allowAccountToAssumeRole = false # Do not enable this in production!
 }
 ```
@@ -801,7 +873,7 @@ module "github_action_role" {
 ##### Inputs
 
 | Variable                          | Type         | Description                                                                                                                                                                                                   | Required | Default |
-| --------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
+|-----------------------------------|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
 | name                              | string       | Name of the role                                                                                                                                                                                              | yes      |         |
 | repo                              | string       | Repository that is authorized to assume this role                                                                                                                                                             | yes      |         |
 | policies                          | list(object) | List of additional inline policies to attach to the app                                                                                                                                                       | no       | `[]`    |
@@ -810,6 +882,7 @@ module "github_action_role" {
 | inline                            | bool         | If true, the policies will be created as inline policies. If false, they will be created as managed policies. Changing this will not necessarily remove the old policies correctly, check in the AWS console! | no       | `true`  |
 | boundary_policy_arn               | string       | ARN of a boundary policy to attach to the app                                                                                                                                                                 | no       | `null`  |
 | s3StateBackend                    | bool         | Set to true if a s3 state backend was setup with the setup-tfstate module (or uses the same naming scheme for the s3 bucket and dynamoDB table). This will set the required s3 and dynamoDB permissions.      | no       | `true`  |
+| stateLockTableRegion              | string       | Region of the state lock table, if different from the default region.                                                                                                                                         | no       | `null`  |
 | INSECURE_allowAccountToAssumeRole | bool         | Set to true if you want to allow the account to assume the role. This is insecure and should only be used for testing. Do not enable this in production!                                                      | no       | `false` |
 
 ##### Outputs

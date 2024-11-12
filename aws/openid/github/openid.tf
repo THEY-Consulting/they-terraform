@@ -2,6 +2,8 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 locals {
+  stateLockTableRegion = var.stateLockTableRegion != "" ? var.stateLockTableRegion : data.aws_region.current.name
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = concat(
@@ -71,7 +73,7 @@ locals {
                 "dynamodb:DeleteItem",
               ],
               Resource : [
-                "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/${var.name}-tfstate-lock",
+                "arn:aws:dynamodb:${local.stateLockTableRegion}:${data.aws_caller_identity.current.account_id}:table/${var.name}-tfstate-lock",
               ],
             },
           ]

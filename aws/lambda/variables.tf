@@ -69,11 +69,11 @@ variable "bucket_trigger" {
 }
 
 variable "sqs_trigger" {
-    description = "Event trigger configuration."
-    type = object({
-        arn = string
-    })
-    default = null
+  description = "Event trigger configuration."
+  type = object({
+    arn = string
+  })
+  default = null
 }
 
 variable "role_arn" {
