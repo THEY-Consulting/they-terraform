@@ -87,6 +87,20 @@ resource "aws_launch_template" "launch_template" {
     }
   }
 
+  dynamic "block_device_mappings" {
+    for_each = var.min_instance_storage_size != null ? [var.min_instance_storage_size] : []
+
+    content {
+      device_name = "/dev/xvda"
+
+      ebs {
+        volume_size           = var.min_instance_storage_size
+        delete_on_termination = true
+        encrypted             = true
+      }
+    }
+  }
+
   lifecycle {
     precondition {
       condition     = var.user_data == null || var.user_data_file_name == null

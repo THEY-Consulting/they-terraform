@@ -21,9 +21,12 @@ module "auto-scaling-group" {
   desired_capacity    = 2
   min_size            = 1
   max_size            = 3
-  user_data_file_name = "user_data.sh"
+  user_data_file_name  = "user_data.sh"
   availability_zones  = data.aws_availability_zones.azs.names[*] # Use AZs of region defined by provider.
-  certificate_arn     = data.aws_acm_certificate.certificate.arn
+  certificate_arn      = data.aws_acm_certificate.certificate.arn
+  min_instance_storage_size = 3
+  key_name = "core"
+  allow_ssh_inbound = true
 }
 
 # --- OUTPUT ---
