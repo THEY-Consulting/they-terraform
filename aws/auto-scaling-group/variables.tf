@@ -55,6 +55,11 @@ variable "extra_ebs_volume_size" {
   default     = null # Variable is optional.
 }
 
+variable "min_instance_storage_size_in_gb" {
+  description = "Size in GB of the root EBS volume attached to the instances of the ASG."
+  type        = number
+}
+
 variable "tags" {
   description = "Additional tags for the Auto Scaling Group."
   type        = map(string)

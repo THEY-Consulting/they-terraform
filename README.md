@@ -559,12 +559,12 @@ module "s3_bucket" {
   name       = "my-bucket"
   versioning = true
 
-  lifecycle_rules = [{ 
-    name                = "example-rule", 
-    prefix              = "they", 
-    days                = 60, 
-    noncurrent_days     = 30, 
-    noncurrent_versions = 10 
+  lifecycle_rules = [{
+    name                = "example-rule",
+    prefix              = "they",
+    days                = 60,
+    noncurrent_days     = 30,
+    noncurrent_versions = 10
   }]
 
   policy = jsonencode({
@@ -597,7 +597,7 @@ module "s3_bucket" {
 ##### Inputs
 
 | Variable                               | Type         | Description                                                                                                                                          | Required | Default |
-|----------------------------------------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
+| -------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
 | name                                   | string       | Name of the bucket                                                                                                                                   | yes      |         |
 | versioning                             | bool         | Enable versioning of s3 bucket                                                                                                                       | yes      |         |
 | policy                                 | string       | Policy of s3 bucket                                                                                                                                  | no       | `null`  |
@@ -687,40 +687,41 @@ module "auto-scaling-group" {
 
 ##### Inputs
 
-| Variable                           | Type         | Description                                                                                                                                  | Required | Default         |
-|------------------------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------|----------|-----------------|
-| name                               | string       | Name of the Auto Scaling group (ASG)                                                                                                         | yes      |                 |
-| ami_id                             | string       | ID of AMI used in EC2 instances of ASG                                                                                                       | yes      |                 |
-| instance_type                      | string       | Instance type used to deploy instances in ASG                                                                                                | yes      |                 |
-| desired_capacity                   | number       | The number of EC2 instances that will be running in the ASG                                                                                  | no       | `1`             |
-| min_size                           | number       | The minimum number of EC2 instances in the ASG                                                                                               | no       | `1`             |
-| max_size                           | number       | The maximum number of EC2 instances in the ASG                                                                                               | no       | `1`             |
-| key_name                           | string       | Name of key pair used for the instances                                                                                                      | no       | `null`          |
-| user_data_file_name                | string       | The name of the local file in the working directory with the user data used in the instances of the ASG                                      | no       | `null`          |
-| user_data                          | string       | User data to provide when launching instances of ASG. Use this to provide plain text instead of user_data_file_name                          | no       | `null`          |
-| availability_zones                 | list(string) | List of availability zones (AZs) names. A subnet is created for every AZ and the ASG instances are deployed across the different AZs         | yes      |                 |
-| single_availability_zone           | bool         | Specify true to deploy all ASG instances in the same zone. Otherwise, the ASG will be deployed across multiple availability zones            | no       | `false`         |
-| vpc_id                             | string       | ID of VPC where the ASG will be deployed. If not provided, a new VPC will be created.                                                        | no       | `null`          |
-| vpc_cidr_block                     | string       | The CIDR block of private IP addresses of the VPC. The subnets will be located within this CIDR block.                                       | no       | `"10.0.0.0/16"` |
-| public_subnets                     | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                                     | no       | `false`         |
-| certificate_arn                    | string       | ARN of certificate used to setup HTTPs in Application Load Balancer                                                                          | no       | `null`          |
-| tags                               | map(string)  | Additional tags for the components of this module                                                                                            | no       | `{}`            |
-| health_check_path                  | string       | Destination for the health check request                                                                                                     | no       | `"/"`           |
-| target_groups                      | list(object) | List of additional target groups to attach to the ASG instances and forward traffic to                                                       | no       | `[]`            |
-| target_groups.\*.name              | string       | Name of the target group                                                                                                                     | (yes)    |                 |
-| target_groups.\*.port              | number       | Port of the target group                                                                                                                     | (yes)    |                 |
-| target_groups.\*.health_check_path | string       | Destination for the health check request for the target group                                                                                | no       | `"/"`           |
-| policies                           | list(object) | List of policies to attach to the ASG instances via IAM Instance Profile                                                                     | no       | `[]`            |
-| policies.\*.name                   | string       | Name of the inline policy                                                                                                                    | yes      |                 |
-| policies.\*.policy                 | string       | Policy document as a JSON formatted string                                                                                                   | yes      |                 |
-| permissions_boundary_arn           | string       | ARN of the permissions boundary to attach to the IAM Instance Profile                                                                        | no       | `null`          |
-| allow_all_outbound                 | bool         | Allow all outbound traffic from instances                                                                                                    | no       | `false`         |
-| allow_ssh_inbound                  | bool         | Allow ssh inbound traffic from outside the VPC                                                                                               | no       | `false`         |
-| health_check_type                  | string       | Controls how the health check for the EC2 instances under the ASG is done                                                                    | no       | `"ELB"`         |
-| multi_az_nat                       | bool         | Specify true to deploy a NAT Gateway in each availability zone (AZ) of the deployment. Otherwise, only a single NAT Gateway will be deployed | no       | `false`         |
-| loadbalancer_disabled              | bool         | Specify true to use the ASG without an ELB. By default, an ELB will be used                                                                  | no       | `false`         |
-| manual_lifecycle                   | bool         | Specify true to force the asg to wait until lifecycle actions are completed before adding instances to the load balancer                     | no       | `false`         |
-| manual_lifecycle_timeout           | number       | The maximum time, in seconds, that an instance can remain in a Pending:Wait state                                                            | no       | `null`          |
+| Variable                           | Type         | Description                                                                                                                                  | Required | Default                                                                   |
+| ---------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------- |
+| name                               | string       | Name of the Auto Scaling group (ASG)                                                                                                         | yes      |                                                                           |
+| ami_id                             | string       | ID of AMI used in EC2 instances of ASG                                                                                                       | yes      |                                                                           |
+| instance_type                      | string       | Instance type used to deploy instances in ASG                                                                                                | yes      |                                                                           |
+| desired_capacity                   | number       | The number of EC2 instances that will be running in the ASG                                                                                  | no       | `1`                                                                       |
+| min_size                           | number       | The minimum number of EC2 instances in the ASG                                                                                               | no       | `1`                                                                       |
+| max_size                           | number       | The maximum number of EC2 instances in the ASG                                                                                               | no       | `1`                                                                       |
+| min_instance_storage_size_in_gb    | number       | The storage size of the root EBS volume of the deployed EC2 instances                                                                        | no       | The storage AWS automatically allocates for your instance type by default |
+| key_name                           | string       | Name of key pair used for the instances                                                                                                      | no       | `null`                                                                    |
+| user_data_file_name                | string       | The name of the local file in the working directory with the user data used in the instances of the ASG                                      | no       | `null`                                                                    |
+| user_data                          | string       | User data to provide when launching instances of ASG. Use this to provide plain text instead of user_data_file_name                          | no       | `null`                                                                    |
+| availability_zones                 | list(string) | List of availability zones (AZs) names. A subnet is created for every AZ and the ASG instances are deployed across the different AZs         | yes      |                                                                           |
+| single_availability_zone           | bool         | Specify true to deploy all ASG instances in the same zone. Otherwise, the ASG will be deployed across multiple availability zones            | no       | `false`                                                                   |
+| vpc_id                             | string       | ID of VPC where the ASG will be deployed. If not provided, a new VPC will be created.                                                        | no       | `null`                                                                    |
+| vpc_cidr_block                     | string       | The CIDR block of private IP addresses of the VPC. The subnets will be located within this CIDR block.                                       | no       | `"10.0.0.0/16"`                                                           |
+| public_subnets                     | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                                     | no       | `false`                                                                   |
+| certificate_arn                    | string       | ARN of certificate used to setup HTTPs in Application Load Balancer                                                                          | no       | `null`                                                                    |
+| tags                               | map(string)  | Additional tags for the components of this module                                                                                            | no       | `{}`                                                                      |
+| health_check_path                  | string       | Destination for the health check request                                                                                                     | no       | `"/"`                                                                     |
+| target_groups                      | list(object) | List of additional target groups to attach to the ASG instances and forward traffic to                                                       | no       | `[]`                                                                      |
+| target_groups.\*.name              | string       | Name of the target group                                                                                                                     | (yes)    |                                                                           |
+| target_groups.\*.port              | number       | Port of the target group                                                                                                                     | (yes)    |                                                                           |
+| target_groups.\*.health_check_path | string       | Destination for the health check request for the target group                                                                                | no       | `"/"`                                                                     |
+| policies                           | list(object) | List of policies to attach to the ASG instances via IAM Instance Profile                                                                     | no       | `[]`                                                                      |
+| policies.\*.name                   | string       | Name of the inline policy                                                                                                                    | yes      |                                                                           |
+| policies.\*.policy                 | string       | Policy document as a JSON formatted string                                                                                                   | yes      |                                                                           |
+| permissions_boundary_arn           | string       | ARN of the permissions boundary to attach to the IAM Instance Profile                                                                        | no       | `null`                                                                    |
+| allow_all_outbound                 | bool         | Allow all outbound traffic from instances                                                                                                    | no       | `false`                                                                   |
+| allow_ssh_inbound                  | bool         | Allow ssh inbound traffic from outside the VPC                                                                                               | no       | `false`                                                                   |
+| health_check_type                  | string       | Controls how the health check for the EC2 instances under the ASG is done                                                                    | no       | `"ELB"`                                                                   |
+| multi_az_nat                       | bool         | Specify true to deploy a NAT Gateway in each availability zone (AZ) of the deployment. Otherwise, only a single NAT Gateway will be deployed | no       | `false`                                                                   |
+| loadbalancer_disabled              | bool         | Specify true to use the ASG without an ELB. By default, an ELB will be used                                                                  | no       | `false`                                                                   |
+| manual_lifecycle                   | bool         | Specify true to force the asg to wait until lifecycle actions are completed before adding instances to the load balancer                     | no       | `false`                                                                   |
+| manual_lifecycle_timeout           | number       | The maximum time, in seconds, that an instance can remain in a Pending:Wait state                                                            | no       | `null`                                                                    |
 
 ##### Outputs
 
@@ -755,7 +756,7 @@ module "cloudfront_distribution" {
 ##### Inputs
 
 | Variable             | Type   | Description                                                           | Required | Default    |
-|----------------------|--------|-----------------------------------------------------------------------|----------|------------|
+| -------------------- | ------ | --------------------------------------------------------------------- | -------- | ---------- |
 | name                 | string | Name of CloudFront distribution                                       | yes      |            |
 | domain               | string | The domain name for the CloudFront distribution                       | yes      |            |
 | certificate_arn      | string | The ARN of the certificate to use for HTTPS                           | yes      |            |
@@ -769,7 +770,7 @@ module "cloudfront_distribution" {
 ##### Outputs
 
 | Output         | Type   | Description                                   |
-|----------------|--------|-----------------------------------------------|
+| -------------- | ------ | --------------------------------------------- |
 | domain_name    | string | Domain name of the CloudFront distribution    |
 | hosted_zone_id | string | Hosted zone id of the CloudFront distribution |
 | arn            | string | ARN of the CloudFront distribution            |
@@ -873,7 +874,7 @@ module "github_action_role" {
 ##### Inputs
 
 | Variable                          | Type         | Description                                                                                                                                                                                                   | Required | Default |
-|-----------------------------------|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
+| --------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
 | name                              | string       | Name of the role                                                                                                                                                                                              | yes      |         |
 | repo                              | string       | Repository that is authorized to assume this role                                                                                                                                                             | yes      |         |
 | policies                          | list(object) | List of additional inline policies to attach to the app                                                                                                                                                       | no       | `[]`    |
