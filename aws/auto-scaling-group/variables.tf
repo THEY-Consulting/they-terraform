@@ -55,10 +55,9 @@ variable "extra_ebs_volume_size" {
   default     = null # Variable is optional.
 }
 
-variable "min_instance_storage_size" {
-  description = "Size of extra EBS volume to attach to instances."
+variable "min_instance_storage_size_in_gb" {
+  description = "Size in GB of the root EBS volume attached to the instances of the ASG."
   type        = number
-  default     = 2 # Variable is optional.
 }
 
 variable "tags" {
