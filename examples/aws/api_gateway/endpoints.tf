@@ -6,7 +6,7 @@ module "lambda_without_build" {
 
   name        = "they-test-api-gateway-simple"
   description = "Test lambda without build step"
-  source_dir  = "../packages/lambda-simple"
+  source_dir  = "../.packages/lambda-simple"
   runtime     = "nodejs20.x"
 
   build = {
@@ -20,7 +20,7 @@ module "lambda_with_custom_headers" {
 
   name        = "they-test-api-gateway-custom-headers"
   description = "Test lambda with custom headers in response"
-  source_dir  = "../packages/lambda-response-headers"
+  source_dir  = "../.packages/lambda-response-headers"
   runtime     = "nodejs20.x"
 
   build = {

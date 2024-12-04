@@ -8,10 +8,17 @@ variable "runtime" {
   type = object({
     name    = string
     version = string
+    os      = optional(string, "windows")
   })
   default = {
     name    = "node"
     version = "~18"
+    os      = "windows"
+  }
+
+  validation {
+    condition     = var.runtime.name != "python" || var.runtime.os != "windows"
+    error_message = "Python is not supported on Windows."
   }
 }
 
@@ -33,11 +40,12 @@ variable "resource_group_name" {
 variable "storage_account" {
   description = "The storage account."
   type = object({
-    preexisting_name = optional(string, null)
-    is_hns_enabled   = optional(bool, false)
-    tier             = optional(string, "Standard")
-    replication_type = optional(string, "RAGRS") # Read-access geo-redundant storage (RA-GRS)
-    min_tls_version  = optional(string, "TLS1_2")
+    preexisting_name            = optional(string, null)
+    preexisting_ressource_group = optional(string, null)
+    is_hns_enabled              = optional(bool, false)
+    tier                        = optional(string, "Standard")
+    replication_type            = optional(string, "RAGRS") # Read-access geo-redundant storage (RA-GRS)
+    min_tls_version             = optional(string, "TLS1_2")
   })
   default = {}
 }
@@ -46,7 +54,6 @@ variable "service_plan" {
   description = "The service plan."
   type = object({
     name     = optional(string, null)
-    os_type  = optional(string, "Windows")
     sku_name = optional(string, "Y1")
   })
   default = {}

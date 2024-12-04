@@ -4,6 +4,11 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.26.0"
     }
+
+    checkmate = {
+      source  = "tetratelabs/checkmate"
+      version = "~> 1.6"
+    }
   }
 
   backend "s3" {

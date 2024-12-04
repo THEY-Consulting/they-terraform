@@ -1,7 +1,8 @@
 locals {
   insights_tags = var.insights.enabled ? tomap({
-    "hidden-link: /app-insights-resource-id"         = replace(azurerm_application_insights.app_insights[0].id, "Microsoft.Insights", "microsoft.insights")
-    "hidden-link: /app-insights-conn-string"         = azurerm_application_insights.app_insights[0].connection_string
+    "hidden-link: /app-insights-resource-id" = replace(azurerm_application_insights.app_insights[0].id, "Microsoft.Insights", "microsoft.insights")
+    # Note: below currently causes deployment problems with character limits
+    #    "hidden-link: /app-insights-conn-string"         = azurerm_application_insights.app_insights[0].connection_string
     "hidden-link: /app-insights-instrumentation-key" = azurerm_application_insights.app_insights[0].instrumentation_key
   }) : {}
 }

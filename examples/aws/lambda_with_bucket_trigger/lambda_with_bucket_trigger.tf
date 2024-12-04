@@ -6,7 +6,7 @@ module "lambda_with_bucket_trigger" {
 
   name        = "they-test-bucket"
   description = "Test lambda with bucket trigger"
-  source_dir  = "../packages/lambda-typescript"
+  source_dir  = "../.packages/lambda-typescript"
   runtime     = "nodejs20.x"
 
   bucket_trigger = {

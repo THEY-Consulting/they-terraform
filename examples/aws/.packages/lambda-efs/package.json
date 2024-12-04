@@ -1,0 +1,13 @@
+{
+  "name": "@media-data-publisher/unzipper",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc --noemit && esbuild src/index.ts --bundle --platform=node --target=node20 --outdir=dist --keep-names --external:@aws-sdk/client-s3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.5",
+    "esbuild": "^0.19.4",
+    "typescript": "5.2.2"
+  }
+}

@@ -1,0 +1,44 @@
+# This file is maintained automatically by "terraform init".
+# Manual edits may be lost in future updates.
+
+provider "registry.terraform.io/hashicorp/aws" {
+  version     = "5.26.0"
+  constraints = "~> 5.26.0"
+  hashes = [
+    "h1:McIRw8larBNW5TeXxyiWd8fD55oj1szEbMOuSQOSDBs=",
+    "zh:11a4062491e574c8e96b6bc7ced67b5e9338ccfa068223fc9042f9e1e7eda47a",
+    "zh:4331f85aeb22223ab656d04b48337a033f44f02f685c8def604c4f8f4687d10f",
+    "zh:915d6c996390736709f7ac7582cd41418463cfc07696218af6fea4a282df744a",
+    "zh:9306c306dbb2e1597037c54d20b1bd5f22a9cdcdb2b2b7bad657c8230bea2298",
+    "zh:93371860b9df369243219606711bfd3cfbd263db67838c06d5d5848cf47b6ede",
+    "zh:98338c17764a7b9322ddb6efd3af84e6890a4a0687f846eefdfb0fa03cec892d",
+    "zh:9b12af85486a96aedd8d7984b0ff811a4b42e3d88dad1a3fb4c0b580d04fa425",
+    "zh:a28c9d77a5be25bac42d99418365757e4eb65a2c7c6788828263772cf2774869",
+    "zh:bd9c4648a090622d6b8c3c91dad513eec81e54db3dfe940ab6d155e5f37735e5",
+    "zh:bde63db136cccdeb282489e2ec2b3f9a7566edc9df27911a296352ab00832261",
+    "zh:ccd33f9490ce3f2d89efab995abf3b30e75579585f6a8a5b1f756246903d3518",
+    "zh:d73d1c461eb9d22833251f6533fc214cf014bc1d3165c5bfaa8ca29cd295ffb2",
+    "zh:db4ffb7eec5d0e1d0dbd0d65e1a3eaa6173a3337058105aec41fd0b2af5a2b46",
+    "zh:eb36b933419e9f6563330f3b7d53d4f1b09e62d27f7786d5dc6c4a2d0f6de182",
+    "zh:ec85ce1976e43f7d7fa10fa191c0a85e97326a3cb22387c0ed8b74d426ec94fd",
+  ]
+}
+
+provider "registry.terraform.io/hashicorp/azurerm" {
+  version = "3.99.0"
+  hashes = [
+    "h1:dawmYJUMGlL3t1mKDyaLJc08uSxPaUBoCAb/YCbVxPM=",
+    "zh:20581c1f4c586a37af45ed4c2a86ff4d868cee79139a755bd29750d804cee3ef",
+    "zh:28b3cc4e5f8bc65a595eab011d5965203a39e92aa9e26df842ffc979305ac823",
+    "zh:4cb167f8bb82f9065b7b50d012be3045fce3c699b0ea0e257ad1995441227f72",
+    "zh:6fa5c6fa430921a4e0fe8d44eaf12210fb90afdf3f83cedfde1c691ae36e953c",
+    "zh:75eff5b0ea9fca46ed5a0425c5e33fbda470e6448917817e80ae898688568665",
+    "zh:9af0aeaa74bfc764c60eec7d212d31deb70e03e970d22449f11170f75108f9cf",
+    "zh:b5055767199a2927d41b543a16e905c1e0b209f14a2144c756786194e133b41d",
+    "zh:c3e30b0eed068a148498ac78a9e013bc2eef0eb3cc3b4484f77421d64a797dc2",
+    "zh:ce87cd35cef9e5805f921978a91a7a4e139e8cbc7674a94076cb1a20a0c2feb1",
+    "zh:d87b84f144c865145bd10093ead99b653ea363fd4e7315675727659ca78544d0",
+    "zh:ee5900a50d69e046aab6581f6d888014b3f8d543e5b17c50761579d3370935f2",
+    "zh:f569b65999264a9416862bca5cd2a6177d94ccb0424f3a4ef424428912b9cb3c",
+  ]
+}

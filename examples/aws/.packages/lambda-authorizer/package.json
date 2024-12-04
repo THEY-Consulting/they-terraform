@@ -1,0 +1,13 @@
+{
+  "name": "@they/example-authorizer-lambda",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "8.10.126",
+    "@types/node": "20.9.2",
+    "typescript": "5.2.2"
+  }
+}

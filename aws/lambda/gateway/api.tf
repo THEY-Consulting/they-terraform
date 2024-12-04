@@ -1,6 +1,7 @@
 resource "aws_api_gateway_rest_api" "api" {
-  name        = var.name
-  description = var.description
+  name                         = var.name
+  description                  = var.description
+  disable_execute_api_endpoint = local.disable_default_endpoint
 }
 
 resource "aws_api_gateway_deployment" "deployment" {
@@ -11,6 +12,7 @@ resource "aws_api_gateway_deployment" "deployment" {
       var.endpoints,
       var.authorizer,
       var.api_key,
+      local.disable_default_endpoint
     ])))
   }
 

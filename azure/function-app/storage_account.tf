@@ -14,6 +14,6 @@ resource "azurerm_storage_account" "managed_storage_account" {
 }
 
 data "azurerm_storage_account" "storage_account" {
-  name                = coalesce(var.storage_account.preexisting_name, azurerm_storage_account.managed_storage_account.0.name)
-  resource_group_name = var.resource_group_name
+  name                = var.storage_account.preexisting_name != null ? var.storage_account.preexisting_name : azurerm_storage_account.managed_storage_account.0.name
+  resource_group_name = var.storage_account.preexisting_ressource_group != null ? var.storage_account.preexisting_ressource_group : var.resource_group_name
 }

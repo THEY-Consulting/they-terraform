@@ -1,0 +1,13 @@
+{
+  "name": "@they/example-typescript-function-app",
+  "version": "1.0.0",
+  "main": "dist/hello-world/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@azure/functions": "3.5.1",
+    "@types/node": "^20.9.2",
+    "typescript": "5.2.2"
+  }
+}

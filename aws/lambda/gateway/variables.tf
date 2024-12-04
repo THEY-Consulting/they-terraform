@@ -1,6 +1,7 @@
 locals {
-  use_domain = var.domain == null ? false : true
-  use_mtls   = local.use_domain ? (var.domain.s3_truststore_uri == null ? false : true) : false
+  use_domain               = var.domain == null ? false : true
+  use_mtls                 = local.use_domain ? (var.domain.s3_truststore_uri == null ? false : true) : false
+  disable_default_endpoint = anytrue([var.disable_default_endpoint, local.use_mtls])
 }
 
 variable "name" {
@@ -20,6 +21,12 @@ variable "stage_name" {
   default     = "dev"
 }
 
+variable "base_path" {
+  description = "The base path to use for the api gateway."
+  type        = string
+  default     = null
+}
+
 variable "endpoints" {
   description = "The endpoints to create for the api gateway."
   type = list(object({
@@ -31,6 +38,18 @@ variable "endpoints" {
     authorizer_id    = optional(string)
     api_key_required = optional(bool)
   }))
+}
+
+variable "logging_level" {
+  description = "Set the logging level for the api gateway."
+  type        = string
+  default     = "INFO"
+}
+
+variable "metrics_enabled" {
+  description = "Enables metrics for the api gateway."
+  type        = bool
+  default     = true
 }
 
 variable "api_key" {
@@ -62,10 +81,11 @@ variable "authorizer" {
 variable "domain" {
   description = "The domain configuration to use for the api gateway."
   type = object({
-    certificate_arn   = optional(string)
-    s3_truststore_uri = optional(string)
-    zone_name         = string
-    domain            = string
+    certificate_arn       = optional(string)
+    s3_truststore_uri     = optional(string)
+    s3_truststore_version = optional(string)
+    zone_name             = string
+    domain                = string
   })
   default = null
 
@@ -77,6 +97,12 @@ variable "domain" {
     )
     error_message = "Either 'certificate_arn' or 's3_truststore_uri' must be set. They cannot both be set or both be null"
   }
+}
+
+variable "disable_default_endpoint" {
+  description = "By default, clients can invoke your API with the default https://{api_id}.execute-api.{region}.amazonaws.com endpoint. To require that clients use a custom domain name to invoke your API, disable the default endpoint."
+  type        = bool
+  default     = false
 }
 
 variable "redeployment_trigger" {

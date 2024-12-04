@@ -48,7 +48,7 @@ variable "cloudwatch" {
 variable "cron_trigger" {
   description = "Cron trigger configuration."
   type = object({
-    name        = string
+    name        = optional(string)
     description = optional(string)
     schedule    = string
     input       = optional(string) // Valid JSON text passed to the target.
@@ -64,6 +64,14 @@ variable "bucket_trigger" {
     events        = list(string)
     filter_prefix = optional(string)
     filter_suffix = optional(string)
+  })
+  default = null
+}
+
+variable "sqs_trigger" {
+  description = "Event trigger configuration."
+  type = object({
+    arn = string
   })
   default = null
 }
@@ -113,6 +121,12 @@ variable "vpc_config" {
     subnet_ids         = list(string)
   })
   default = null
+}
+
+variable "mount_efs" {
+  description = "ARN of the EFS file system to mount."
+  type        = string
+  default     = null
 }
 
 variable "publish" {

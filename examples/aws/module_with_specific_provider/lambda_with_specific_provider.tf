@@ -6,7 +6,7 @@ module "module_with_specifig_provider" {
 
   name        = "they-test-module-with-specific-provider"
   description = "Test module with specific provider"
-  source_dir  = "../packages/lambda-typescript"
+  source_dir  = "../.packages/lambda-typescript"
   runtime     = "nodejs20.x"
 
   # setting provider explicitly

@@ -24,7 +24,8 @@ resource "aws_api_gateway_domain_name" "api_gateway_domain_name_mtls" {
   }
 
   mutual_tls_authentication {
-    truststore_uri = var.domain.s3_truststore_uri
+    truststore_uri     = var.domain.s3_truststore_uri
+    truststore_version = var.domain.s3_truststore_version
   }
   domain_name = var.domain.domain
 }
@@ -35,6 +36,7 @@ resource "aws_api_gateway_base_path_mapping" "base_path_mapping" {
   api_id      = aws_api_gateway_rest_api.api.id
   stage_name  = aws_api_gateway_stage.stage.stage_name
   domain_name = local.use_mtls ? aws_api_gateway_domain_name.api_gateway_domain_name_mtls[0].domain_name : aws_api_gateway_domain_name.api_gateway_domain_name[0].domain_name
+  base_path   = var.base_path
 }
 
 resource "aws_route53_record" "api_gateway_domain_name_record" {

@@ -1,0 +1,14 @@
+{
+  "name": "@they/example-bundle-function-app",
+  "version": "1.0.0",
+  "main": "dist/hello-world/index.js",
+  "scripts": {
+    "build": "tsc --noemit && esbuild hello-world/index.ts --bundle --platform=node --outdir=dist"
+  },
+  "devDependencies": {
+    "@azure/functions": "3.5.1",
+    "@types/node": "^20.9.2",
+    "esbuild": "^0.19.6",
+    "typescript": "5.2.2"
+  }
+}
