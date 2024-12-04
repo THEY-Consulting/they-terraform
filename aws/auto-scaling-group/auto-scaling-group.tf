@@ -54,6 +54,11 @@ resource "aws_autoscaling_group" "asg" {
     triggers = ["tag"]
   }
 
+  lifecycle {
+    // This prevents the ASG from removing the target groups when the ASG is updated.
+    // See https://registry.terraform.io/providers/hashicorp/aws/latest/docs/guides/version-3-upgrade#drift-detection-enabled-for-load_balancers-and-target_group_arns-arguments
+    ignore_changes = [load_balancers, target_group_arns]
+  }
 }
 
 resource "aws_launch_template" "launch_template" {
