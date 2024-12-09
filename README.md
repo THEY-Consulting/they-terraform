@@ -927,18 +927,18 @@ example, click [here](./examples/aws/lambda_with_outbound_proxy/main.tf).
 
 ## Inputs
 
-| Name | Description | Type | Required | Default |
-|------|-------------|------|----------|:-------:|
-| <a name="input_eip_allocation_id"></a> [eip\_allocation\_id](#input\_eip\_allocation\_id) | The allocation id of the elastic ip address. The public ip of this eip will be used as the outbound ip of the proxy. | `string` | yes |  |
-| <a name="input_name"></a> [name](#input\_name) | Name/Prefix of resources created by this module. | `string` | yes |  |
-| <a name="input_tags"></a> [tags](#input\_tags) | Map of tags to assign to the created resources of this module. | `map(string)` | no | `{}` |
+| Name                                                                                 | Description                                                                                                          | Type          | Required | Default |
+| ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | ------------- | -------- | :-----: |
+| <a name="input_eip_allocation_id"></a> [eip_allocation_id](#input_eip_allocation_id) | The allocation id of the elastic ip address. The public ip of this eip will be used as the outbound ip of the proxy. | `string`      | no       | `null`  |
+| <a name="input_name"></a> [name](#input_name)                                        | Name/Prefix of resources created by this module.                                                                     | `string`      | no       |  null   |
+| <a name="input_tags"></a> [tags](#input_tags)                                        | Map of tags to assign to the created resources of this module.                                                       | `map(string)` | no       |  `{}`   |
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| <a name="output_vpc_arn"></a> [vpc\_arn](#output\_vpc\_arn) | Arn of the created vpc. |
-| <a name="output_vpc_config"></a> [vpc\_config](#output\_vpc\_config) | By attaching this config to the vpc\_config block of a lambda function it uses the outbound proxy. |
+| Name                                                              | Description                                                                                       |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| <a name="output_vpc_arn"></a> [vpc_arn](#output_vpc_arn)          | Arn of the created vpc.                                                                           |
+| <a name="output_vpc_config"></a> [vpc_config](#output_vpc_config) | By attaching this config to the vpc_config block of a lambda function it uses the outbound proxy. |
 
 ### Azure
 
