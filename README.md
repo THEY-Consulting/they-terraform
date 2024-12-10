@@ -19,6 +19,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [Azure OpenID role](#azure-openid-role)
     - [GitHub OpenID role](#github-openid-role)
     - [setup-tfstate](#setup-tfstate)
+    - [Outbound proxy VPC](#outbound-proxy-vpc)
   - [Azure](#azure)
     - [Function app](#function-app)
     - [MSSQL Database](#mssql-database)
@@ -915,6 +916,47 @@ module "setup_tfstate" {
 | -------------- | ------ | ------------------------- |
 | s3_bucket_arn  | string | The ARN of the s3 bucket  |
 | s3_bucket_name | string | The name of the s3 bucket |
+
+#### Outbound proxy VPC
+
+Whenever you need to talk to APIs which use IP based whitelisting, this is
+the module to create the required setup with. It uses an eip/elastic ip (will be created if none is given)
+and it spits out a vpc_config which can be attached to a lambda function. The
+lambda function will then execute requests via the ip of the given eip.
+
+```hcl
+module "outbound_proxy_vpc" {
+  source = "../../../aws/lambda/outbound-proxy-vpc"
+
+  name = local.name
+}
+
+module "lambda_with_outbound_proxy" {
+  source = "../../../aws/lambda"
+  vpc_config  = module.outbound_proxy_vpc.vpc_config
+
+  name        = local.name
+  description = "Test lambda with outbound proxy"
+  source_dir  = "../packages/lambda-outbound-proxy"
+  runtime     = "nodejs20.x"
+
+}
+```
+
+##### Inputs
+
+| Name                                                                                 | Description                                                                                                          | Type          | Required | Default |
+| ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | ------------- | -------- | :-----: |
+| <a name="input_eip_allocation_id"></a> [eip_allocation_id](#input_eip_allocation_id) | The allocation id of the elastic ip address. The public ip of this eip will be used as the outbound ip of the proxy. | `string`      | no       | `null`  |
+| <a name="input_name"></a> [name](#input_name)                                        | Name/Prefix of resources created by this module.                                                                     | `string`      | no       |  null   |
+| <a name="input_tags"></a> [tags](#input_tags)                                        | Map of tags to assign to the created resources of this module.                                                       | `map(string)` | no       |  `{}`   |
+
+##### Outputs
+
+| Name                                                              | Description                                                                                       |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| <a name="output_vpc_arn"></a> [vpc_arn](#output_vpc_arn)          | Arn of the created vpc.                                                                           |
+| <a name="output_vpc_config"></a> [vpc_config](#output_vpc_config) | By attaching this config to the vpc_config block of a lambda function it uses the outbound proxy. |
 
 ### Azure
 
