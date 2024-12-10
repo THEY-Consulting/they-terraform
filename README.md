@@ -917,15 +917,33 @@ module "setup_tfstate" {
 | s3_bucket_arn  | string | The ARN of the s3 bucket  |
 | s3_bucket_name | string | The name of the s3 bucket |
 
-# Outbound proxy VPC
+#### Outbound proxy VPC
 
 Whenever you need to talk to APIs which use IP based whitelisting, this is
-the module to create the required setup with. It requires an eip/elastic ip
+the module to create the required setup with. It uses an eip/elastic ip (will be created if none is given)
 and it spits out a vpc_config which can be attached to a lambda function. The
-lambda function will then execute requests via the ip of the given eip. For an
-example, click [here](./examples/aws/lambda_with_outbound_proxy/main.tf).
+lambda function will then execute requests via the ip of the given eip.
 
-## Inputs
+```hcl
+module "outbound_proxy_vpc" {
+  source = "../../../aws/lambda/outbound-proxy-vpc"
+
+  name = local.name
+}
+
+module "lambda_with_outbound_proxy" {
+  source = "../../../aws/lambda"
+  vpc_config  = module.outbound_proxy_vpc.vpc_config
+
+  name        = local.name
+  description = "Test lambda with outbound proxy"
+  source_dir  = "../packages/lambda-outbound-proxy"
+  runtime     = "nodejs20.x"
+
+}
+```
+
+##### Inputs
 
 | Name                                                                                 | Description                                                                                                          | Type          | Required | Default |
 | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | ------------- | -------- | :-----: |
@@ -933,7 +951,7 @@ example, click [here](./examples/aws/lambda_with_outbound_proxy/main.tf).
 | <a name="input_name"></a> [name](#input_name)                                        | Name/Prefix of resources created by this module.                                                                     | `string`      | no       |  null   |
 | <a name="input_tags"></a> [tags](#input_tags)                                        | Map of tags to assign to the created resources of this module.                                                       | `map(string)` | no       |  `{}`   |
 
-## Outputs
+##### Outputs
 
 | Name                                                              | Description                                                                                       |
 | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
