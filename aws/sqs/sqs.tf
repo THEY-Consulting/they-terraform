@@ -65,4 +65,8 @@ resource "aws_sns_topic_subscription" "main" {
   topic_arn = var.sns_topic_arn_for_subscription
   protocol  = "sqs"
   endpoint  = aws_sqs_queue.main.arn
+
+  lifecycle {
+    ignore_changes = [replay_policy]
+  }
 }
