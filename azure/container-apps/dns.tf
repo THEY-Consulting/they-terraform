@@ -26,7 +26,7 @@ resource "azurerm_dns_cname_record" "main" {
   zone_name           = data.azurerm_dns_zone.main[0].name
   ttl                 = var.ttl
 
-  record = azurerm_container_app.container_app[each.key].latest_revision_fqdn
+  record = azurerm_container_app.container_app[each.key].ingress[0].fqdn
 }
 
 resource "azurerm_container_app_custom_domain" "main" {
