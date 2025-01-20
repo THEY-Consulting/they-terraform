@@ -1,14 +1,15 @@
 data "aws_default_tags" "current" {}
 
 resource "aws_autoscaling_group" "asg" {
-  name                 = var.name
-  vpc_zone_identifier  = var.single_availability_zone ? [aws_subnet.instances_subnets[0].id] : aws_subnet.instances_subnets[*].id
-  desired_capacity     = var.desired_capacity
-  min_size             = var.min_size
-  max_size             = var.max_size
-  target_group_arns    = var.loadbalancer_disabled ? [] : [aws_lb_target_group.tg.arn]
-  health_check_type    = var.health_check_type
-  termination_policies = ["OldestInstance"]
+  name                      = var.name
+  vpc_zone_identifier       = var.single_availability_zone ? [aws_subnet.instances_subnets[0].id] : aws_subnet.instances_subnets[*].id
+  desired_capacity          = var.desired_capacity
+  min_size                  = var.min_size
+  max_size                  = var.max_size
+  target_group_arns         = var.loadbalancer_disabled ? [] : [aws_lb_target_group.tg.arn]
+  health_check_type         = var.health_check_type
+  termination_policies      = ["OldestInstance"]
+  wait_for_capacity_timeout = var.wait_for_capacity_timeout
 
   launch_template {
     id      = aws_launch_template.launch_template.id
