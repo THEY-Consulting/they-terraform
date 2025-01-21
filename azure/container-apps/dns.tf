@@ -9,7 +9,7 @@ data "azurerm_dns_zone" "main" {
 # https://learn.microsoft.com/en-us/azure/container-apps/custom-domains-managed-certificates?pivots=azure-portal
 resource "azurerm_dns_txt_record" "main" {
   for_each            = var.dns_zone != null ? var.container_apps : {}
-  name                = "asuid.${each.value.subdomain}" # asuid. is azure specific and required as prefix
+  name                = var.use_a_record == false ? "asuid.${each.value.subdomain}" : "asuid" # asuid. is azure specific and required as prefix
   resource_group_name = data.azurerm_dns_zone.main[0].resource_group_name
   zone_name           = data.azurerm_dns_zone.main[0].name
   ttl                 = var.ttl
@@ -31,7 +31,7 @@ resource "azurerm_dns_cname_record" "main" {
 
 resource "azurerm_dns_a_record" "main" {
   for_each            = var.use_a_record == true ? var.container_apps : {}
-  name                = each.value.subdomain
+  name                = "@" #each.value.subdomain
   zone_name           = data.azurerm_dns_zone.main[0].name
   resource_group_name = data.azurerm_dns_zone.main[0].resource_group_name
   ttl                 = var.ttl
