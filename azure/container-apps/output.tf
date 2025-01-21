@@ -4,3 +4,7 @@ output "container_apps_urls" {
     app_name => "${app.subdomain}.${var.dns_zone.existing_dns_zone_name}"
   } : { for app in azurerm_container_app.container_app : app.name => app.latest_revision_fqdn }
 }
+
+# output "public_ip" {
+# value = azurerm_container_app_environment.app_environment.static_ip_address
+# }

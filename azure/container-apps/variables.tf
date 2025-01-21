@@ -59,6 +59,12 @@ variable "resource_group_name" {
   default     = null
 }
 
+variable "use_a_record" {
+  description = "Boolean to determine if an A record should be created for the container app."
+  type        = bool
+  default     = false
+}
+
 variable "log_retention" {
   description = "Amount of days for log retention"
   type        = number
