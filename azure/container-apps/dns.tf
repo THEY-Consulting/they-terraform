@@ -20,7 +20,7 @@ resource "azurerm_dns_txt_record" "main" {
 }
 
 resource "azurerm_dns_cname_record" "main" {
-  for_each            = var.use_a_record == false ? var.container_apps : {}
+  for_each            = var.dns_zone != null && var.use_a_record == false ? var.container_apps : {}
   name                = each.value.subdomain
   resource_group_name = data.azurerm_dns_zone.main[0].resource_group_name
   zone_name           = data.azurerm_dns_zone.main[0].name
@@ -31,7 +31,7 @@ resource "azurerm_dns_cname_record" "main" {
 
 resource "azurerm_dns_a_record" "main" {
   for_each            = var.use_a_record == true ? var.container_apps : {}
-  name                = "@" #each.value.subdomain
+  name                = "@"
   zone_name           = data.azurerm_dns_zone.main[0].name
   resource_group_name = data.azurerm_dns_zone.main[0].resource_group_name
   ttl                 = var.ttl
