@@ -726,14 +726,16 @@ module "auto-scaling-group" {
 
 ##### Outputs
 
-| Output             | Type         | Description                                         |
-| ------------------ | ------------ | --------------------------------------------------- |
-| alb_dns            | string       | DNS of the Application Load Balancer of the ASG     |
-| alb_zone_id        | string       | Zone ID of the Application Load Balancer of the ASG |
-| nat_gateway_ips    | list(string) | Public IPs of the NAT gateways                      |
-| security_group_id  | string       | ID of the security group                            |
-| private_subnet_ids | list(string) | IDs of the private subnets                          |
-| public_subnet_ids  | list(string) | IDs of the public subnets                           |
+| Output                         | Type         | Description                                         |
+|--------------------------------|--------------|-----------------------------------------------------|
+| alb_dns                        | string       | DNS of the Application Load Balancer of the ASG     |
+| alb_zone_id                    | string       | Zone ID of the Application Load Balancer of the ASG |
+| nat_gateway_ips                | list(string) | Public IPs of the NAT gateways                      |
+| security_group_id              | string       | ID of the security group                            |
+| private_subnet_ids             | list(string) | IDs of the private subnets                          |
+| public_subnet_ids              | list(string) | IDs of the public subnets                           |
+| private_subnet_route_table_ids | list(string) | IDs of the route tables for the private subnets     |
+| vpc_id                         | string       | ID of the VPC                                       |
 
 #### CloudFront Distribution
 
