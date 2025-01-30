@@ -44,7 +44,7 @@ variable "s3StateBackend" {
 variable "stateLockTableRegion" {
   description = "Region of the state lock table, if different from the default region."
   type        = string
-  default     = null
+  default     = ""
 }
 
 variable "cloudwatch" {
@@ -97,7 +97,7 @@ variable "delegated_boundary_arn" {
   default     = null
 
   validation {
-    condition     = (var.iam == false && var.asg == true) || var.delegated_boundary_arn != null
+    condition     = (var.iam == false && var.asg == false) || var.delegated_boundary_arn != null
     error_message = "`delegated_boundary_arn` is required if `iam` or `asg` is true."
   }
 }
@@ -105,10 +105,10 @@ variable "delegated_boundary_arn" {
 variable "instance_key_pair_name" {
   description = "The name of the key pair that is used to launch instances"
   type        = string
-  default     = null
+  default     = ""
 
   validation {
-    condition     = var.asg == false || var.instance_key_pair_name != null
+    condition     = var.asg == false || var.instance_key_pair_name != ""
     error_message = "`instance_key_pair_name` is required if `asg` is true."
   }
 }

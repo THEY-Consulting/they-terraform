@@ -30,7 +30,6 @@ locals {
   cloudfront_statements = [
     # AllowDescribeCloudfront
     {
-      Sid : "AllowDescribeCloudfront",
       Effect : "Allow",
       Action : [
         "cloudfront:ListCachePolicies",
@@ -45,7 +44,6 @@ locals {
 
     # CreateDistribution
     {
-      Sid : "CreateDistribution",
       Effect : "Allow",
       Action : [
         "cloudfront:TagResource",
@@ -62,7 +60,6 @@ locals {
 
     # ModifyDistribution
     {
-      Sid : "ModifyDistribution",
       Effect : "Allow",
       Action : [
         "cloudfront:ListTagsForResource",
@@ -87,7 +84,6 @@ locals {
 
     # AllowS3Deployment
     {
-      Sid : "AllowS3Deployment",
       Effect : "Allow",
       Action : [
         "s3:PutObject",
@@ -103,7 +99,6 @@ locals {
   cloudwatch_statements = [
     # CloutwatchLogs
     {
-      Sid    = "CloudwatchLogs"
       Effect = "Allow",
       Action = [
         "logs:CreateLogGroup",
@@ -121,7 +116,6 @@ locals {
 
     # CloudwatchDashboard
     {
-      Sid    = "CloudwatchDashboard",
       Effect = "Allow",
       Action = [
         "cloudwatch:GetDashboard",
@@ -135,7 +129,6 @@ locals {
   ec2_statements = [
     # AllowDescribeEc2
     {
-      Sid : "AllowDescribeEc2",
       Effect : "Allow",
       Action : [
         "ec2:DescribeImages",
@@ -164,7 +157,6 @@ locals {
 
     # AllowCreateVpc
     {
-      Sid : "AllowCreateVpc",
       Effect : "Allow",
       Action : [
         "ec2:CreateTags",
@@ -182,7 +174,6 @@ locals {
 
     # AllowRelatedToVpc
     {
-      Sid : "AllowRelatedToVpc",
       Effect : "Allow",
       Action : [
         "ec2:DeleteVpc",
@@ -206,7 +197,6 @@ locals {
 
     # AllowCreateSubnet
     {
-      Sid : "AllowCreateSubnet",
       Effect : "Allow",
       Action : [
         "ec2:CreateTags",
@@ -224,7 +214,6 @@ locals {
 
     # AllowRelatedToSubnet
     {
-      Sid : "AllowRelatedToSubnet",
       Effect : "Allow",
       Action : [
         "ec2:ModifySubnetAttribute",
@@ -246,7 +235,6 @@ locals {
 
     # AllowCreateSecurityGroup
     {
-      Sid : "AllowCreateSecurityGroup",
       Effect : "Allow",
       Action : [
         "ec2:CreateTags",
@@ -264,7 +252,6 @@ locals {
 
     # AllowRelatedToSecurityGroup
     {
-      Sid : "AllowRelatedToSecurityGroup",
       Effect : "Allow",
       Action : [
         "ec2:AuthorizeSecurityGroupIngress",
@@ -286,7 +273,6 @@ locals {
 
     # AllowCreateSecurityGroupRule
     {
-      Sid : "AllowCreateSecurityGroupRule",
       Effect : "Allow",
       Action : [
         "ec2:AuthorizeSecurityGroupIngress",
@@ -305,7 +291,6 @@ locals {
 
     # AllowRelatedToSecurityGroupRule
     {
-      Sid : "AllowRelatedToSecurityGroupRule",
       Effect : "Allow",
       Action : [
         "ec2:CreateTags",
@@ -322,7 +307,6 @@ locals {
 
     # AllowCreateInternetGateway
     {
-      Sid : "AllowCreateInternetGateway",
       Effect : "Allow",
       Action : [
         "ec2:CreateTags",
@@ -340,7 +324,6 @@ locals {
 
     # AllowRelatedToInternetGateway
     {
-      Sid : "AllowRelatedToInternetGateway",
       Effect : "Allow",
       Action : [
         "ec2:AttachInternetGateway",
@@ -360,7 +343,6 @@ locals {
 
     # AllowCreateRouteTable
     {
-      Sid : "AllowCreateRouteTable",
       Effect : "Allow",
       Action : [
         "ec2:CreateTags",
@@ -378,7 +360,6 @@ locals {
 
     # AllowRelatedToRouteTable
     {
-      Sid : "AllowRelatedToRouteTable",
       Effect : "Allow",
       Action : [
         "ec2:DeleteRouteTable",
@@ -400,7 +381,6 @@ locals {
 
     # AllowReplaceMainRouteTableAssociation
     {
-      Sid : "AllowReplaceMainRouteTableAssociation",
       Effect : "Allow",
       Action : [
         "ec2:ReplaceRouteTableAssociation",
@@ -412,7 +392,6 @@ locals {
 
     # AllowCreateRoute
     {
-      Sid : "AllowCreateRoute",
       Effect : "Allow",
       Action : [
         "ec2:CreateRoute",
@@ -424,7 +403,6 @@ locals {
 
     # AllowCreateNatGateway
     {
-      Sid : "AllowCreateNatGateway",
       Effect : "Allow",
       Action : [
         "ec2:CreateTags",
@@ -442,7 +420,6 @@ locals {
 
     # AllowRelatedToNatGateway
     {
-      Sid : "AllowRelatedToNatGateway",
       Effect : "Allow",
       Action : [
         "ec2:DeleteNatGateway",
@@ -460,7 +437,6 @@ locals {
 
     # AllowCreateElasticIp
     {
-      Sid : "AllowCreateElasticIp",
       Effect : "Allow",
       Action : [
         "ec2:CreateTags",
@@ -478,7 +454,6 @@ locals {
 
     # AllowRelatedToElasticIp
     {
-      Sid : "AllowRelatedToElasticIp",
       Effect : "Allow",
       Action : [
         "ec2:CreateNatGateway",
@@ -497,7 +472,6 @@ locals {
 
     # AllowDisassociateAddress
     {
-      Sid : "AllowDisassociateAddress",
       Effect : "Allow",
       Action : [
         "ec2:DisassociateAddress",
@@ -509,7 +483,6 @@ locals {
 
     # AllowCreateVpcEndpoint
     {
-      Sid : "AllowCreateVpcEndpoint",
       Effect : "Allow",
       Action : [
         "ec2:CreateTags",
@@ -527,7 +500,6 @@ locals {
 
     # AllowRelatedToVpcEndpoint
     {
-      Sid : "AllowRelatedToVpcEndpoint",
       Effect : "Allow",
       Action : [
         "ec2:CreateTags",
@@ -547,7 +519,6 @@ locals {
   elb_statements = [
     # AllowDescribeElb
     {
-      Sid : "AllowDescribeElb",
       Effect : "Allow",
       Action : [
         "elasticloadbalancing:DescribeLoadBalancers",
@@ -566,7 +537,6 @@ locals {
 
     # AllowTagging
     {
-      Sid : "AllowTagging",
       Effect : "Allow",
       Action : [
         "elasticloadbalancing:addTags",
@@ -585,7 +555,6 @@ locals {
 
     # AllowCreateLoadBalancer
     {
-      Sid : "AllowCreateLoadBalancer",
       Effect : "Allow",
       Action : [
         "elasticloadbalancing:CreateLoadBalancer",
@@ -602,7 +571,6 @@ locals {
 
     # AllowRelatedToLoadBalancer
     {
-      Sid : "AllowRelatedToLoadBalancer",
       Effect : "Allow",
       Action : [
         "elasticloadbalancing:ModifyLoadBalancerAttributes",
@@ -621,7 +589,6 @@ locals {
 
     # AllowCreateLoadBalancerListener
     {
-      Sid : "AllowCreateLoadBalancerListener",
       Effect : "Allow",
       Action : [
         "elasticloadbalancing:CreateListener",
@@ -638,7 +605,6 @@ locals {
 
     # AllowRelatedToLoadBalancerListener
     {
-      Sid : "AllowRelatedToLoadBalancerListener",
       Effect : "Allow",
       Action : [
         "elasticloadbalancing:ModifyListener",
@@ -656,7 +622,6 @@ locals {
 
     # AllowCreateTargetGroup
     {
-      Sid : "AllowCreateTargetGroup",
       Effect : "Allow",
       Action : [
         "elasticloadbalancing:CreateTargetGroup",
@@ -673,7 +638,6 @@ locals {
 
     # AllowRelatedToTargetGroup
     {
-      Sid : "AllowRelatedToTargetGroup",
       Effect : "Allow",
       Action : [
         "elasticloadbalancing:ModifyTargetGroupAttributes",
@@ -693,7 +657,6 @@ locals {
   asg_statements = [
     # AllowDescribeAsg
     {
-      Sid : "AllowDescribeAsg",
       Effect : "Allow",
       Action : [
         "autoscaling:DescribeAutoScalingGroups",
@@ -708,7 +671,6 @@ locals {
 
     # AllowCreateAsg
     {
-      Sid : "AllowCreateAsg",
       Effect : "Allow",
       Action : [
         "autoscaling:CreateAutoScalingGroup",
@@ -725,7 +687,6 @@ locals {
 
     # AllowRelatedToAsg
     {
-      Sid : "AllowRelatedToAsg",
       Effect : "Allow",
       Action : [
         "autoscaling:CreateOrUpdateTags",
@@ -749,7 +710,6 @@ locals {
 
     # AllowCreateVolume
     {
-      Sid : "AllowCreateVolume",
       "Effect" : "Allow",
       "Action" : [
         "ec2:CreateTags",
@@ -767,7 +727,6 @@ locals {
 
     # AllowRelatedToVolume
     {
-      Sid : "AllowRelatedToVolume",
       "Effect" : "Allow",
       "Action" : [
         "ec2:DeleteVolume",
@@ -785,7 +744,6 @@ locals {
 
     # AllowCreateLaunchTemplate
     {
-      Sid : "AllowCreateLaunchTemplate",
       Effect : "Allow",
       Action : [
         "ec2:CreateTags",
@@ -803,7 +761,6 @@ locals {
 
     # AllowRelatedToLaunchTemplate
     {
-      Sid : "AllowRelatedToLaunchTemplate",
       Effect : "Allow",
       Action : [
         "ec2:CreateLaunchTemplateVersion",
@@ -823,7 +780,6 @@ locals {
 
     # AllowRelatedToAmi
     {
-      Sid : "AllowRelatedToAmi",
       "Effect" : "Allow",
       "Action" : [
         "ec2:RunInstances",
@@ -838,7 +794,6 @@ locals {
 
     # AllowRelatedToTagged
     {
-      Sid : "AllowRelatedToTagged",
       Effect : "Allow",
       Action : [
         "ec2:RunInstances",
@@ -856,7 +811,6 @@ locals {
 
     # AllowRelatedToUnbound
     {
-      Sid : "AllowRelatedToUnbound",
       "Effect" : "Allow",
       "Action" : [
         "ec2:RunInstances",
@@ -872,7 +826,6 @@ locals {
 
     # AllowTagging
     {
-      Sid : "AllowTagging",
       "Effect" : "Allow",
       "Action" : [
         "elasticloadbalancing:AddTags",
@@ -891,7 +844,6 @@ locals {
   route53_statements = [
     # AllowDescribeRoute53
     {
-      Sid : "AllowDescribeRoute53",
       Effect : "Allow",
       Action : [
         "route53:ListHostedZones",
@@ -904,7 +856,6 @@ locals {
 
     # AllowDescribeZone
     {
-      Sid : "AllowDescribeZone",
       Effect : "Allow",
       Action : [
         "route53:GetHostedZone",
@@ -918,7 +869,6 @@ locals {
 
     # AllowReadChangeStatus
     {
-      Sid : "AllowReadChangeStatus",
       Effect : "Allow",
       Action : [
         "route53:GetChange",
@@ -930,7 +880,6 @@ locals {
 
     # AllowWriteRecord
     {
-      Sid : "AllowWriteRecordThey",
       Effect : "Allow",
       Action : [
         "route53:ChangeResourceRecordSets",
@@ -947,7 +896,6 @@ locals {
 
     # AllowDescribeCertificates
     {
-      Sid : "AllowDescribeCertificates",
       Effect : "Allow",
       Action : [
         "acm:DescribeCertificate",
@@ -961,7 +909,6 @@ locals {
   iam_statements = [
     # AllowDescribeIam
     {
-      Sid : "AllowDescribeIam",
       Effect : "Allow",
       Action : [
         "iam:GetRole",
@@ -979,7 +926,6 @@ locals {
 
     # AllowCreateRoleWithBoundary
     {
-      Sid : "AllowCreateRoleWithBoundary",
       Effect : "Allow",
       Action : [
         "iam:CreateRole",
@@ -996,7 +942,6 @@ locals {
 
     # AllowRelatedToRole
     {
-      Sid : "AllowRelatedToRole",
       Effect : "Allow",
       Action : [
         "iam:TagRole",
@@ -1014,7 +959,6 @@ locals {
 
     # AllowCreateInstanceProfile
     {
-      Sid : "AllowCreateInstanceProfile",
       Effect : "Allow",
       Action : [
         "iam:TagInstanceProfile",
@@ -1027,7 +971,6 @@ locals {
 
     # AllowRelatedToInstanceProfile
     {
-      Sid : "AllowRelatedToInstanceProfile",
       Effect : "Allow",
       Action : [
         "iam:DeleteInstanceProfile",
@@ -1043,7 +986,6 @@ locals {
   dynamodb_statements = [
     # AllowDescribeDynamoDb
     {
-      Sid : "AllowDescribeDynamoDb",
       Effect : "Allow",
       Action : [
         "dynamodb:DescribeTable",
@@ -1058,7 +1000,6 @@ locals {
 
     # AllowCreateDynamoDb
     {
-      Sid : "AllowCreateDynamoDb",
       Effect : "Allow",
       Action : [
         "dynamodb:CreateTable",
@@ -1073,7 +1014,6 @@ locals {
 
     # AllowAccess
     {
-      Sid : "AllowAccess",
       Effect : "Allow",
       Action : [
         "dynamodb:ListTables",
@@ -1081,14 +1021,13 @@ locals {
         "dynamodb:DeleteTable",
         "dynamodb:TagResource",
       ],
-      Resource : var.dynamodb_table_names
+      Resource : var.dynamodb ? [for table_name in var.dynamodb_table_names : "arn:aws:dynamodb::${data.aws_caller_identity.current.account_id}:table/${table_name}"] : []
     },
   ]
 
   ecr_statements = [
     # AllowRelatedToEcr
     {
-      Sid : "AllowRelatedToEcr",
       Effect : "Allow",
       Action : [
         "ecr:GetDownloadUrlForLayer",
@@ -1110,7 +1049,6 @@ locals {
 
     # AllowEcrToken
     {
-      Sid : "AllowEcrToken",
       Effect : "Allow",
       Action : [
         "ecr:GetAuthorizationToken"

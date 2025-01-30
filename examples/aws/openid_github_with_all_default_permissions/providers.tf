@@ -10,7 +10,7 @@ terraform {
     bucket         = "they-terraform-examples-tfstate"
     encrypt        = true
     dynamodb_table = "they-terraform-examples-tfstate-lock"
-    key            = "openid-github/terraform.tfstate"
+    key            = "openid-github-with-all-default-permissions/terraform.tfstate"
     region         = "eu-central-1"
   }
 
