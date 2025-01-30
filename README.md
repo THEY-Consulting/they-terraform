@@ -866,61 +866,64 @@ module "github_action_role" {
       })
     },
   ]
-  inline                            = true
+  inline                            = false
   INSECURE_allowAccountToAssumeRole = false # Do not enable this in production!
   boundary_policy_arn               = "arn:aws:iam::123456789012:policy/they-test-boundary"
 
-  s3StateBackend                = true
-  stateLockTableRegion          = "eu-central-1"
-  cloudwatch                    = true
-  cloudfront                    = true
-  cloudfront_source_bucket_arns = ["arn:aws:s3:::they-test-deployment-bucket"]
-  asg                           = true
-  ami_condition                 = { "ec2:ImageType" : "machine", "ec2:Owner" : "amazon" }
-  iam                           = true
-  delegated_boundary_arn        = "arn:aws:iam::123456789012:policy/they-test-boundary"
-  instance_key_pair_name        = "test-key"
-  route53                       = true
-  host_zone_arn                 = "arn:aws:route53:::hostedzone/Z1234567890"
-  route53_records               = ["test*.they-code.de", "_test*.they-code.de"]
-  certificate_arns              = ["arn:aws:acm:::certificate/1234567890"]
-  dynamodb                      = true
-  dynamodb_table_names          = ["they-test-table"]
-  ecr                           = true
-  ecr_repository_arns           = ["arn:aws:ecr:::repository/they-test-repo"]
+  include_default_policies = {
+    s3StateBackend                = true
+    cloudwatch                    = true
+    cloudfront                    = true
+    cloudfront_source_bucket_arns = ["arn:aws:s3:::they-test-deployment-bucket"]
+    asg                           = true
+    iam                           = true
+    delegated_boundary_arn        = "arn:aws:iam::123456789012:policy/they-test-boundary"
+    instance_key_pair_name        = "test-key"
+    route53                       = true
+    host_zone_arn                 = "arn:aws:route53:::hostedzone/Z1234567890"
+    route53_records               = ["test*.they-code.de", "_test*.they-code.de"]
+    certificate_arns              = ["arn:aws:acm:::certificate/1234567890"]
+    dynamodb                      = true
+    dynamodb_table_names          = ["they-test-table"]
+    ecr                           = true
+    ecr_repository_arns           = ["arn:aws:ecr:::repository/they-test-repo"]
+  }
 }
 ```
 
 ##### Inputs
 
-| Variable                          | Type         | Description                                                                                                                                                                                                   | Required | Default                                           |
-|-----------------------------------|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------------------------------------------------|
-| name                              | string       | Name of the role                                                                                                                                                                                              | yes      |                                                   |
-| repo                              | string       | Repository that is authorized to assume this role                                                                                                                                                             | yes      |                                                   |
-| policies                          | list(object) | List of additional inline policies to attach to the app                                                                                                                                                       | no       | `[]`                                              |
-| policies.\*.name                  | string       | Name of the inline policy                                                                                                                                                                                     | yes      |                                                   |
-| policies.\*.policy                | string       | Policy document as a JSON formatted string                                                                                                                                                                    | yes      |                                                   |
-| inline                            | bool         | If true, the policies will be created as inline policies. If false, they will be created as managed policies. Changing this will not necessarily remove the old policies correctly, check in the AWS console! | no       | `true`                                            |
-| INSECURE_allowAccountToAssumeRole | bool         | Set to true if you want to allow the account to assume the role. This is insecure and should only be used for testing. Do not enable this in production!                                                      | no       | `false`                                           |
-| boundary_policy_arn               | string       | ARN of a boundary policy to attach to the app                                                                                                                                                                 | no       | `null`                                            |
-| s3StateBackend                    | bool         | Set to true if a s3 state backend was setup with the setup-tfstate module (or uses the same naming scheme for the s3 bucket and dynamoDB table). This will set the required s3 and dynamoDB permissions.      | no       | `true`                                            |
-| stateLockTableRegion              | string       | Region of the state lock table, if different from the default region                                                                                                                                          | no       | `""`                                              |
-| cloudwatch                        | bool         | Set to true if the app uses CloudWatch                                                                                                                                                                        | no       | `false`                                           |
-| cloudfront                        | bool         | Set to true if the app uses CloudFront                                                                                                                                                                        | no       | `false`                                           |
-| cloudfront_source_bucket_arns     | list(string) | The ARNs of the S3 buckets that are allowed as CloudFront sources, required if `cloudfront` is true                                                                                                           | (yes)    | `null`                                            |
-| asg                               | bool         | Set to true if the app uses an Auto Scaling Group                                                                                                                                                             | no       | `false`                                           |
-| ami_condition                     | object       | The condition that must be met by AMIs that are used to launch instances                                                                                                                                      | no       | `{"ec2:ImageType":"machine", "ec2:Owner":"amazon"}` |
-| iam                               | bool         | Set to true if the app uses IAM roles, setting `asg` to true will automatically enable this as well                                                                                                           | no       | `false`                                           |
-| delegated_boundary_arn            | string       | The ARN of the IAM policy that is used as the permissions boundary for newly created roles, required if `iam` or `asg` is true                                                                                | (yes)    | `null`                                            |
-| instance_key_pair_name            | string       | The name of the key pair that is used to launch instances, required if `iam` or `asg` is true                                                                                                                 | (yes)    | `""`                                              |
-| route53                           | bool         | Set to true if the app uses Route 53                                                                                                                                                                          | no       | `false`                                           |
-| host_zone_arn                     | string       | The ARN of the Route 53 Hosted Zone that is used for the domain, required if `route53` is true                                                                                                                | (yes)    | `null`                                            |
-| route53_records                   | list(string) | The Route 53 records that are allowed to be created, supports wildcards, required if `route53` is true                                                                                                        | (yes)    | `null`                                            |
-| certificate_arns                  | list(string) | The ARNs of the ACM certificates that are allowed to be used, required if `route53` is true                                                                                                                   | (yes)    | `null`                                            |
-| dynamodb                          | bool         | Set to true if the app uses DynamoDB                                                                                                                                                                          | no       | `false`                                           |
-| dynamodb_table_names              | list(string) | The Names of DynamoDB tables that are allowed to be managed, required if `dynamodb` is true                                                                                                                   | (yes)    | `null`                                            |
-| ecr                               | bool         | Set to true if the app uses ECR                                                                                                                                                                               | no       | `false`                                           |
-| ecr_repository_arns               | list(string) | The ARNs of the ECR repositories that are allowed to be accessed, required if `ecr` is true                                                                                                                   | (yes)    | `null`                                            |
+| Variable                                               | Type         | Description                                                                                                                                                                                                   | Required | Default                                             |
+|--------------------------------------------------------|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|-----------------------------------------------------|
+| name                                                   | string       | Name of the role                                                                                                                                                                                              | yes      |                                                     |
+| repo                                                   | string       | Repository that is authorized to assume this role                                                                                                                                                             | yes      |                                                     |
+| policies                                               | list(object) | List of additional inline policies to attach to the app                                                                                                                                                       | no       | `[]`                                                |
+| policies.\*.name                                       | string       | Name of the inline policy                                                                                                                                                                                     | yes      |                                                     |
+| policies.\*.policy                                     | string       | Policy document as a JSON formatted string                                                                                                                                                                    | yes      |                                                     |
+| inline                                                 | bool         | If true, the policies will be created as inline policies. If false, they will be created as managed policies. Changing this will not necessarily remove the old policies correctly, check in the AWS console! | no       | `true`                                              |
+| INSECURE_allowAccountToAssumeRole                      | bool         | Set to true if you want to allow the account to assume the role. This is insecure and should only be used for testing. Do not enable this in production!                                                      | no       | `false`                                             |
+| boundary_policy_arn                                    | string       | ARN of a boundary policy to attach to the app                                                                                                                                                                 | no       | `null`                                              |
+| include_default_policies                               | object       | Configure the default policies that should be included in the role                                                                                                                                            | no       | `"{}"`                                              |
+| include_default_policies.s3StateBackend                | bool         | Set to true if a s3 state backend was setup with the setup-tfstate module (or uses the same naming scheme for the s3 bucket and dynamoDB table). This will set the required s3 and dynamoDB permissions.      | no       | `true`                                              |
+| include_default_policies.stateLockTableRegion          | string       | Region of the state lock table, if different from the default region                                                                                                                                          | no       | `""`                                                |
+| include_default_policies.cloudwatch                    | bool         | Set to true if the app uses CloudWatch                                                                                                                                                                        | no       | `false`                                             |
+| include_default_policies.cloudfront                    | bool         | Set to true if the app uses CloudFront                                                                                                                                                                        | no       | `false`                                             |
+| include_default_policies.cloudfront_source_bucket_arns | list(string) | The ARNs of the S3 buckets that are allowed as CloudFront sources, required if `cloudfront` is true                                                                                                           | (yes)    | `null`                                              |
+| include_default_policies.asg                           | bool         | Set to true if the app uses an Auto Scaling Group                                                                                                                                                             | no       | `false`                                             |
+| include_default_policies.ami_condition                 | object       | The condition that must be met by AMIs that are used to launch instances                                                                                                                                      | no       | `{"ec2:ImageType":"machine", "ec2:Owner":"amazon"}` |
+| include_default_policies.iam                           | bool         | Set to true if the app uses IAM roles, setting `asg` to true will automatically enable this as well                                                                                                           | no       | `false`                                             |
+| include_default_policies.delegated_boundary_arn        | string       | The ARN of the IAM policy that is used as the permissions boundary for newly created roles, required if `iam` or `asg` is true                                                                                | (yes)    | `null`                                              |
+| include_default_policies.instance_key_pair_name        | string       | The name of the key pair that is used to launch instances, required if `iam` or `asg` is true                                                                                                                 | (yes)    | `""`                                                |
+| include_default_policies.route53                       | bool         | Set to true if the app uses Route 53                                                                                                                                                                          | no       | `false`                                             |
+| include_default_policies.host_zone_arn                 | string       | The ARN of the Route 53 Hosted Zone that is used for the domain, required if `route53` is true                                                                                                                | (yes)    | `null`                                              |
+| include_default_policies.route53_records               | list(string) | The Route 53 records that are allowed to be created, supports wildcards, required if `route53` is true                                                                                                        | (yes)    | `null`                                              |
+| include_default_policies.certificate_arns              | list(string) | The ARNs of the ACM certificates that are allowed to be used, required if `route53` is true                                                                                                                   | (yes)    | `null`                                              |
+| include_default_policies.dynamodb                      | bool         | Set to true if the app uses DynamoDB                                                                                                                                                                          | no       | `false`                                             |
+| include_default_policies.dynamodb_table_names          | list(string) | The Names of DynamoDB tables that are allowed to be managed, required if `dynamodb` is true                                                                                                                   | (yes)    | `null`                                              |
+| include_default_policies.ecr                           | bool         | Set to true if the app uses ECR                                                                                                                                                                               | no       | `false`                                             |
+| include_default_policies.ecr_repository_arns           | list(string) | The ARNs of the ECR repositories that are allowed to be accessed, required if `ecr` is true                                                                                                                   | (yes)    | `null`                                              |
+| s3StateBackend                                         | bool         | @Deprecated: use `include_default_policies.s3StateBackend` instead                                                                                                                                            | no       | `true`                                              |
+| stateLockTableRegion                                   | string       | @Deprecated: use `include_default_policies.stateLockTableRegion` instead                                                                                                                                      | no       | `""`                                                |
 
 ##### Outputs
 

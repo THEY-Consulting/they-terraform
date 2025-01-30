@@ -92,7 +92,7 @@ locals {
         "s3:ListBucket",
         "s3:DeleteObject",
       ],
-      Resource : var.cloudfront_source_bucket_arns,
+      Resource : var.include_default_policies.cloudfront_source_bucket_arns,
     },
   ]
 
@@ -788,7 +788,7 @@ locals {
         "arn:aws:ec2:${data.aws_region.current.name}::image/ami-*",
       ],
       "Condition" : {
-        "StringEquals" : var.ami_condition
+        "StringEquals" : var.include_default_policies.ami_condition
       }
     },
 
@@ -820,7 +820,7 @@ locals {
         "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:volume/*", # This should be fine as we don't allow AttachVolume permissions
         "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:instance/*",
         "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:network-interface/*",
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:key-pair/${var.instance_key_pair_name}",
+        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:key-pair/${var.include_default_policies.instance_key_pair_name}",
       ]
     },
 
@@ -863,7 +863,7 @@ locals {
         "route53:ListResourceRecordSets",
       ],
       Resource : [
-        var.host_zone_arn,
+        var.include_default_policies.host_zone_arn,
       ],
     },
 
@@ -885,11 +885,11 @@ locals {
         "route53:ChangeResourceRecordSets",
       ],
       Resource : [
-        var.host_zone_arn,
+        var.include_default_policies.host_zone_arn,
       ],
       Condition : {
         StringLike : {
-          "route53:ChangeResourceRecordSetsNormalizedRecordNames" : var.route53_records
+          "route53:ChangeResourceRecordSetsNormalizedRecordNames" : var.include_default_policies.route53_records
         }
       }
     },
@@ -902,7 +902,7 @@ locals {
         "acm:ListTagsForCertificate",
         "acm:GetCertificate",
       ],
-      Resource : var.certificate_arns
+      Resource : var.include_default_policies.certificate_arns
     }
   ]
 
@@ -935,7 +935,7 @@ locals {
       ],
       "Condition" : {
         "StringEquals" : {
-          "iam:PermissionsBoundary" : var.delegated_boundary_arn
+          "iam:PermissionsBoundary" : var.include_default_policies.delegated_boundary_arn
         }
       }
     },
@@ -1021,7 +1021,7 @@ locals {
         "dynamodb:DeleteTable",
         "dynamodb:TagResource",
       ],
-      Resource : var.dynamodb ? [for table_name in var.dynamodb_table_names : "arn:aws:dynamodb::${data.aws_caller_identity.current.account_id}:table/${table_name}"] : []
+      Resource : var.include_default_policies.dynamodb ? [for table_name in var.include_default_policies.dynamodb_table_names : "arn:aws:dynamodb::${data.aws_caller_identity.current.account_id}:table/${table_name}"] : []
     },
   ]
 
@@ -1044,7 +1044,7 @@ locals {
         "ecr:DeleteRepositoryPolicy",
         "ecr:SetRepositoryPolicy"
       ],
-      Resource : var.ecr_repository_arns
+      Resource : var.include_default_policies.ecr_repository_arns
     },
 
     # AllowEcrToken

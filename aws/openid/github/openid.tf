@@ -2,7 +2,7 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 locals {
-  stateLockTableRegion = var.stateLockTableRegion != "" ? var.stateLockTableRegion : data.aws_region.current.name
+  stateLockTableRegion = coalesce(var.include_default_policies.stateLockTableRegion, var.stateLockTableRegion, data.aws_region.current.name)
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
