@@ -697,6 +697,7 @@ locals {
         "autoscaling:StartInstanceRefresh",
         "autoscaling:PutLifecycleHook",
         "autoscaling:DetachLoadBalancerTargetGroups",
+        "autoscaling:CancelInstanceRefresh",
       ],
       Resource : [
         "arn:aws:autoscaling:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:autoScalingGroup:*:autoScalingGroupName/*"
