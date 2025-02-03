@@ -662,6 +662,7 @@ locals {
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeScalingActivities",
         "autoscaling:DescribeLoadBalancerTargetGroups",
+        "autoscaling:DescribeInstanceRefreshes",
         "ec2:DescribeVolumes",
       ],
       Resource : [
