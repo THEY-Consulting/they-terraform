@@ -682,6 +682,10 @@ module "auto-scaling-group" {
   multi_az_nat = true
   manual_lifecycle = false
   manual_lifecycle_timeout = 300
+  access_logs = {
+    bucket = "they-test-logs"
+    prefix = "asg-logs"
+  }
 }
 
 ```
@@ -689,7 +693,7 @@ module "auto-scaling-group" {
 ##### Inputs
 
 | Variable                           | Type         | Description                                                                                                                                  | Required | Default                                                                   |
-| ---------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------- |
+|------------------------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------|----------|---------------------------------------------------------------------------|
 | name                               | string       | Name of the Auto Scaling group (ASG)                                                                                                         | yes      |                                                                           |
 | ami_id                             | string       | ID of AMI used in EC2 instances of ASG                                                                                                       | yes      |                                                                           |
 | instance_type                      | string       | Instance type used to deploy instances in ASG                                                                                                | yes      |                                                                           |
@@ -723,6 +727,9 @@ module "auto-scaling-group" {
 | loadbalancer_disabled              | bool         | Specify true to use the ASG without an ELB. By default, an ELB will be used                                                                  | no       | `false`                                                                   |
 | manual_lifecycle                   | bool         | Specify true to force the asg to wait until lifecycle actions are completed before adding instances to the load balancer                     | no       | `false`                                                                   |
 | manual_lifecycle_timeout           | number       | The maximum time, in seconds, that an instance can remain in a Pending:Wait state                                                            | no       | `null`                                                                    |
+| access_logs                        | object       | Enables access logs                                                                                                                          | no       | `null`                                                                    |
+| access_logs.bucket                 | string       | Name of the bucket where the access logs are stored                                                                                          | (yes)    |                                                                           |
+| access_logs.prefix                 | string       | Prefix for access logs within the s3 bucket, use this to set the folder within the bucket                                                    | (yes)    |                                                                           |
 
 ##### Outputs
 

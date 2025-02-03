@@ -174,3 +174,12 @@ variable "manual_lifecycle_timeout" {
   type        = number
   default     = null
 }
+
+variable "access_logs" {
+  description = "Enables access logs"
+  type = object({
+    bucket = string
+    prefix = string
+  })
+  default = null
+}
