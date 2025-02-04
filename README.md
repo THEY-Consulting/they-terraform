@@ -14,6 +14,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [SNS](#sns)
     - [API Gateway (REST)](#api-gateway-rest)
     - [S3 Bucket](#s3-bucket)
+    - [S3 Log Bucket Policy](#s3-log-bucket-policy)
     - [Auto Scaling group](#auto-scaling-group)
     - [CloudFront Distribution](#cloudfront-distribution)
     - [Azure OpenID role](#azure-openid-role)
@@ -617,6 +618,28 @@ module "s3_bucket" {
 | id         | string | ID of the s3 bucket            |
 | arn        | string | ARN of the s3 bucket           |
 | versioning | string | ID of the s3 bucket versioning |
+
+#### S3 Log Bucket Policy
+
+```hcl
+module "s3_log_bucket_policy" {
+  source = "github.com/THEY-Consulting/they-terraform//aws/s3-bucket/log-bucket-policy"
+
+  bucket_name = "my-bucket"
+}
+```
+
+##### Inputs
+
+| Variable | Type   | Description        | Required | Default |
+|----------|--------|--------------------| -------- | ------- |
+| name     | string | Name of the bucket | yes      |         |
+
+##### Outputs
+
+| Output   | Type         | Description                                             |
+|----------|--------------|---------------------------------------------------------|
+| policies | list(object) | List of policies that can be used in a policy statement |
 
 #### Auto Scaling group
 
