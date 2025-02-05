@@ -2,7 +2,7 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 locals {
-  stateLockTableRegion = var.stateLockTableRegion != "" ? var.stateLockTableRegion : data.aws_region.current.name
+  stateLockTableRegion = coalesce(var.include_default_policies.stateLockTableRegion, var.stateLockTableRegion, data.aws_region.current.name)
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -36,53 +36,7 @@ locals {
     )
   })
 
-  policies = concat(
-    var.s3StateBackend ? [
-      {
-        name = "ReadWriteS3StateBucket"
-        policy = jsonencode({
-          Version : "2012-10-17",
-          Statement : [
-            {
-              Effect : "Allow",
-              Action : [
-                "s3:GetObject",
-                "s3:ListBucket",
-                "s3:PutObject",
-                "s3:DeleteObject",
-              ],
-              Resource : [
-                "arn:aws:s3:::${var.name}-tfstate",
-                "arn:aws:s3:::${var.name}-tfstate/**"
-              ]
-            }
-          ]
-        })
-      },
-      {
-        name = "DynamoDbStateLock"
-        policy = jsonencode({
-          Version : "2012-10-17",
-          Statement : [
-            {
-              Effect : "Allow",
-              Action : [
-                "dynamodb:DescribeTable",
-                "dynamodb:GetItem",
-                "dynamodb:PutItem",
-                "dynamodb:DeleteItem",
-              ],
-              Resource : [
-                "arn:aws:dynamodb:${local.stateLockTableRegion}:${data.aws_caller_identity.current.account_id}:table/${var.name}-tfstate-lock",
-              ],
-            },
-          ]
-        })
-      }
-    ] : [],
-
-    var.policies
-  )
+  policies = concat(local.prepared_policies, var.policies)
 }
 
 resource "aws_iam_role" "github_oidc_role" {
