@@ -6,7 +6,7 @@
     "build": "tsc --noemit && esbuild index.ts --bundle --platform=node --outdir=dist"
   },
   "devDependencies": {
-    "esbuild": "^0.19.6",
+    "esbuild": "^0.25.0",
     "typescript": "5.2.2"
   }
 }
