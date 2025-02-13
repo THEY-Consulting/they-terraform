@@ -1410,11 +1410,10 @@ module "container-apps" {
 
   name                      = "they-test-container-apps"
   location                  = "Germany West Central"
-  create_new_resource_group = true
   resource_group_name       = "they-test-container-apps"
   workload_profile = {
-    name                  = "Consumption"
-    workload_profile_type = "Consumption"
+    name                  = "Workload Profile"
+    workload_profile_type = "D4"
   }
   unique_environment_certificate = {
     key_vault_secret_name = "my-cert-secret-name"
@@ -1529,13 +1528,14 @@ module "container-apps" {
 | location                             | string       | The Azure Region where the resource should be created                                                                                                                                             | yes      |              |
 | container_registry_server            | string       | The server URL of the container.                                                                                                                                                                  | no       | `null`       |
 | dns_zone                             | object       | DNS zone config required if you want to link the deployed app to a subdomain in the given dns zone. Does not create a dns zone, only a subdomain.                                                 | no       | `null`       |
+| is_a_record                          | bool         | Use this Option if you want to create an 'A' Record for your container App, instead of a CNAME record.                                                                                            | no       | `false`      |
 | dns_record_ttl                       | number       | The TTL of the DNS record                                                                                                                                                                         | no       | `300`        |
 | certificate_binding_type             | string       | The Certificate binding type.                                                                                                                                                                     | no       | `SniEnabled` |
 | enable_log_analytics                 | bool         | Enables the creation of the resource log analytics workspace for the container group                                                                                                              | no       | `false`      |
 | sku_log_analytics                    | string       | The SKU of the log analytics workspace                                                                                                                                                            | no       | `PerGB2018`  |
 | container_apps                       | map(object)  | The container apps to deploy                                                                                                                                                                      | yes      |              |
 | container_apps.name                  | string       | Name of the container app                                                                                                                                                                         | yes      |              |
-| container_app.subdomain              | string       | subdomain for the container                                                                                                                                                                       | no       |              |
+| container_app.subdomain              | string       | subdomain for the container. Necessary if using CNAME record.                                                                                                                                     | no       |              |
 | container_apps.tags                  | map(string)  | A mapping of tags to assign to the Container App.                                                                                                                                                 | no       |              |
 | container_apps.revision_mode         | string       | The revisions operational mode for the Container App. Possible values include Single and Multiple. In Single mode, a single revision is in operation at any given time.                           | yes      |              |
 | container_apps.workload_profile_name | string       | The name of the Workload Profile in the Container App Environment to place this Container App.                                                                                                    | no       |              |
