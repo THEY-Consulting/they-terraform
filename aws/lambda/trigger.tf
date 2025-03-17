@@ -71,4 +71,6 @@ resource "aws_lambda_event_source_mapping" "sqs_trigger_lambda" {
 
   event_source_arn = var.sqs_trigger.arn
   function_name    = aws_lambda_function.lambda_func.function_name
+  # this is necessary since we use Promise<SQSBatchResponse> as the return type of our sync lambdas
+  function_response_types = ["ReportBatchItemFailures"]
 }
