@@ -10,7 +10,7 @@ terraform {
     bucket         = "they-terraform-examples-tfstate"
     encrypt        = true
     dynamodb_table = "they-terraform-examples-tfstate-lock"
-    key            = "auto-scaling-group-only-http/terraform.tfstate"
+    key            = "lambda-with-diagnostics/terraform.tfstate"
     region         = "eu-central-1"
   }
 
@@ -20,7 +20,7 @@ terraform {
 // default provider that is used when no other provider
 // is specified explicitly
 provider "aws" {
-  region = "eu-central-1"
+  region = "eu-west-1"
 
   default_tags {
     tags = {
