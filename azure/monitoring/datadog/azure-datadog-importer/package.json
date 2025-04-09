@@ -1,0 +1,5 @@
+{
+  "name": "@they/azure-datadog-importer",
+  "version": "1.0.0",
+  "main": "datadog/index.js"
+}

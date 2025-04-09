@@ -131,6 +131,16 @@ variable "assign_system_identity" {
   default     = false
 }
 
+variable "diagnostics" {
+  description = "If set, function app logs will be sent to the event hub."
+  type = object({
+    eventhub                          = string
+    namespace                         = string
+    namespace_authorization_rule_name = string
+  })
+  default = null
+}
+
 variable "tags" {
   description = "Tags for the resources."
   type        = map(string)

@@ -1,0 +1,15 @@
+{
+  "bindings": [
+    {
+      "type": "eventHubTrigger",
+      "direction": "in",
+      "name": "eventHubMessages",
+      "path": "logs",
+      "connection": "EVENTHUB_CONNECTION_STRING",
+      "eventHubName": "logs",
+      "cardinality": "many",
+      "consumerGroup": "$Default"
+    }
+  ],
+  "disabled": false
+}
