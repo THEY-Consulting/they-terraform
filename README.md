@@ -241,6 +241,10 @@ module "lambda" {
   }
 
   mount_efs = aws_efs_access_point.main.arn
+  
+  dd_api_key = "datadog-api-key-123"
+  dd_site    = "datadoghq.eu"
+  dd_service = "they-lambda"
 
   tags = {
     createdBy = "terraform"
@@ -252,7 +256,7 @@ module "lambda" {
 ##### Inputs
 
 | Variable                      | Type         | Description                                                                                                                        | Required | Default                    |
-| ----------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------- |
+|-------------------------------| ------------ |------------------------------------------------------------------------------------------------------------------------------------| -------- |----------------------------|
 | name                          | string       | Name of the lambda function                                                                                                        | yes      |                            |
 | description                   | string       | Description of the lambda function                                                                                                 | yes      |                            |
 | source_dir                    | string       | Directory containing the lambda function                                                                                           | yes      |                            |
@@ -295,6 +299,9 @@ module "lambda" {
 | vpc_config.security_group_ids | list(string) | List of security groups to connect the lambda with                                                                                 | (yes)    |                            |
 | vpc_config.subnet_ids         | list(string) | List of subnets to attach to the lambda                                                                                            | (yes)    |                            |
 | mount_efs                     | string       | ARN of the EFS file system to mount                                                                                                | no       | `null`                     |
+| dd_api_key                    | string       | Datadog API key, when this is set, logs are forwared to datadog                                                                    | no       | `null`                     |
+| dd_site                       | string       | Datadog site                                                                                                                       | no       | `"datadoghq.eu"`           |
+| dd_service                    | string       | Sets the service name within datadog                                                                                               | no       | `""`                       |
 | tags                          | map(string)  | Map of tags to assign to the Lambda Function and related resources                                                                 | no       | `{}`                       |
 
 ##### Outputs

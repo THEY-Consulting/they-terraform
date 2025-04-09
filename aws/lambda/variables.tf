@@ -153,6 +153,25 @@ variable "layers" {
   default     = []
 }
 
+variable "dd_api_key" {
+  description = "Datadog API key."
+  type        = string
+  sensitive   = true
+  default     = null
+}
+
+variable "dd_site" {
+  description = "Datadog site."
+  type        = string
+  default     = "datadoghq.eu"
+}
+
+variable "dd_service" {
+  description = "Sets the service name within datadog."
+  type        = string
+  default     = ""
+}
+
 variable "tags" {
   description = "Map of tags to assign to the Lambda Function and related resources."
   type        = map(string)
