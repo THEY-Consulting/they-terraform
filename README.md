@@ -1622,6 +1622,84 @@ module "container-apps" {
 | ------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | container_apps_urls | string | URLs of the container apps. If a custom domain was used, this will be the ouput. Otherwise, the FQDN of the latest revision of each respective Container App will be the output. |
 
+#### Storage Container
+
+```hcl
+module "storage_container" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/storage-container"
+
+  name                = "they-storage-container"
+  resource_group_name = "they-dev"
+  location            = "Germany West Central"
+
+  container_access_type = "private"
+  metadata = {
+    environment = "dev"
+    department  = "it"
+  }
+
+  storage_account = {
+    # name = "customstorageaccount" # Optional: Automatically generated from container name if not specified
+    preexisting_name = null # If null, a new storage account will be created
+    tier             = "Standard"
+    replication_type = "LRS"
+    kind             = "StorageV2"
+    access_tier      = "Hot"
+    is_hns_enabled = false
+
+    # CORS configuration
+    cors_rules = [
+      {
+        allowed_headers = ["*"]
+        allowed_methods = ["GET", "POST", "PUT"]
+        allowed_origins = ["https://myapp.example.com"]
+        exposed_headers = ["*"]
+        max_age_in_seconds = 3600
+      }
+    ]
+  }
+
+  tags = {
+    createdBy   = "Terraform"
+    environment = "dev"
+  }
+}
+```
+
+##### Inputs
+
+| Variable                                        | Type         | Description                                                                  | Required | Default        |
+|-------------------------------------------------|--------------|------------------------------------------------------------------------------|----------|----------------|
+| name                                            | string       | Name of the storage container                                                | yes      |                |
+| resource_group_name                             | string       | The name of the resource group in which to create the resources              | yes      |                |
+| location                                        | string       | The Azure region where the resources should be created                       | yes      |                |
+| container_access_type                           | string       | The access type for the container. Possible values: blob, container, private | no       | `"private"`    |
+| metadata                                        | map(string)  | A mapping of metadata to assign to the storage container                     | no       | `{}`           |
+| storage_account                                 | object       | The storage account configuration                                            | no       | see sub fields |
+| storage_account.preexisting_name                | string       | Name of an existing storage account; if null, a new one will be created      | no       | `null`         |
+| storage_account.preexisting_resource_group_name | string       | Resource group name of the existing storage account                          | no       | `null`         |
+| storage_account.name                            | string       | Name for the new storage account; if null, derived from container name       | no       | `null`         |
+| storage_account.tier                            | string       | Tier of the storage account (Standard or Premium)                            | no       | `"Standard"`   |
+| storage_account.replication_type                | string       | Replication type for the storage account                                     | no       | `"LRS"`        |
+| storage_account.kind                            | string       | Kind of storage account                                                      | no       | `"StorageV2"`  |
+| storage_account.access_tier                     | string       | Access tier for the storage account (Hot or Cool)                            | no       | `"Hot"`        |
+| storage_account.is_hns_enabled                  | bool         | Enable hierarchical namespace (required for Data Lake Gen2)                  | no       | `false`        |
+| storage_account.min_tls_version                 | string       | Minimum TLS version                                                          | no       | `"TLS1_2"`     |
+| storage_account.cors_rules                      | list(object) | List of CORS rules for the storage account                                   | no       | `null`         |
+| tags                                            | map(string)  | Tags for the resources                                                       | no       | `{}`           |
+
+##### Outputs
+
+| Output                    | Type   | Description                                           |
+|---------------------------|--------|-------------------------------------------------------|
+| id                        | string | The ID of the storage container                       |
+| name                      | string | The name of the storage container                     |
+| storage_account_name      | string | The name of the storage account                       |
+| storage_account_id        | string | The ID of the storage account                         |
+| primary_access_key        | string | The primary access key for the storage account        |
+| primary_connection_string | string | The primary connection string for the storage account |
+| container_url             | string | The URL of the storage container                      |
+
 ## Contributing
 
 ### Prerequisites
