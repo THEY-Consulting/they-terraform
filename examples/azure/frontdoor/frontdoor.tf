@@ -1,8 +1,9 @@
+# --- Storage Container ---
 module "storage_container" {
   source = "../../../azure/storage-container"
 
   name                = "${terraform.workspace}-storage-container"
-  resource_group_name = "they-dev"
+  resource_group_name = "atlas-dev"
   location            = "Germany West Central"
 
   container_access_type = "private"
@@ -12,10 +13,9 @@ module "storage_container" {
   }
 
   storage_account = {
-    # name = "customstorageaccount" # Optional: Automatically generated from container name if not specified
     preexisting_name = null # If null, a new storage account will be created
     tier             = "Standard"
-    replication_type = "LRS"
+    replication_type = "RAGRS"
     kind             = "StorageV2"
     access_tier      = "Hot"
     is_hns_enabled   = false
@@ -24,7 +24,7 @@ module "storage_container" {
     cors_rules = [{
       allowed_headers    = ["*"]
       allowed_methods    = ["GET", "POST", "PUT"]
-      allowed_origins    = ["https://myapp.example.com"]
+      allowed_origins    = ["https://talktoatlas.app"]
       exposed_headers    = ["*"]
       max_age_in_seconds = 3600
     }]
@@ -66,4 +66,26 @@ output "primary_access_key" {
 output "primary_connection_string" {
   value     = module.storage_container.primary_connection_string
   sensitive = true
+}
+
+# --- Front Door ---
+data "azurerm_storage_account" "web" {
+  name                = module.storage_container.storage_account_name
+  resource_group_name = "atlas-dev"
+  depends_on          = [module.storage_container]
+}
+
+module "frontdoor" {
+  source = "../../../azure/frontdoor"
+
+  resource_group = {
+    name     = "atlas-dev"
+    location = "Germany West Central"
+  }
+
+  storage_account = {
+    primary_web_host = data.azurerm_storage_account.web.primary_web_host
+  }
+
+  domain = "talktoatlas"
 }
