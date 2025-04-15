@@ -2,6 +2,10 @@ output "id" {
   value = local.function_app.id
 }
 
+output "name" {
+  value = local.name
+}
+
 output "build" {
   value = var.build.enabled ? data.external.builder.0.result : null
 }

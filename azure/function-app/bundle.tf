@@ -17,7 +17,6 @@ data "archive_file" "function_zip" {
 }
 
 locals {
-  function_app         = var.runtime.os == "windows" ? azurerm_windows_function_app.function_app[0] : azurerm_linux_function_app.function_app[0]
   publish_code_command = "az webapp deployment source config-zip --resource-group ${var.resource_group_name} --name ${local.function_app.name} --src ${data.archive_file.function_zip.output_path}"
 }
 resource "null_resource" "function_app_publish" {

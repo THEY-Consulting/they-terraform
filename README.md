@@ -1160,8 +1160,9 @@ module "function_app" {
 ##### Outputs
 
 | Output            | Type         | Description                        |
-| ----------------- | ------------ | ---------------------------------- |
+|-------------------| ------------ |------------------------------------|
 | id                | string       | The ID of the Function App         |
+| name              | string       | The name of the Function App       |
 | build             | string       | Build output                       |
 | archive_file_path | string       | Path to the generated archive file |
 | endpoint_url      | string       | Endpoint URL                       |

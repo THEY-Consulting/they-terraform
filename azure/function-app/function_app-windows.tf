@@ -1,7 +1,7 @@
 resource "azurerm_windows_function_app" "function_app" {
   count = var.runtime.os == "windows" ? 1 : 0
 
-  name                = "${var.name}-windows-function-app"
+  name                = local.name
   resource_group_name = var.resource_group_name
   location            = var.location
 
