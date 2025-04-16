@@ -11,12 +11,12 @@ resource "azurerm_cdn_frontdoor_endpoint" "web_endpoint" {
 }
 
 resource "azurerm_cdn_frontdoor_rule_set" "rule_set" {
-  name                     = "caching"
+  name                     = "${terraform.workspace}caching"
   cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.fqdn_profile.id
 }
 
 resource "azurerm_cdn_frontdoor_origin_group" "origin_group_web" {
-  name                     = "web"
+  name                     = "frontdoor-origin-group-${terraform.workspace}-web"
   cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.fqdn_profile.id
 
   load_balancing {
@@ -34,7 +34,7 @@ resource "azurerm_cdn_frontdoor_origin_group" "origin_group_web" {
 
 resource "azurerm_cdn_frontdoor_origin" "web_origin" {
   depends_on                     = [var.storage_account]
-  name                           = "web"
+  name                           = "frontdoor-origin-${terraform.workspace}-web"
   cdn_frontdoor_origin_group_id  = azurerm_cdn_frontdoor_origin_group.origin_group_web.id
   enabled                        = true
   certificate_name_check_enabled = false
@@ -73,8 +73,46 @@ resource "azurerm_cdn_frontdoor_rule" "cache_rule" {
   }
 }
 
+# Determine the full domain name
+locals {
+  full_domain_name = var.dns_zone_name != null ? "${var.subdomain}.${var.dns_zone_name}" : "${var.subdomain}.${var.domain}"
+}
+
+resource "azurerm_cdn_frontdoor_custom_domain" "custom_domain" {
+  name                     = var.domain
+  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.fqdn_profile.id
+  host_name                = local.full_domain_name
+
+  tls {
+    certificate_type    = "ManagedCertificate"
+    minimum_tls_version = "TLS12"
+  }
+}
+
+# Create the DNS validation TXT record
+resource "azurerm_dns_txt_record" "validation" {
+  count               = var.dns_zone_name != null ? 1 : 0
+  name                = "_dnsauth.${var.subdomain}"
+  resource_group_name = coalesce(var.dns_zone_resource_group, var.resource_group.name)
+  zone_name           = var.dns_zone_name
+  ttl                 = 3600
+
+  record {
+    value = azurerm_cdn_frontdoor_custom_domain.custom_domain.validation_token
+  }
+}
+
+resource "azurerm_dns_cname_record" "frontdoor" {
+  count               = var.dns_zone_name != null ? 1 : 0
+  name                = var.subdomain
+  resource_group_name = coalesce(var.dns_zone_resource_group, var.resource_group.name)
+  zone_name           = var.dns_zone_name
+  ttl                 = 3600
+  record              = azurerm_cdn_frontdoor_endpoint.web_endpoint.host_name
+}
+
 resource "azurerm_cdn_frontdoor_route" "default_route" {
-  name                            = "default"
+  name                            = "frontdoor-${terraform.workspace}-default-route"
   cdn_frontdoor_endpoint_id       = azurerm_cdn_frontdoor_endpoint.web_endpoint.id
   cdn_frontdoor_origin_group_id   = azurerm_cdn_frontdoor_origin_group.origin_group_web.id
   cdn_frontdoor_origin_ids        = [azurerm_cdn_frontdoor_origin.web_origin.id]
@@ -86,17 +124,6 @@ resource "azurerm_cdn_frontdoor_route" "default_route" {
   patterns_to_match               = ["/*"]
   supported_protocols             = ["Http", "Https"]
   link_to_default_domain          = false
-}
-
-resource "azurerm_cdn_frontdoor_custom_domain" "custom_domain" {
-  name                     = var.domain
-  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.fqdn_profile.id
-  host_name                = "www.${var.domain}.app"
-
-  tls {
-    certificate_type    = "ManagedCertificate"
-    minimum_tls_version = "TLS12"
-  }
 }
 
 resource "azurerm_cdn_frontdoor_custom_domain_association" "domain_association" {

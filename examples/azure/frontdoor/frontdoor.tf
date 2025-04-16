@@ -87,5 +87,22 @@ module "frontdoor" {
     primary_web_host = data.azurerm_storage_account.web.primary_web_host
   }
 
+  # Base domain name without subdomain
   domain = "talktoatlas"
+
+  # Subdomain configuration
+  subdomain = terraform.workspace
+
+  # DNS zone configuration - if you have an existing DNS zone
+  dns_zone_name           = "talktoatlas.app"
+  dns_zone_resource_group = "atlas-dev"
+}
+
+# Additional outputs for the front door
+output "frontdoor_endpoint_url" {
+  value = module.frontdoor.endpoint_url
+}
+
+output "frontdoor_custom_domain_url" {
+  value = module.frontdoor.custom_domain_url
 }

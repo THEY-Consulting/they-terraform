@@ -20,12 +20,10 @@ terraform {
 provider "azurerm" {
   features {}
 
-  subscription_id = "bae375c7-4774-49cb-8b45-b69ea8f8c3ae"
-  tenant_id       = var.tenant_id
+  subscription_id = var.subscription_id
 }
 
-variable "tenant_id" {
-  description = "Use specific azure tenant ID."
+variable "subscription_id" {
+  description = "The subscription ID to use for the Azure provider"
   type        = string
-  default     = null
 }
