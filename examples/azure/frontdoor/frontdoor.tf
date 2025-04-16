@@ -3,7 +3,7 @@ module "storage_container" {
   source = "../../../azure/storage-container"
 
   name                = "${terraform.workspace}-storage-container"
-  resource_group_name = "atlas-dev"
+  resource_group_name = "they-dev"
   location            = "Germany West Central"
 
   container_access_type = "private"
@@ -24,11 +24,13 @@ module "storage_container" {
     cors_rules = [{
       allowed_headers    = ["*"]
       allowed_methods    = ["GET", "POST", "PUT"]
-      allowed_origins    = ["https://talktoatlas.app"]
+      allowed_origins    = ["https://they-azure.de"]
       exposed_headers    = ["*"]
       max_age_in_seconds = 3600
     }]
   }
+
+  enable_static_website = true
 
   tags = {
     createdBy   = "Terraform"
@@ -36,42 +38,10 @@ module "storage_container" {
   }
 }
 
-# Outputs
-output "container_id" {
-  value = module.storage_container.id
-}
-
-output "container_name" {
-  value = module.storage_container.name
-}
-
-output "storage_account_name" {
-  value = module.storage_container.storage_account_name
-}
-
-output "storage_account_id" {
-  value = module.storage_container.storage_account_id
-}
-
-output "container_url" {
-  value = module.storage_container.container_url
-}
-
-# Sensitive outputs
-output "primary_access_key" {
-  value     = module.storage_container.primary_access_key
-  sensitive = true
-}
-
-output "primary_connection_string" {
-  value     = module.storage_container.primary_connection_string
-  sensitive = true
-}
-
 # --- Front Door ---
 data "azurerm_storage_account" "web" {
   name                = module.storage_container.storage_account_name
-  resource_group_name = "atlas-dev"
+  resource_group_name = "they-dev"
   depends_on          = [module.storage_container]
 }
 
@@ -79,7 +49,7 @@ module "frontdoor" {
   source = "../../../azure/frontdoor"
 
   resource_group = {
-    name     = "atlas-dev"
+    name     = "they-dev"
     location = "Germany West Central"
   }
 
@@ -88,14 +58,14 @@ module "frontdoor" {
   }
 
   # Base domain name without subdomain
-  domain = "talktoatlas"
+  domain = "they-azure"
 
   # Subdomain configuration
   subdomain = terraform.workspace
 
   # DNS zone configuration - if you have an existing DNS zone
-  dns_zone_name           = "talktoatlas.app"
-  dns_zone_resource_group = "atlas-dev"
+  dns_zone_name           = "they-azure.de"
+  dns_zone_resource_group = "they-dev"
 }
 
 # Additional outputs for the front door

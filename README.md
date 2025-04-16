@@ -1659,6 +1659,8 @@ module "storage_container" {
     ]
   }
 
+  enable_static_website = true
+
   tags = {
     createdBy   = "Terraform"
     environment = "dev"
@@ -1686,6 +1688,7 @@ module "storage_container" {
 | storage_account.is_hns_enabled                  | bool         | Enable hierarchical namespace (required for Data Lake Gen2)                  | no       | `false`        |
 | storage_account.min_tls_version                 | string       | Minimum TLS version                                                          | no       | `"TLS1_2"`     |
 | storage_account.cors_rules                      | list(object) | List of CORS rules for the storage account                                   | no       | `null`         |
+| enable_static_website                           | bool         | Enable or disable the static website feature for the storage account         | no       | `false`        |
 | tags                                            | map(string)  | Tags for the resources                                                       | no       | `{}`           |
 
 ##### Outputs
@@ -1823,3 +1826,5 @@ When you are done testing, please destroy the resources with `terraform destroy`
 Therefore, you need to delete the bucket manually in the AWS console.
 After that you can remove the remaining resources with `terraform destroy`.
 Keep in mind that after destroying a bucket it can take up to 24 hours until the name is available again.
+
+`

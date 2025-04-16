@@ -34,10 +34,9 @@ resource "azurerm_storage_account" "storage_account" {
 }
 
 resource "azurerm_storage_account_static_website" "static_website" {
-  count = var.storage_account.preexisting_name == null ? 1 : 0
+  count = var.enable_static_website && var.storage_account.preexisting_name == null ? 1 : 0
 
   storage_account_id = azurerm_storage_account.storage_account[0].id
   #error_404_document = "customnotfound.html"
   index_document = "index.html"
 }
-
