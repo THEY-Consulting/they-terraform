@@ -1,4 +1,12 @@
-// https://github.com/DataDog/datadog-serverless-functions/blob/master/azure/activity_logs_monitoring/index.js
+/**
+ * This file is copied from the datadog GitHub repo for the Azure EventHub function.
+ * Maybe there is a better way to include it as a dependency but for now we have to copy/update it manually.
+ * Therefore, we shouldn't change anything in this file, so we can easily copy&paste it from the repo in the future.
+ *
+ * Source (2025-04-16):
+ * https://github.com/DataDog/datadog-serverless-functions/blob/master/azure/activity_logs_monitoring/index.js
+ */
+
 // Unless explicitly stated otherwise all files in this repository are licensed
 // under the Apache License Version 2.0.
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
