@@ -11,10 +11,10 @@ data "azurerm_storage_account" "existing" {
 }
 
 resource "azurerm_storage_container" "container" {
-  name                              = var.name
-  storage_account_id                = local.storage_account_id
-  container_access_type             = var.container_access_type
-  metadata                          = var.metadata
+  name                  = var.name
+  storage_account_id    = local.storage_account_id
+  container_access_type = var.container_access_type
+  metadata              = var.metadata
 }
 
 resource "azurerm_storage_account" "storage_account" {

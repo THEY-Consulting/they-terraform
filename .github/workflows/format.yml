@@ -1,0 +1,26 @@
+name: Format
+
+on:
+  pull_request:
+
+jobs:
+  terraform:
+    name: Format terraform
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set terraform version
+        run: |
+          TF_VERSION=$(grep -vP '^[\s]?#' .terraform-version)
+          echo "TF_VERSION=$TF_VERSION" >> $GITHUB_ENV
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Run terraform fmt
+        run: terraform fmt -check -recursive
