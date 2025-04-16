@@ -69,12 +69,11 @@ module "lambda-datadog" {
   version = "2.0.0"
 
   environment_variables = merge({
-    #     "DD_API_KEY_SECRET_ARN" : # TODO
     "DD_API_KEY" : var.dd_api_key
     "DD_ENV" : terraform.workspace
     "DD_SERVICE" : var.dd_service
     "DD_SITE" : var.dd_site
-    #     "DD_VERSION" : var.version_tag # TODO?
+    "DD_VERSION" : var.environment != null ? lookup(var.environment, "VERSION", "") : ""
   }, var.environment)
 
   # AWS_lambda_function arguments, these get passed to the lambda function.
