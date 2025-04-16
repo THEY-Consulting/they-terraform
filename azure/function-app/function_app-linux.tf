@@ -1,7 +1,7 @@
 resource "azurerm_linux_function_app" "function_app" {
   count = var.runtime.os == "linux" ? 1 : 0
 
-  name                = "${var.name}-linux-function-app"
+  name                = local.name
   resource_group_name = var.resource_group_name
   location            = var.location
 

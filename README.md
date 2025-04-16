@@ -26,6 +26,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [MSSQL Database](#mssql-database)
     - [VM](#vm)
     - [Container Instances](#container-instances)
+    - [Datadog Diagnostics](#datadog-diagnostics)
 - [Contributing](#contributing)
   - [Prerequisites](#prerequisites-1)
   - [Environment Variables](#environment-variables)
@@ -1159,8 +1160,9 @@ module "function_app" {
 ##### Outputs
 
 | Output            | Type         | Description                        |
-| ----------------- | ------------ | ---------------------------------- |
+|-------------------| ------------ |------------------------------------|
 | id                | string       | The ID of the Function App         |
+| name              | string       | The name of the Function App       |
 | build             | string       | Build output                       |
 | archive_file_path | string       | Path to the generated archive file |
 | endpoint_url      | string       | Endpoint URL                       |
@@ -1699,6 +1701,59 @@ module "storage_container" {
 | primary_access_key        | string | The primary access key for the storage account        |
 | primary_connection_string | string | The primary connection string for the storage account |
 | container_url             | string | The URL of the storage container                      |
+
+#### Datadog Diagnostics
+
+```hcl
+module "diagnostics" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/monitoring/datadog"
+
+  environment             = "dev"
+  eventhub_namespace_name = "they-test"
+  handler_name            = "datadog-importer-they-test"
+  location                = "Germany West Central"
+  resource_group_name     = "they-dev"
+
+  sku      = "Basic"
+  capacity = 1
+  
+  dd_api_key = "datadog-api-key"
+  dd_site    = "datadoghq.eu"
+  dd_service = "they-diagnostics"
+  dd_tags    = "they,diagnostics"
+
+  tags = {
+    Project   = "they-terraform-examples"
+    CreatedBy = "terraform"
+  }
+}
+```
+
+##### Inputs
+
+| Variable                | Type        | Description                                                                                           | Required | Default          |
+|-------------------------|-------------|-------------------------------------------------------------------------------------------------------|----------|------------------|
+| environment             | string      | Name of project. It will also be the name of the resource group, if a resource group is to be created | no       | `"dev"`          |
+| eventhub_namespace_name | string      | Name of the eventhub namespace                                                                        | yes      |                  |
+| handler_name            | string      | Name of the logs handler                                                                              | yes      |                  |
+| location                | string      | The Azure Region where the resource should be created                                                 | yes      |                  |
+| resource_group_name     | string      | The name of the resource group in which to create the resources                                       | yes      |                  |
+| sku                     | string      | The SKU of the event hubs namespace. This is the pricing tier. Use 'Basic', 'Standard', or 'Premium'  | no       | `"Basic"`        |
+| capacity                | number      | The capacity of the event hubs namespace. This is the number of throughput units                      | no       | `1`              |
+| dd_api_key              | string      | Datadog API key                                                                                       | yes      |                  |
+| dd_site                 | string      | Datadog site                                                                                          | no       | `"datadoghq.eu"` |
+| dd_service              | string      | Sets the service name within datadog                                                                  | no       | `""`             |
+| dd_tags                 | string      | Comma-separated list of tags to send to datadog                                                       | no       | `""`             |
+| tags                    | map(string) | Map of tags to assign to the resources                                                                | no       | `{}`             |
+
+##### Outputs
+
+| Output                                        | Type   | Description                                                                                                   |
+|-----------------------------------------------|--------|---------------------------------------------------------------------------------------------------------------|
+| diagnostics                                   | object | Contains information about the event hub, can be used as `diagnostics` parameter of the azure function module |
+| diagnostics.eventhub_name                     | string | Name of the event hub                                                                                         |
+| diagnostics.namespace                         | string | Name of the event hub namespace                                                                               |
+| diagnostics.namespace_authorization_rule_name | string | Name of the authorization rule that allows produces to send logs to the event hub                             |
 
 ## Contributing
 
