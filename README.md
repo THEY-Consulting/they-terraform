@@ -1700,6 +1700,54 @@ module "storage_container" {
 | primary_connection_string | string | The primary connection string for the storage account |
 | container_url             | string | The URL of the storage container                      |
 
+#### Front Door
+
+```hcl
+module "frontdoor" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/frontdoor"
+
+  resource_group = {
+    name     = "they-dev"
+    location = "Germany West Central"
+  }
+
+  storage_account = {
+    primary_web_host = "yourwebstorage.z6.web.core.windows.net"
+  }
+
+  domain = "example"
+  subdomain = "www"
+
+  # DNS zone configuration - if you have an existing DNS zone
+  dns_zone_name = "example.com"
+  dns_zone_resource_group = "they-dev"
+}
+```
+
+##### Inputs
+
+| Variable                         | Type   | Description                                                                                       | Required | Default |
+|----------------------------------|--------|---------------------------------------------------------------------------------------------------|----------|---------|
+| resource_group                   | object | The resource group where the Front Door resources will be created                                 | yes      |         |
+| resource_group.name              | string | The name of the resource group                                                                    | yes      |         |
+| resource_group.location          | string | The location of the resource group                                                                | yes      |         |
+| storage_account                  | object | The storage account configuration                                                                 | yes      |         |
+| storage_account.primary_web_host | string | Primary web host of the storage account                                                           | yes      |         |
+| domain                           | string | The base domain name (without the subdomain part)                                                 | yes      |         |
+| subdomain                        | string | The subdomain to use (e.g., 'www' for www.example.com)                                            | no       | `"www"` |
+| dns_zone_name                    | string | The name of the DNS zone where the CNAME and TXT validation records will be created               | no       | `null`  |
+| dns_zone_resource_group          | string | The resource group containing the DNS zone. Defaults to the same resource group as the Front Door | no       | `null`  |
+
+##### Outputs
+
+| Output                         | Type   | Description                                |
+|--------------------------------|--------|--------------------------------------------|
+| endpoint_url                   | string | The URL of the Front Door endpoint         |
+| custom_domain_url              | string | The URL of the custom domain               |
+| cdn_frontdoor_profile_id       | string | The ID of the Front Door profile           |
+| cdn_frontdoor_endpoint_id      | string | The ID of the Front Door endpoint          |
+| custom_domain_validation_token | string | The validation token for the custom domain |
+
 ## Contributing
 
 ### Prerequisites
