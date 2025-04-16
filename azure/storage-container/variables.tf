@@ -53,6 +53,12 @@ variable "storage_account" {
   default = {}
 }
 
+variable "enable_static_website" {
+  description = "Enable or disable the static website feature for the storage account."
+  type        = bool
+  default     = false
+}
+
 variable "tags" {
   description = "Tags for the resources."
   type        = map(string)

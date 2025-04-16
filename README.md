@@ -1659,6 +1659,8 @@ module "storage_container" {
     ]
   }
 
+  enable_static_website = true
+
   tags = {
     createdBy   = "Terraform"
     environment = "dev"
@@ -1686,6 +1688,7 @@ module "storage_container" {
 | storage_account.is_hns_enabled                  | bool         | Enable hierarchical namespace (required for Data Lake Gen2)                  | no       | `false`        |
 | storage_account.min_tls_version                 | string       | Minimum TLS version                                                          | no       | `"TLS1_2"`     |
 | storage_account.cors_rules                      | list(object) | List of CORS rules for the storage account                                   | no       | `null`         |
+| enable_static_website                           | bool         | Enable or disable the static website feature for the storage account         | no       | `false`        |
 | tags                                            | map(string)  | Tags for the resources                                                       | no       | `{}`           |
 
 ##### Outputs
@@ -1699,6 +1702,54 @@ module "storage_container" {
 | primary_access_key        | string | The primary access key for the storage account        |
 | primary_connection_string | string | The primary connection string for the storage account |
 | container_url             | string | The URL of the storage container                      |
+
+#### Front Door
+
+```hcl
+module "frontdoor" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/frontdoor"
+
+  resource_group = {
+    name     = "they-dev"
+    location = "Germany West Central"
+  }
+
+  storage_account = {
+    primary_web_host = "yourwebstorage.z6.web.core.windows.net"
+  }
+
+  domain = "example"
+  subdomain = "www"
+
+  # DNS zone configuration - if you have an existing DNS zone
+  dns_zone_name = "example.com"
+  dns_zone_resource_group = "they-dev"
+}
+```
+
+##### Inputs
+
+| Variable                         | Type   | Description                                                                                       | Required | Default |
+|----------------------------------|--------|---------------------------------------------------------------------------------------------------|----------|---------|
+| resource_group                   | object | The resource group where the Front Door resources will be created                                 | yes      |         |
+| resource_group.name              | string | The name of the resource group                                                                    | yes      |         |
+| resource_group.location          | string | The location of the resource group                                                                | yes      |         |
+| storage_account                  | object | The storage account configuration                                                                 | yes      |         |
+| storage_account.primary_web_host | string | Primary web host of the storage account                                                           | yes      |         |
+| domain                           | string | The base domain name (without the subdomain part)                                                 | yes      |         |
+| subdomain                        | string | The subdomain to use (e.g., 'www' for www.example.com)                                            | no       | `"www"` |
+| dns_zone_name                    | string | The name of the DNS zone where the CNAME and TXT validation records will be created               | no       | `null`  |
+| dns_zone_resource_group          | string | The resource group containing the DNS zone. Defaults to the same resource group as the Front Door | no       | `null`  |
+
+##### Outputs
+
+| Output                         | Type   | Description                                |
+|--------------------------------|--------|--------------------------------------------|
+| endpoint_url                   | string | The URL of the Front Door endpoint         |
+| custom_domain_url              | string | The URL of the custom domain               |
+| cdn_frontdoor_profile_id       | string | The ID of the Front Door profile           |
+| cdn_frontdoor_endpoint_id      | string | The ID of the Front Door endpoint          |
+| custom_domain_validation_token | string | The validation token for the custom domain |
 
 ## Contributing
 
@@ -1775,3 +1826,5 @@ When you are done testing, please destroy the resources with `terraform destroy`
 Therefore, you need to delete the bucket manually in the AWS console.
 After that you can remove the remaining resources with `terraform destroy`.
 Keep in mind that after destroying a bucket it can take up to 24 hours until the name is available again.
+
+`
