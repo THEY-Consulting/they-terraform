@@ -73,6 +73,15 @@ resource "azurerm_windows_function_app" "function_app" {
         powershell_core_version = application_stack.value.version
       }
     }
+
+    # required to be able to trigger the function app from the portal
+    cors {
+      allowed_origins = [
+        "https://portal.azure.com",
+      ]
+      support_credentials = false
+    }
+
   }
 
   # hidden-links are set by application insights automatically and would lead to continuous diffs -> set them explicitly
