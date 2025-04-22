@@ -1,7 +1,7 @@
 module "storage_container" {
   source = "../../../azure/storage-container"
 
-  name                = "they-storage-container"
+  name                = "${terraform.workspace}-storage-container"
   resource_group_name = "they-dev"
   location            = "Germany West Central"
 
