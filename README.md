@@ -27,6 +27,8 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [VM](#vm)
     - [Container Instances](#container-instances)
     - [Datadog Diagnostics](#datadog-diagnostics)
+    - [Frontdoor](#front-door)
+    - [Container Registry](#container-registry)
 - [Contributing](#contributing)
   - [Prerequisites](#prerequisites-1)
   - [Environment Variables](#environment-variables)
@@ -1805,6 +1807,65 @@ module "frontdoor" {
 | cdn_frontdoor_profile_id       | string | The ID of the Front Door profile           |
 | cdn_frontdoor_endpoint_id      | string | The ID of the Front Door endpoint          |
 | custom_domain_validation_token | string | The validation token for the custom domain |
+
+#### Container Registry
+
+```hcl
+module "container_registry" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/container-registry"
+
+  name = "theyregistry"
+  resource_group = {
+    name     = "they-dev"
+    location = "Germany West Central"
+  }
+
+  sku           = "Standard"
+  admin_enabled = true
+
+  tags = {
+    Project   = "they-project"
+    CreatedBy = "terraform"
+    Environment = "dev"
+  }
+}
+```
+
+##### Inputs
+
+| Variable                      | Type         | Description                                                                                            | Required | Default           |
+|-------------------------------|--------------|--------------------------------------------------------------------------------------------------------|----------|-------------------|
+| name                          | string       | Name of the container registry                                                                         | yes      |                   |
+| resource_group                | object       | The resource group where the registry will be created                                                  | yes      |                   |
+| resource_group.name           | string       | Name of the resource group                                                                             | yes      |                   |
+| resource_group.location       | string       | Location of the resource group                                                                         | yes      |                   |
+| sku                           | string       | The SKU of the container registry. Possible values are 'Basic', 'Standard', and 'Premium'              | no       | `"Standard"`      |
+| admin_enabled                 | bool         | Specifies whether the admin user is enabled                                                            | no       | `false`           |
+| retention_policy_days         | number       | The number of days to retain an untagged manifest. Only available for Premium SKU                      | no       | `7`               |
+| quarantine_policy_enabled     | bool         | Boolean value that indicates whether quarantine policy is enabled. Only available for Premium SKU      | no       | `false`           |
+| trust_policy_enabled          | bool         | Boolean value that indicates whether the trust policy is enabled. Only available for Premium SKU       | no       | `false`           |
+| export_policy_enabled         | bool         | Boolean value that indicates whether the export policy is enabled. Only available for Premium SKU      | no       | `true`            |
+| anonymous_pull_enabled        | bool         | Whether to allow anonymous pull access. Only available for Standard and Premium SKUs                   | no       | `false`           |
+| data_endpoint_enabled         | bool         | Whether to enable dedicated data endpoints for this Container Registry. Only available for Premium SKU | no       | `false`           |
+| network_rule_bypass_option    | string       | Whether to allow trusted Azure services to access a network restricted Container Registry              | no       | `"AzureServices"` |
+| geo_replications              | list(object) | A list of Azure locations where the container registry should be geo-replicated. Only for Premium SKU  | no       | `[]`              |
+| network_rule_set              | object       | Network rules for the container registry. Only available for Premium SKU                               | no       | `null`            |
+| public_network_access_enabled | bool         | Whether public network access is allowed for the container registry                                    | no       | `true`            |
+| zone_redundancy_enabled       | bool         | Whether zone redundancy is enabled for the container registry                                          | no       | `false`           |
+| identity                      | object       | The type of identity to use for the container registry                                                 | no       | `null`            |
+| encryption                    | object       | Encryption settings for the container registry                                                         | no       | `null`            |
+| tags                          | map(string)  | Tags for the resources                                                                                 | no       | `{}`              |
+
+##### Outputs
+
+| Output            | Type   | Description                                                                                  |
+|-------------------|--------|----------------------------------------------------------------------------------------------|
+| id                | string | The ID of the Container Registry                                                             |
+| name              | string | The name of the Container Registry                                                           |
+| login_server      | string | The URL that can be used to log into the container registry                                  |
+| admin_username    | string | The Username associated with the Container Registry Admin account - if admin is enabled      |
+| admin_password    | string | The Password associated with the Container Registry Admin account - if admin is enabled      |
+| identity          | object | The identity of the Container Registry                                                       |
 
 ## Contributing
 
