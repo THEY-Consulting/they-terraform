@@ -30,7 +30,7 @@ variable "sku" {
 variable "tags" {
   description = "Additional tags for all resources."
   type        = map(string)
-  default     = {
+  default = {
     Project   = "Docker Registry"
     CreatedBy = "Terraform"
   }

@@ -8,15 +8,15 @@ resource "azurerm_container_registry" "acr" {
   zone_redundancy_enabled       = var.zone_redundancy_enabled
 
   # Premium SKU features
-  retention_policy_in_days      = var.sku == "Premium" ? var.retention_policy_days : null
-  quarantine_policy_enabled     = var.sku == "Premium" ? var.quarantine_policy_enabled : null
-  trust_policy_enabled          = var.sku == "Premium" ? var.trust_policy_enabled : null
-  export_policy_enabled         = var.sku == "Premium" ? var.export_policy_enabled : null
-  anonymous_pull_enabled        = contains(["Standard", "Premium"], var.sku) ? var.anonymous_pull_enabled : null
-  data_endpoint_enabled         = var.sku == "Premium" ? var.data_endpoint_enabled : null
-  network_rule_bypass_option    = var.sku == "Premium" ? var.network_rule_bypass_option : null
+  retention_policy_in_days   = var.sku == "Premium" ? var.retention_policy_days : null
+  quarantine_policy_enabled  = var.sku == "Premium" ? var.quarantine_policy_enabled : null
+  trust_policy_enabled       = var.sku == "Premium" ? var.trust_policy_enabled : null
+  export_policy_enabled      = var.sku == "Premium" ? var.export_policy_enabled : null
+  anonymous_pull_enabled     = contains(["Standard", "Premium"], var.sku) ? var.anonymous_pull_enabled : null
+  data_endpoint_enabled      = var.sku == "Premium" ? var.data_endpoint_enabled : null
+  network_rule_bypass_option = var.sku == "Premium" ? var.network_rule_bypass_option : null
 
-  tags                          = var.tags
+  tags = var.tags
 
   dynamic "georeplications" {
     for_each = var.sku == "Premium" ? var.geo_replications : []

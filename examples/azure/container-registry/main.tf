@@ -29,7 +29,7 @@ module "container_registry" {
   }
 
   sku           = var.sku
-  admin_enabled = true  # Enable admin for simple authentication
+  admin_enabled = true # Enable admin for simple authentication
 
   tags = local.tags
 }
