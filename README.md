@@ -1820,12 +1820,57 @@ module "container_registry" {
     location = "Germany West Central"
   }
 
-  sku           = "Standard"
-  admin_enabled = true
+  # Basic configuration
+  sku           = "Standard"  # Options: Basic, Standard, Premium
+  admin_enabled = true        # Enable admin for simple authentication
+
+  # Premium SKU features
+  retention_policy_days     = 30      # Days to retain untagged manifests
+  quarantine_policy_enabled = true    # Enable quarantine for uploaded images
+  trust_policy_enabled      = true    # Enable content trust
+  export_policy_enabled     = true    # Enable export of registry data
+  
+  # Features for Standard and Premium SKUs
+  anonymous_pull_enabled = false      # Require authentication for pulls
+  
+  # More Premium SKU features
+  data_endpoint_enabled         = true              # Enable dedicated data endpoints
+  network_rule_bypass_option    = "AzureServices"   # Allow Azure services to access 
+  public_network_access_enabled = true
+  zone_redundancy_enabled       = true              # Enable multi-zone redundancy
+  
+  # Geo-replication for disaster recovery (Premium SKU only)
+  geo_replications = [
+    {
+      location                  = "West Europe"
+      zone_redundancy_enabled   = true
+      regional_endpoint_enabled = true
+      tags                      = { replica = "west-europe" }
+    }
+  ]
+
+  # Network access rules (Premium SKU only)
+  network_rule_set = {
+    default_action = "Deny"                               # Deny all by default
+    ip_rules       = ["203.0.113.0/24", "198.51.100.10"]  # Allow specific IPs
+  }
+
+  # Managed identity for registry authentication
+  identity = {
+    type         = "SystemAssigned"   # System-assigned managed identity
+    identity_ids = null               # Used for user-assigned identities
+  }
+
+  # Customer-managed keys for encryption
+  # Note: Requires a key vault and managed identity
+  encryption = {
+    key_vault_key_id   = "https://my-keyvault.vault.azure.net/keys/mykey/version"
+    identity_client_id = "00000000-0000-0000-0000-000000000000"
+  }
 
   tags = {
-    Project   = "they-project"
-    CreatedBy = "terraform"
+    Project     = "they-project"
+    CreatedBy   = "terraform"
     Environment = "dev"
   }
 }
