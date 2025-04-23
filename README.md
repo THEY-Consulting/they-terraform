@@ -27,6 +27,8 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [VM](#vm)
     - [Container Instances](#container-instances)
     - [Datadog Diagnostics](#datadog-diagnostics)
+    - [Frontdoor](#front-door)
+    - [Container Registry](#container-registry)
 - [Contributing](#contributing)
   - [Prerequisites](#prerequisites-1)
   - [Environment Variables](#environment-variables)
@@ -1805,6 +1807,110 @@ module "frontdoor" {
 | cdn_frontdoor_profile_id       | string | The ID of the Front Door profile           |
 | cdn_frontdoor_endpoint_id      | string | The ID of the Front Door endpoint          |
 | custom_domain_validation_token | string | The validation token for the custom domain |
+
+#### Container Registry
+
+```hcl
+module "container_registry" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/container-registry"
+
+  name = "theyregistry"
+  resource_group = {
+    name     = "they-dev"
+    location = "Germany West Central"
+  }
+
+  # Basic configuration
+  sku           = "Standard"  # Options: Basic, Standard, Premium
+  admin_enabled = true        # Enable admin for simple authentication
+
+  # Premium SKU features
+  retention_policy_days     = 30      # Days to retain untagged manifests
+  quarantine_policy_enabled = true    # Enable quarantine for uploaded images
+  trust_policy_enabled      = true    # Enable content trust
+  export_policy_enabled     = true    # Enable export of registry data
+  
+  # Features for Standard and Premium SKUs
+  anonymous_pull_enabled = false      # Require authentication for pulls
+  
+  # More Premium SKU features
+  data_endpoint_enabled         = true              # Enable dedicated data endpoints
+  network_rule_bypass_option    = "AzureServices"   # Allow Azure services to access 
+  public_network_access_enabled = true
+  zone_redundancy_enabled       = true              # Enable multi-zone redundancy
+  
+  # Geo-replication for disaster recovery (Premium SKU only)
+  geo_replications = [
+    {
+      location                  = "West Europe"
+      zone_redundancy_enabled   = true
+      regional_endpoint_enabled = true
+      tags                      = { replica = "west-europe" }
+    }
+  ]
+
+  # Network access rules (Premium SKU only)
+  network_rule_set = {
+    default_action = "Deny"                               # Deny all by default
+    ip_rules       = ["203.0.113.0/24", "198.51.100.10"]  # Allow specific IPs
+  }
+
+  # Managed identity for registry authentication
+  identity = {
+    type         = "SystemAssigned"   # System-assigned managed identity
+    identity_ids = null               # Used for user-assigned identities
+  }
+
+  # Customer-managed keys for encryption
+  # Note: Requires a key vault and managed identity
+  encryption = {
+    key_vault_key_id   = "https://my-keyvault.vault.azure.net/keys/mykey/version"
+    identity_client_id = "00000000-0000-0000-0000-000000000000"
+  }
+
+  tags = {
+    Project     = "they-project"
+    CreatedBy   = "terraform"
+    Environment = "dev"
+  }
+}
+```
+
+##### Inputs
+
+| Variable                      | Type         | Description                                                                                            | Required | Default           |
+|-------------------------------|--------------|--------------------------------------------------------------------------------------------------------|----------|-------------------|
+| name                          | string       | Name of the container registry                                                                         | yes      |                   |
+| resource_group                | object       | The resource group where the registry will be created                                                  | yes      |                   |
+| resource_group.name           | string       | Name of the resource group                                                                             | yes      |                   |
+| resource_group.location       | string       | Location of the resource group                                                                         | yes      |                   |
+| sku                           | string       | The SKU of the container registry. Possible values are 'Basic', 'Standard', and 'Premium'              | no       | `"Standard"`      |
+| admin_enabled                 | bool         | Specifies whether the admin user is enabled                                                            | no       | `false`           |
+| retention_policy_days         | number       | The number of days to retain an untagged manifest. Only available for Premium SKU                      | no       | `7`               |
+| quarantine_policy_enabled     | bool         | Boolean value that indicates whether quarantine policy is enabled. Only available for Premium SKU      | no       | `false`           |
+| trust_policy_enabled          | bool         | Boolean value that indicates whether the trust policy is enabled. Only available for Premium SKU       | no       | `false`           |
+| export_policy_enabled         | bool         | Boolean value that indicates whether the export policy is enabled. Only available for Premium SKU      | no       | `true`            |
+| anonymous_pull_enabled        | bool         | Whether to allow anonymous pull access. Only available for Standard and Premium SKUs                   | no       | `false`           |
+| data_endpoint_enabled         | bool         | Whether to enable dedicated data endpoints for this Container Registry. Only available for Premium SKU | no       | `false`           |
+| network_rule_bypass_option    | string       | Whether to allow trusted Azure services to access a network restricted Container Registry              | no       | `"AzureServices"` |
+| geo_replications              | list(object) | A list of Azure locations where the container registry should be geo-replicated. Only for Premium SKU  | no       | `[]`              |
+| network_rule_set              | object       | Network rules for the container registry. Only available for Premium SKU                               | no       | `null`            |
+| public_network_access_enabled | bool         | Whether public network access is allowed for the container registry                                    | no       | `true`            |
+| zone_redundancy_enabled       | bool         | Whether zone redundancy is enabled for the container registry                                          | no       | `false`           |
+| identity                      | object       | The type of identity to use for the container registry                                                 | no       | `null`            |
+| encryption                    | object       | Encryption settings for the container registry                                                         | no       | `null`            |
+| tags                          | map(string)  | Tags for the resources                                                                                 | no       | `{}`              |
+
+##### Outputs
+
+| Output            | Type   | Description                                                                                  |
+|-------------------|--------|----------------------------------------------------------------------------------------------|
+| id                | string | The ID of the Container Registry                                                             |
+| name              | string | The name of the Container Registry                                                           |
+| login_server      | string | The URL that can be used to log into the container registry                                  |
+| admin_username    | string | The Username associated with the Container Registry Admin account - if admin is enabled      |
+| admin_password    | string | The Password associated with the Container Registry Admin account - if admin is enabled      |
+| identity          | object | The identity of the Container Registry                                                       |
 
 ## Contributing
 
