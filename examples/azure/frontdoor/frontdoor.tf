@@ -68,6 +68,18 @@ module "frontdoor" {
   dns_zone_resource_group = "they-dev"
 }
 
+resource "azurerm_storage_blob" "blobobject" {
+  name                   = "index.html"
+  storage_account_name   = module.storage_container.storage_account_name
+  storage_container_name = "$web"
+  type                   = "Block"
+  source                 = "index.html"
+  content_type           = "text/html"
+  access_tier            = "Hot"
+
+  depends_on = [module.frontdoor, module.storage_container]
+}
+
 # Additional outputs for the front door
 output "frontdoor_endpoint_url" {
   value = module.frontdoor.endpoint_url
