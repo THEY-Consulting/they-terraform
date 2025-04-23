@@ -30,6 +30,10 @@ resource "azurerm_linux_function_app" "function_app" {
     var.environment
   )
 
+  // This is used to configure the AzureWebJobsDashboard setting.
+  // Since it is deprecated, we disable it
+  builtin_logging_enabled = false
+
   dynamic "identity" {
     for_each = var.identity != null ? [var.identity] : []
     content {
