@@ -84,7 +84,7 @@ resource "azurerm_cdn_frontdoor_custom_domain" "custom_domain" {
   host_name                = local.full_domain_name
 
   tls {
-    certificate_type    = "ManagedCertificate"
+    certificate_type = "ManagedCertificate"
   }
 }
 
