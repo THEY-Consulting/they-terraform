@@ -1,3 +1,9 @@
+locals {
+  workspace = replace(terraform.workspace, "-", "")
+  # Determine the full domain name based on the presence of a DNS zone
+  full_domain_name = var.dns_zone_name != null ? "${var.subdomain}.${var.dns_zone_name}" : "${var.subdomain}.${var.domain}"
+}
+
 resource "azurerm_cdn_frontdoor_profile" "fqdn_profile" {
   name                     = "${terraform.workspace}-profile"
   resource_group_name      = var.resource_group.name
@@ -11,7 +17,7 @@ resource "azurerm_cdn_frontdoor_endpoint" "web_endpoint" {
 }
 
 resource "azurerm_cdn_frontdoor_rule_set" "rule_set" {
-  name                     = "${terraform.workspace}caching"
+  name                     = "${local.workspace}caching"
   cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.fqdn_profile.id
 }
 
@@ -71,11 +77,6 @@ resource "azurerm_cdn_frontdoor_rule" "cache_rule" {
       query_string_caching_behavior = "IgnoreQueryString"
     }
   }
-}
-
-# Determine the full domain name
-locals {
-  full_domain_name = var.dns_zone_name != null ? "${var.subdomain}.${var.dns_zone_name}" : "${var.subdomain}.${var.domain}"
 }
 
 resource "azurerm_cdn_frontdoor_custom_domain" "custom_domain" {
