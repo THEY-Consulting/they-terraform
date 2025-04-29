@@ -22,3 +22,8 @@ output "custom_domain_validation_token" {
   description = "The validation token for the custom domain"
   value       = azurerm_cdn_frontdoor_custom_domain.custom_domain.validation_token
 }
+
+output "cdn_frontdoor_name" {
+  description = "The name of the Front Door profile"
+  value       = azurerm_cdn_frontdoor_profile.fqdn_profile.name
+}

@@ -1806,6 +1806,7 @@ module "frontdoor" {
 | custom_domain_url              | string | The URL of the custom domain               |
 | cdn_frontdoor_profile_id       | string | The ID of the Front Door profile           |
 | cdn_frontdoor_endpoint_id      | string | The ID of the Front Door endpoint          |
+| cdn_frontdoor_name             | string | The Name of the Front Door profile         |
 | custom_domain_validation_token | string | The validation token for the custom domain |
 
 #### Container Registry
