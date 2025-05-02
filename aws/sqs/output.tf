@@ -6,12 +6,20 @@ output "queue_name" {
   value = aws_sqs_queue.main.name
 }
 
+output "queue_url" {
+  value = aws_sqs_queue.main.url
+}
+
 output "dlq_arn" {
   value = var.dead_letter_queue_config == null ? null : aws_sqs_queue.dlq[0].arn
 }
 
 output "dlq_queue_name" {
   value = var.dead_letter_queue_config == null ? null : aws_sqs_queue.dlq[0].name
+}
+
+output "dlq_queue_url" {
+  value = var.dead_letter_queue_config == null ? null : aws_sqs_queue.dlq[0].url
 }
 
 output "topic_subscription_arn" {
