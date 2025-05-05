@@ -648,7 +648,7 @@ module "s3_log_bucket_policy" {
 |----------|--------------|---------------------------------------------------------|
 | policies | list(object) | List of policies that can be used in a policy statement |
 
-#### Auto Scaling group
+#### Auto Scaling Group
 
 ```hcl
 data "aws_availability_zones" "azs" {
@@ -724,7 +724,7 @@ module "auto-scaling-group" {
 
 | Variable                           | Type         | Description                                                                                                                                  | Required | Default                                                                   |
 |------------------------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------|----------|---------------------------------------------------------------------------|
-| name                               | string       | Name of the Auto Scaling group (ASG)                                                                                                         | yes      |                                                                           |
+| name                               | string       | Name of the Auto Scaling Group (ASG)                                                                                                         | yes      |                                                                           |
 | ami_id                             | string       | ID of AMI used in EC2 instances of ASG                                                                                                       | yes      |                                                                           |
 | instance_type                      | string       | Instance type used to deploy instances in ASG                                                                                                | yes      |                                                                           |
 | desired_capacity                   | number       | The number of EC2 instances that will be running in the ASG                                                                                  | no       | `1`                                                                       |
@@ -767,6 +767,8 @@ module "auto-scaling-group" {
 |--------------------------------|--------------|-----------------------------------------------------|
 | alb_dns                        | string       | DNS of the Application Load Balancer of the ASG     |
 | alb_zone_id                    | string       | Zone ID of the Application Load Balancer of the ASG |
+| asg_arn                        | string       | ARN of the ASG                                      |
+| asg_name                       | string       | Name of the ASG                                     |
 | nat_gateway_ips                | list(string) | Public IPs of the NAT gateways                      |
 | security_group_id              | string       | ID of the security group                            |
 | private_subnet_ids             | list(string) | IDs of the private subnets                          |
