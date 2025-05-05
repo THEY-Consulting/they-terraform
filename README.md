@@ -12,6 +12,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [RDS postgres database](#rds-postgres-database)
     - [Lambda](#lambda)
     - [SNS](#sns)
+    - [SQS](#sqs)
     - [API Gateway (REST)](#api-gateway-rest)
     - [S3 Bucket](#s3-bucket)
     - [S3 Log Bucket Policy](#s3-log-bucket-policy)
@@ -444,10 +445,13 @@ module "sqs" {
 | Output                 | Type   | Description                                                                  |
 | ---------------------- | ------ | ---------------------------------------------------------------------------- |
 | arn                    | string | The Amazon Resource Name (ARN) identifying your SQS                          |
-| queue_name             | string | The name of the SQS created                                                  |
+| queue_name             | string | The name of the SQS                                                          |
+| queue_url              | string | The URL of the SQS                                                           |
 | topic_subscription_arn | string | The Amazon Resource Name (ARN) of the topic your SQS is subscribed to        |
-| dlq_arn                | string | The Amazon Resource Name (ARN) of the dead letter queue created for your sqs |
+| dlq_arn                | string | The Amazon Resource Name (ARN) of the dead letter queue created for your SQS |
 | dlq_queue_name         | string | The name of the dead letter queue created for your SQS                       |
+| dlq_queue_url          | string | The URL of the dead letter queue created for your SQS                        |
+
 
 #### API Gateway (REST)
 
