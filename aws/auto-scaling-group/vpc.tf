@@ -1,5 +1,5 @@
 locals {
-  # The total maximum value of NAT Gateways is one NAT Gateway for each 
+  # The total maximum value of NAT Gateways is one NAT Gateway for each
   # availability zone.
   number_of_nat_gateways = var.multi_az_nat ? length(aws_subnet.instances_subnets) : 1
   vpc_id                 = var.vpc_id == null ? aws_vpc.vpc[0].id : var.vpc_id
@@ -30,7 +30,7 @@ resource "aws_subnet" "instances_subnets" {
   vpc_id                  = local.vpc_id
   cidr_block              = cidrsubnet(var.vpc_cidr_block, 4, count.index)
   availability_zone       = var.availability_zones[count.index]
-  map_public_ip_on_launch = var.public_subnets # Default is false. 
+  map_public_ip_on_launch = var.public_subnets # Default is false.
 
   tags = {
     Name = "${var.name}-private-${var.availability_zones[count.index]}"
