@@ -17,3 +17,7 @@ output "network_security_group_id" {
 output "vm_username" {
   value = var.vm_username
 }
+
+output "vm_id" {
+  value = azurerm_linux_virtual_machine.main[0].id
+}

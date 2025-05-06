@@ -1323,7 +1323,7 @@ module "vm" {
 ##### Inputs
 
 | Variable                              | Type         | Description                                                                                      | Required | Default                                                                                |
-| ------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------ | -------- | -------------------------------------------------------------------------------------- |
+|---------------------------------------|--------------|--------------------------------------------------------------------------------------------------|----------|----------------------------------------------------------------------------------------|
 | name                                  | string       | Name of the vm and related resources                                                             | yes      |                                                                                        |
 | resource_group_name                   | string       | The name of the resource group in which to create the resources                                  | yes      |                                                                                        |
 | vm_hostname                           | string       | Hostname of the vm                                                                               | no       | `var.name`                                                                             |
@@ -1364,12 +1364,13 @@ module "vm" {
 ##### Outputs
 
 | Output                    | Type   | Description                      |
-| ------------------------- | ------ | -------------------------------- |
+|---------------------------|--------|----------------------------------|
 | public_ip                 | string | Public ip if enabled             |
 | network_name              | string | Name of the network              |
 | subnet_id                 | string | Id of the subnet                 |
 | network_security_group_id | string | Id of the network security group |
 | vm_username               | string | Admin username                   |
+| vm_id                     | string | Id of the VM                     |
 
 #### Container Instances
 
