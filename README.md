@@ -1363,14 +1363,15 @@ module "vm" {
 
 ##### Outputs
 
-| Output                    | Type   | Description                      |
-|---------------------------|--------|----------------------------------|
-| public_ip                 | string | Public ip if enabled             |
-| network_name              | string | Name of the network              |
-| subnet_id                 | string | Id of the subnet                 |
-| network_security_group_id | string | Id of the network security group |
-| vm_username               | string | Admin username                   |
-| vm_id                     | string | Id of the VM                     |
+| Output                    | Type   | Description                        |
+|---------------------------|--------|------------------------------------|
+| public_ip                 | string | Public ip if enabled               |
+| network_name              | string | Name of the network                |
+| subnet_id                 | string | Id of the subnet                   |
+| network_security_group_id | string | Id of the network security group   |
+| vm_username               | string | Admin username                     |
+| vm_id                     | string | Id of the VM                       |
+| nsg_name                  | string | Name of the network security group |
 
 #### Container Instances
 

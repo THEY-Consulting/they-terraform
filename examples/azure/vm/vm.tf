@@ -31,6 +31,10 @@ output "vm_id" {
   value = module.vm.vm_id
 }
 
+output "nsg_name" {
+  value = module.vm.nsg_name
+}
+
 output "connect_instructions" {
   value = "Connect to your VM with: ssh -i ${path.cwd}/insecure-key ${module.vm.vm_username}@${module.vm.public_ip}"
 }
