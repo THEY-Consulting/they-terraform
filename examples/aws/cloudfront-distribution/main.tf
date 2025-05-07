@@ -56,3 +56,7 @@ output "hosted_zone_id" {
 output "domain" {
   value = local.domain
 }
+
+output "id" {
+  value = module.cloudfront_distribution.id
+}

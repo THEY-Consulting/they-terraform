@@ -9,3 +9,7 @@ output "hosted_zone_id" {
 output "arn" {
   value = aws_cloudfront_distribution.s3_distribution.arn
 }
+
+output "id" {
+  value = aws_cloudfront_distribution.s3_distribution.id
+}

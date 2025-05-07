@@ -812,10 +812,11 @@ module "cloudfront_distribution" {
 ##### Outputs
 
 | Output         | Type   | Description                                   |
-| -------------- | ------ | --------------------------------------------- |
+|----------------| ------ |-----------------------------------------------|
 | domain_name    | string | Domain name of the CloudFront distribution    |
 | hosted_zone_id | string | Hosted zone id of the CloudFront distribution |
 | arn            | string | ARN of the CloudFront distribution            |
+| id             | string | Id of the CloudFront distribution             |
 
 #### Azure OpenID role
 
