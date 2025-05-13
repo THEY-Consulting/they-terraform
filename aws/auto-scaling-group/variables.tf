@@ -120,6 +120,8 @@ variable "target_groups" {
     name              = string
     port              = number
     health_check_path = optional(string, "/")
+    path_patterns     = optional(list(string))
+    priority          = optional(number)
   }))
   default = []
 }

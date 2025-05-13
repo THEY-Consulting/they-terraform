@@ -68,6 +68,23 @@ resource "aws_lb_listener" "lb_listener_https" {
   }
 }
 
+resource "aws_lb_listener_rule" "https_listener_extra_rules" {
+  count        = var.target_groups[0].path_patterns != null ? length(var.target_groups) : 0
+  listener_arn = aws_lb_listener.lb_listener_https[0].arn
+  priority     = var.target_groups[count.index].priority
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.extra[count.index].arn
+  }
+
+  condition {
+    path_pattern {
+      values = var.target_groups[count.index].path_patterns
+    }
+  }
+}
+
 resource "aws_lb_target_group" "tg" {
   name     = var.name
   port     = 80
