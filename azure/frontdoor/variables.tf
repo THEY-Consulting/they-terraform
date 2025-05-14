@@ -32,3 +32,12 @@ variable "dns_zone_resource_group" {
   type        = string
   default     = null
 }
+
+variable "frontdoor_profile" {
+  description = "Existing Front Door profile to use instead of creating a new one. If not provided, a new profile will be created."
+  type = object({
+    id   = string
+    name = string
+  })
+  default = null
+}

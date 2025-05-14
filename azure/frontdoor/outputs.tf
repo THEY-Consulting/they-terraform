@@ -10,7 +10,7 @@ output "custom_domain_url" {
 
 output "cdn_frontdoor_profile_id" {
   description = "The ID of the Front Door profile"
-  value       = azurerm_cdn_frontdoor_profile.fqdn_profile.id
+  value       = local.frontdoor_profile_id
 }
 
 output "cdn_frontdoor_endpoint_id" {
@@ -25,5 +25,5 @@ output "custom_domain_validation_token" {
 
 output "cdn_frontdoor_name" {
   description = "The name of the Front Door profile"
-  value       = azurerm_cdn_frontdoor_profile.fqdn_profile.name
+  value       = local.frontdoor_profile_name
 }

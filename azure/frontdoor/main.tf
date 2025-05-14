@@ -5,25 +5,32 @@ locals {
 }
 
 resource "azurerm_cdn_frontdoor_profile" "fqdn_profile" {
+  count = var.frontdoor_profile == null ? 1 : 0
+
   name                     = "${terraform.workspace}-profile"
   resource_group_name      = var.resource_group.name
   response_timeout_seconds = 16
   sku_name                 = "Standard_AzureFrontDoor"
 }
 
+locals {
+  frontdoor_profile_id   = var.frontdoor_profile != null ? var.frontdoor_profile.id : azurerm_cdn_frontdoor_profile.fqdn_profile[0].id
+  frontdoor_profile_name = var.frontdoor_profile != null ? var.frontdoor_profile.name : azurerm_cdn_frontdoor_profile.fqdn_profile[0].name
+}
+
 resource "azurerm_cdn_frontdoor_endpoint" "web_endpoint" {
   name                     = "${terraform.workspace}-web-endpoint"
-  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.fqdn_profile.id
+  cdn_frontdoor_profile_id = local.frontdoor_profile_id
 }
 
 resource "azurerm_cdn_frontdoor_rule_set" "rule_set" {
   name                     = "${local.workspace}caching"
-  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.fqdn_profile.id
+  cdn_frontdoor_profile_id = local.frontdoor_profile_id
 }
 
 resource "azurerm_cdn_frontdoor_origin_group" "origin_group_web" {
   name                     = "frontdoor-origin-group-${terraform.workspace}-web"
-  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.fqdn_profile.id
+  cdn_frontdoor_profile_id = local.frontdoor_profile_id
 
   load_balancing {
     additional_latency_in_milliseconds = 0
@@ -81,7 +88,7 @@ resource "azurerm_cdn_frontdoor_rule" "cache_rule" {
 
 resource "azurerm_cdn_frontdoor_custom_domain" "custom_domain" {
   name                     = var.domain
-  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.fqdn_profile.id
+  cdn_frontdoor_profile_id = local.frontdoor_profile_id
   host_name                = local.full_domain_name
 
   tls {
