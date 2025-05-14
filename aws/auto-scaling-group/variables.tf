@@ -117,9 +117,11 @@ variable "health_check_path" {
 variable "target_groups" {
   description = "List of additional target groups to attach to the ASG instances and forward traffic to"
   type = list(object({
-    name              = string
-    port              = number
-    health_check_path = optional(string, "/")
+    name                                                    = string
+    port                                                    = number
+    health_check_path                                       = optional(string, "/")
+    path_patterns_forwarded_to_target_group_on_default_port = optional(list(string))
+    path_priority                                           = optional(number)
   }))
   default = []
 }
