@@ -70,7 +70,7 @@ resource "aws_lb_listener" "lb_listener_https" {
 
 resource "aws_lb_listener_rule" "https_listener_extra_rules" {
   for_each     = { for index, tg in var.target_groups : index => tg if tg.path_patterns_forwarded_to_target_group_on_default_port != null }
-  listener_arn = aws_lb_listener.lb_listener_https[0].arn
+  listener_arn = var.certificate_arn != null ? aws_lb_listener.lb_listener_https[0].arn : aws_lb_listener.lb_listener_only_http[0].arn
   priority     = each.value.path_priority
 
   action {
