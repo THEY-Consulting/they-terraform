@@ -69,18 +69,18 @@ resource "aws_lb_listener" "lb_listener_https" {
 }
 
 resource "aws_lb_listener_rule" "https_listener_extra_rules" {
-  count        = var.target_groups[0].path_patterns != null ? length(var.target_groups) : 0
+  for_each     = { for index, tg in var.target_groups : index => tg if tg.path_patterns_forwarded_to_target_group_on_default_port != null }
   listener_arn = aws_lb_listener.lb_listener_https[0].arn
-  priority     = var.target_groups[count.index].path_priority
+  priority     = each.value.path_priority
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.extra[count.index].arn
+    target_group_arn = aws_lb_target_group.extra[each.key].arn
   }
 
   condition {
     path_pattern {
-      values = var.target_groups[count.index].path_patterns
+      values = each.value.path_patterns_forwarded_to_target_group_on_default_port
     }
   }
 }
