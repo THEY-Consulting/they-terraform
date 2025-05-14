@@ -121,7 +121,7 @@ variable "target_groups" {
     port              = number
     health_check_path = optional(string, "/")
     path_patterns     = optional(list(string))
-    priority          = optional(number)
+    path_priority     = optional(number)
   }))
   default = []
 }
