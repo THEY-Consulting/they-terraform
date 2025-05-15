@@ -20,7 +20,7 @@ resource "terraform_data" "validate_inputs" {
   lifecycle {
     precondition {
       condition     = local.input_validation
-      error_message = "You must provide exactly one of 'web', 'backend', or 'storage_account' (deprecated) blocks."
+      error_message = "You must provide exactly one of 'web' or 'backend'"
     }
   }
 }
