@@ -1518,7 +1518,83 @@ module "container-apps" {
       cors_enabled          = true
       cors_allowed_origins  = "https://my-allowed-origin.com"
       ingress = {
-        allow_i
+        allow_insecure_connections = true
+        external_enabled           = true
+        target_port                = 81
+        traffic_weight = {
+          latest_revision = true
+          percentage      = 100
+        }
+      }
+      registry = [{
+        server               = "test.azurecr.io"
+        username             = "User"
+        password_secret_name = "registry-secret"
+      }]
+      secret = {
+        name  = "registry-secret"
+        value = "Password"
+      }
+      template = {
+        max_replicas = 3
+        min_replicas = 1
+        containers = [
+          {
+            name   = "backend-test"
+            image  = "test.azurecr.io/backend-test:latest"
+            cpu    = "0.5"
+            memory = "1.0Gi"
+          }
+        ]
+      }
+    },
+    frontend = {
+      name          = "frontend"
+      revision_mode = "Single"
+      subdomain     = "test-frontend"
+      ingress = {
+        allow_insecure_connections = true
+        external_enabled           = true
+        target_port                = 3000
+        traffic_weight = {
+          latest_revision = true
+          percentage      = 100
+        }
+      }
+      registry = [{
+        server               = "test.azurecr.io"
+        username             = "Username"
+        password_secret_name = "registry-secret"
+      }]
+      secret = {
+        name  = "registry-secret"
+        value = "Password"
+      }
+      template = {
+        max_replicas = 3
+        min_replicas = 1
+        containers = [
+          {
+            name   = "frontend-test"
+            image  = "test.azurecr.io/frontend-test:latest"
+            cpu    = "2.0"
+            memory = "4.0Gi"
+            env = [
+              {
+                name  = "ENV_BASE_URL"
+                value = "http://example.com"
+              },
+              {
+                name  = "ENV_2"
+                value = "ANOTHER_ENV_VAR_VALUE"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
 ```
 
 ##### Inputs
@@ -2003,7 +2079,7 @@ terraform apply
 ```
 
 The resources used to manage the state of the resources deployed within the `examples` folder can be found at `examples/.setup-tfstate`.
-If you want to setup your own Terraform state management system, remove any `.terraform.lock.hcl` files within the `examples` folder, and deploy the resources at `examples/.setup-tfstate/` in your own AWS account.
+If you want to set up your own Terraform state management system, remove any `.terraform.lock.hcl` files within the `examples` folder, and deploy the resources at `examples/.setup-tfstate/` in your own AWS account.
 
 #### Clean-up
 
