@@ -127,12 +127,12 @@ module "frontdoor_backend" {
 
   # Backend configuration for API service
   backend = {
-    host                          = azurerm_public_ip.mock_backend.ip_address
-    host_header                   = azurerm_public_ip.mock_backend.ip_address
+    host                           = azurerm_public_ip.mock_backend.ip_address
+    host_header                    = azurerm_public_ip.mock_backend.ip_address
     certificate_name_check_enabled = false
-    forwarding_protocol           = "HttpOnly"
-    http_port                     = 80
-    https_port                    = 443
+    forwarding_protocol            = "HttpOnly"
+    http_port                      = 80
+    https_port                     = 443
     health_probe = {
       path         = "/"
       interval     = 120
