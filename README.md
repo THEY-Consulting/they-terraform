@@ -1531,7 +1531,6 @@ module "container-apps" {
         username             = "User"
         password_secret_name = "registry-secret"
       }]
-
       secret = {
         name  = "registry-secret"
         value = "Password"
@@ -1567,7 +1566,6 @@ module "container-apps" {
         username             = "Username"
         password_secret_name = "registry-secret"
       }]
-
       secret = {
         name  = "registry-secret"
         value = "Password"
@@ -1775,40 +1773,130 @@ module "diagnostics" {
 #### Front Door
 
 ```hcl
-module "frontdoor" {
+#### Front Door
+# Create a shared Front Door profile (optional)
+resource "azurerm_cdn_frontdoor_profile" "shared_profile" {
+  name                     = "shared-frontdoor-profile"
+  resource_group_name      = "my-resource-group"
+  response_timeout_seconds = 16
+  sku_name                 = "Standard_AzureFrontDoor"
+}
+
+# Web example (static website hosting)
+module "frontdoor_web" {
   source = "github.com/THEY-Consulting/they-terraform//azure/frontdoor"
 
   resource_group = {
-    name     = "they-dev"
+    name     = "my-resource-group"
     location = "Germany West Central"
   }
 
-  storage_account = {
-    primary_web_host = "yourwebstorage.z6.web.core.windows.net"
+  # Optional: Use shared profile instead of creating a new one
+  frontdoor_profile = {
+    id   = azurerm_cdn_frontdoor_profile.shared_profile.id
+    name = azurerm_cdn_frontdoor_profile.shared_profile.name
   }
 
-  domain = "example"
-  subdomain = "www"
+  # Web-specific configuration for static website hosting
+  web = {
+    primary_web_host = "mystorageaccount.z6.web.core.windows.net"
+  }
 
+  # Domain configuration
+  domain    = "example"
+  subdomain = "www"
+  
   # DNS zone configuration - if you have an existing DNS zone
-  dns_zone_name = "example.com"
-  dns_zone_resource_group = "they-dev"
+  dns_zone_name           = "example.com"
+  dns_zone_resource_group = "my-dns-resource-group"
+  
+  # Cache settings (optional)
+  cache_settings = {
+    query_string_caching_behavior = "IgnoreQueryString"
+    compression_enabled           = true
+    content_types_to_compress     = ["text/html", "text/css", "application/javascript"]
+  }
+}
+
+# Backend API example
+module "frontdoor_backend" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/frontdoor"
+
+  resource_group = {
+    name     = "my-resource-group"
+    location = "Germany West Central"
+  }
+
+  # Optional: Use shared profile instead of creating a new one
+  frontdoor_profile = {
+    id   = azurerm_cdn_frontdoor_profile.shared_profile.id
+    name = azurerm_cdn_frontdoor_profile.shared_profile.name
+  }
+
+  # Backend-specific configuration for APIs
+  backend = {
+    host                          = "10.0.0.1"  # VM public IP or other backend host
+    host_header                   = "api.example.com"
+    certificate_name_check_enabled = false
+    forwarding_protocol           = "HttpOnly"
+    http_port                     = 80
+    https_port                    = 443
+    health_probe = {
+      path         = "/health"
+      interval     = 120
+      protocol     = "Http"
+      request_type = "GET"
+    }
+  }
+
+  # Domain configuration
+  domain    = "example"
+  subdomain = "api"
+  
+  # DNS zone configuration
+  dns_zone_name           = "example.com"
+  dns_zone_resource_group = "my-dns-resource-group"
+  
+  # Cache settings for API (minimal caching)
+  cache_settings = {
+    query_string_caching_behavior = "IgnoreQueryString"
+    compression_enabled           = true
+    content_types_to_compress     = ["application/json", "text/plain"]
+  }
 }
 ```
 
 ##### Inputs
 
-| Variable                         | Type   | Description                                                                                       | Required | Default |
-|----------------------------------|--------|---------------------------------------------------------------------------------------------------|----------|---------|
-| resource_group                   | object | The resource group where the Front Door resources will be created                                 | yes      |         |
-| resource_group.name              | string | The name of the resource group                                                                    | yes      |         |
-| resource_group.location          | string | The location of the resource group                                                                | yes      |         |
-| storage_account                  | object | The storage account configuration                                                                 | yes      |         |
-| storage_account.primary_web_host | string | Primary web host of the storage account                                                           | yes      |         |
-| domain                           | string | The base domain name (without the subdomain part)                                                 | yes      |         |
-| subdomain                        | string | The subdomain to use (e.g., 'www' for www.example.com)                                            | no       | `"www"` |
-| dns_zone_name                    | string | The name of the DNS zone where the CNAME and TXT validation records will be created               | no       | `null`  |
-| dns_zone_resource_group          | string | The resource group containing the DNS zone. Defaults to the same resource group as the Front Door | no       | `null`  |
+| Variable                                     | Type         | Description                                                                                       | Required | Default                                                                               |
+|----------------------------------------------|--------------|---------------------------------------------------------------------------------------------------|----------|---------------------------------------------------------------------------------------|
+| resource_group                               | object       | The resource group where the Front Door resources will be created                                 | yes      |                                                                                       |
+| resource_group.name                          | string       | The name of the resource group                                                                    | yes      |                                                                                       |
+| resource_group.location                      | string       | The location of the resource group                                                                | yes      |                                                                                       |
+| frontdoor_profile                            | object       | Existing Front Door profile to use instead of creating a new one                                  | no       | `null`                                                                                |
+| frontdoor_profile.id                         | string       | The ID of the existing Front Door profile                                                         | (yes)    |                                                                                       |
+| frontdoor_profile.name                       | string       | The name of the existing Front Door profile                                                       | (yes)    |                                                                                       |
+| web                                          | object       | Configuration for web/frontend usage with storage account. Use this for static website hosting    | no*      | `null`                                                                                |
+| web.primary_web_host                         | string       | Primary web host of the storage account                                                           | (yes)    |                                                                                       |
+| backend                                      | object       | Configuration for backend API services                                                            | no*      | `null`                                                                                |
+| backend.host                                 | string       | Backend host (VM IP, App Service, etc.)                                                           | (yes)    |                                                                                       |
+| backend.host_header                          | string       | Host header to send to the backend                                                                | no       | Value of backend.host                                                                 |
+| backend.certificate_name_check_enabled       | bool         | Whether to check the certificate name                                                             | no       | `false`                                                                               |
+| backend.forwarding_protocol                  | string       | Protocol to use when forwarding requests to the backend                                           | no       | `"HttpOnly"`                                                                          |
+| backend.http_port                            | number       | HTTP port for the backend                                                                         | no       | `80`                                                                                  |
+| backend.https_port                           | number       | HTTPS port for the backend                                                                        | no       | `443`                                                                                 |
+| backend.health_probe                         | object       | Health probe configuration for the backend                                                        | no       | `{ path = "/", interval = 120, protocol = "Http", request_type = "GET" }`             |
+| storage_account.primary_web_host             | string       | Primary web host of the storage account                                                           | (yes)    |                                                                                       |
+| domain                                       | string       | The base domain name (without the subdomain part)                                                 | yes      |                                                                                       |
+| subdomain                                    | string       | The subdomain to use (e.g., 'www' for www.example.com)                                            | no       | `"www"`                                                                               |
+| dns_zone_name                                | string       | The name of the DNS zone where the CNAME and TXT validation records will be created               | no       | `null`                                                                                |
+| dns_zone_resource_group                      | string       | The resource group containing the DNS zone. Defaults to the same resource group as the Front Door | no       | `null`                                                                                |
+| cache_settings                               | object       | Cache settings for the Front Door                                                                 | no       | `{ query_string_caching_behavior = "IgnoreQueryString", compression_enabled = true }` |
+| cache_settings.query_string_caching_behavior | string       | Query string caching behavior                                                                     | no       | `"IgnoreQueryString"`                                                                 |
+| cache_settings.compression_enabled           | bool         | Whether compression is enabled                                                                    | no       | `true`                                                                                |
+| cache_settings.content_types_to_compress     | list(string) | Content types to compress                                                                         | no       | `["application/json", "text/plain", "text/css", "application/javascript"]`            |
+
+*You must provide exactly one of `web` or `backend`
 
 ##### Outputs
 
@@ -1818,8 +1906,11 @@ module "frontdoor" {
 | custom_domain_url              | string | The URL of the custom domain               |
 | cdn_frontdoor_profile_id       | string | The ID of the Front Door profile           |
 | cdn_frontdoor_endpoint_id      | string | The ID of the Front Door endpoint          |
-| cdn_frontdoor_name             | string | The Name of the Front Door profile         |
+| cdn_frontdoor_name             | string | The name of the Front Door profile         |
 | custom_domain_validation_token | string | The validation token for the custom domain |
+| endpoint_host_name             | string | The host name of the Front Door endpoint   |
+| route_id                       | string | The ID of the Front Door route             |
+| route                          | object | The Front Door route resource              |
 
 #### Container Registry
 
@@ -1988,7 +2079,7 @@ terraform apply
 ```
 
 The resources used to manage the state of the resources deployed within the `examples` folder can be found at `examples/.setup-tfstate`.
-If you want to setup your own Terraform state management system, remove any `.terraform.lock.hcl` files within the `examples` folder, and deploy the resources at `examples/.setup-tfstate/` in your own AWS account.
+If you want to set up your own Terraform state management system, remove any `.terraform.lock.hcl` files within the `examples` folder, and deploy the resources at `examples/.setup-tfstate/` in your own AWS account.
 
 #### Clean-up
 
