@@ -18,6 +18,11 @@ output "cdn_frontdoor_endpoint_id" {
   value       = azurerm_cdn_frontdoor_endpoint.endpoint.id
 }
 
+output "cdn_frontdoor_endpoint_name" {
+  description = "The name of the Front Door endpoint"
+  value       = azurerm_cdn_frontdoor_endpoint.endpoint.name
+}
+
 output "custom_domain_validation_token" {
   description = "The validation token for the custom domain"
   value       = azurerm_cdn_frontdoor_custom_domain.custom_domain.validation_token

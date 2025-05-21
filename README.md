@@ -1905,8 +1905,9 @@ module "frontdoor_backend" {
 | endpoint_url                   | string | The URL of the Front Door endpoint         |
 | custom_domain_url              | string | The URL of the custom domain               |
 | cdn_frontdoor_profile_id       | string | The ID of the Front Door profile           |
-| cdn_frontdoor_endpoint_id      | string | The ID of the Front Door endpoint          |
 | cdn_frontdoor_name             | string | The name of the Front Door profile         |
+| cdn_frontdoor_endpoint_id      | string | The ID of the Front Door endpoint          |
+| cdn_frontdoor_endpoint_name    | string | The name of the Front Door endpoint        |
 | custom_domain_validation_token | string | The validation token for the custom domain |
 | endpoint_host_name             | string | The host name of the Front Door endpoint   |
 | route_id                       | string | The ID of the Front Door route             |
