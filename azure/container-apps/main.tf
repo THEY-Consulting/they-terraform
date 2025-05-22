@@ -56,11 +56,13 @@ resource "azurerm_container_app" "container_app" {
   }
 
   dynamic "secret" {
-    for_each = each.value.secret == null ? [] : [each.value.secret]
+    for_each = each.value.secret == null ? [] : each.value.secret
 
     content {
-      name  = secret.value.name
-      value = secret.value.value
+      name                = secret.value.name
+      value               = secret.value.value
+      key_vault_secret_id = secret.value.key_vault_secret_id
+      identity            = secret.value.identity
     }
   }
   template {

@@ -147,12 +147,12 @@ variable "container_apps" {
       identity_ids = optional(list(string))
     }))
 
-    secret = optional(object({
-      #TODO: do we need the key_vault attributes here? 
-      # see https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/container_app#secret
-      name  = string
-      value = string
-    }))
+    secret = optional(list(object({
+      name                = string
+      value               = optional(string)
+      key_vault_secret_id = optional(string)
+      identity            = optional(string)
+    })))
 
     registry = optional(list(object({
       server               = string
