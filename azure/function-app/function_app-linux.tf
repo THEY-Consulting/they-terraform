@@ -1,7 +1,7 @@
 resource "azurerm_linux_function_app" "function_app" {
   count = var.runtime.os == "linux" ? 1 : 0
 
-  name                = "${var.name}-linux-function-app"
+  name                = local.name
   resource_group_name = var.resource_group_name
   location            = var.location
 
@@ -29,6 +29,10 @@ resource "azurerm_linux_function_app" "function_app" {
     },
     var.environment
   )
+
+  // This is used to configure the AzureWebJobsDashboard setting.
+  // Since it is deprecated, we disable it
+  builtin_logging_enabled = false
 
   dynamic "identity" {
     for_each = var.identity != null ? [var.identity] : []
@@ -81,6 +85,14 @@ resource "azurerm_linux_function_app" "function_app" {
       content {
         python_version = application_stack.value.version
       }
+    }
+
+    # required to be able to trigger the function app from the portal
+    cors {
+      allowed_origins = [
+        "https://portal.azure.com",
+      ]
+      support_credentials = false
     }
   }
 

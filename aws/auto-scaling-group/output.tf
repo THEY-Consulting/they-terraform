@@ -27,3 +27,21 @@ output "public_subnet_ids" {
   description = "IDs of the public subnets."
   value       = aws_subnet.alb_public_subnets.*.id
 }
+
+output "private_subnet_route_table_ids" {
+  description = "IDs of the route tables for the private subnets."
+  value       = aws_route_table.rt_private_subnets.*.id
+}
+
+output "vpc_id" {
+  description = "ID of the VPC."
+  value       = local.vpc_id
+}
+
+output "asg_arn" {
+  value = aws_autoscaling_group.asg.arn
+}
+
+output "asg_name" {
+  value = aws_autoscaling_group.asg.name
+}

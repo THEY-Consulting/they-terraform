@@ -6,8 +6,17 @@ resource "aws_lb" "lb" {
   subnets            = aws_subnet.alb_public_subnets[*].id
   internal           = false # False for internet-facing ALBs.
 
+  dynamic "access_logs" {
+    for_each = var.access_logs != null ? [var.access_logs] : []
+    content {
+      bucket  = access_logs.value["bucket"]
+      prefix  = "${access_logs.value["prefix"]}/${var.name}-lb-access-logs"
+      enabled = true
+    }
+  }
+
   tags = merge(var.tags,
-  { Name = "${var.name}" })
+  { Name = var.name })
 }
 
 resource "aws_lb_listener" "lb_listener_only_http" {
@@ -56,6 +65,23 @@ resource "aws_lb_listener" "lb_listener_https" {
   default_action {
     type             = "forward"
     target_group_arn = var.loadbalancer_disabled ? null : aws_lb_target_group.tg.arn
+  }
+}
+
+resource "aws_lb_listener_rule" "https_listener_extra_rules" {
+  for_each     = { for index, tg in var.target_groups : index => tg if tg.path_patterns_forwarded_to_target_group_on_default_port != null }
+  listener_arn = var.certificate_arn != null ? aws_lb_listener.lb_listener_https[0].arn : aws_lb_listener.lb_listener_only_http[0].arn
+  priority     = each.value.path_priority
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.extra[each.key].arn
+  }
+
+  condition {
+    path_pattern {
+      values = each.value.path_patterns_forwarded_to_target_group_on_default_port
+    }
   }
 }
 

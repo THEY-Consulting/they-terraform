@@ -1,13 +1,14 @@
 data "aws_region" "current" {}
 
 data "aws_route53_zone" "main" {
-  name = local.root_domain
+  count = var.attach_domain ? 1 : 0
+  name  = local.root_domain
 }
 
 resource "aws_route53_record" "frontend" {
   count = var.attach_domain ? 1 : 0
 
-  zone_id = data.aws_route53_zone.main.zone_id
+  zone_id = data.aws_route53_zone.main[0].zone_id
   name    = local.domain_without_protocol
   type    = "A"
 

@@ -1,3 +1,8 @@
+locals {
+  function_app = var.runtime.os == "windows" ? azurerm_windows_function_app.function_app[0] : azurerm_linux_function_app.function_app[0]
+  name         = var.runtime.os == "windows" ? "${var.name}-windows-function-app" : "${var.name}-linux-function-app"
+}
+
 variable "name" {
   description = "Name of the function app."
   type        = string
@@ -12,7 +17,7 @@ variable "runtime" {
   })
   default = {
     name    = "node"
-    version = "~18"
+    version = "~20"
     os      = "windows"
   }
 
@@ -129,6 +134,16 @@ variable "identity" {
 variable "assign_system_identity" {
   description = "If true, a system identity will be assigned to the function app."
   default     = false
+}
+
+variable "diagnostics" {
+  description = "If set, function app logs will be sent to the event hub."
+  type = object({
+    eventhub                          = string
+    namespace                         = string
+    namespace_authorization_rule_name = string
+  })
+  default = null
 }
 
 variable "tags" {

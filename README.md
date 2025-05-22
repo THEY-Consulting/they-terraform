@@ -12,8 +12,10 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [RDS postgres database](#rds-postgres-database)
     - [Lambda](#lambda)
     - [SNS](#sns)
+    - [SQS](#sqs)
     - [API Gateway (REST)](#api-gateway-rest)
     - [S3 Bucket](#s3-bucket)
+    - [S3 Log Bucket Policy](#s3-log-bucket-policy)
     - [Auto Scaling group](#auto-scaling-group)
     - [CloudFront Distribution](#cloudfront-distribution)
     - [Azure OpenID role](#azure-openid-role)
@@ -25,6 +27,9 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [MSSQL Database](#mssql-database)
     - [VM](#vm)
     - [Container Instances](#container-instances)
+    - [Datadog Diagnostics](#datadog-diagnostics)
+    - [Frontdoor](#front-door)
+    - [Container Registry](#container-registry)
 - [Contributing](#contributing)
   - [Prerequisites](#prerequisites-1)
   - [Environment Variables](#environment-variables)
@@ -440,10 +445,12 @@ module "sqs" {
 | Output                 | Type   | Description                                                                  |
 | ---------------------- | ------ | ---------------------------------------------------------------------------- |
 | arn                    | string | The Amazon Resource Name (ARN) identifying your SQS                          |
-| queue_name             | string | The name of the SQS created                                                  |
+| queue_name             | string | The name of the SQS                                                          |
+| queue_url              | string | The URL of the SQS                                                           |
 | topic_subscription_arn | string | The Amazon Resource Name (ARN) of the topic your SQS is subscribed to        |
-| dlq_arn                | string | The Amazon Resource Name (ARN) of the dead letter queue created for your sqs |
+| dlq_arn                | string | The Amazon Resource Name (ARN) of the dead letter queue created for your SQS |
 | dlq_queue_name         | string | The name of the dead letter queue created for your SQS                       |
+| dlq_queue_url          | string | The URL of the dead letter queue created for your SQS                        |
 
 #### API Gateway (REST)
 
@@ -618,7 +625,29 @@ module "s3_bucket" {
 | arn        | string | ARN of the s3 bucket           |
 | versioning | string | ID of the s3 bucket versioning |
 
-#### Auto Scaling group
+#### S3 Log Bucket Policy
+
+```hcl
+module "s3_log_bucket_policy" {
+  source = "github.com/THEY-Consulting/they-terraform//aws/s3-bucket/log-bucket-policy"
+
+  bucket_name = "my-bucket"
+}
+```
+
+##### Inputs
+
+| Variable | Type   | Description        | Required | Default |
+| -------- | ------ | ------------------ | -------- | ------- |
+| name     | string | Name of the bucket | yes      |         |
+
+##### Outputs
+
+| Output   | Type         | Description                                             |
+| -------- | ------------ | ------------------------------------------------------- |
+| policies | list(object) | List of policies that can be used in a policy statement |
+
+#### Auto Scaling Group
 
 ```hcl
 data "aws_availability_zones" "azs" {
@@ -659,6 +688,8 @@ module "auto-scaling-group" {
     name = "api"
     port = 8080
     health_check_path = "/health"
+    path_priority = 100
+    path_patterns_forwarded_to_target_group_on_default_port = tolist(["/api/*", "/v1"])
   }]
   policies = [{
     name = "ecr_pull"
@@ -682,58 +713,71 @@ module "auto-scaling-group" {
   multi_az_nat = true
   manual_lifecycle = false
   manual_lifecycle_timeout = 300
+  access_logs = {
+    bucket = "they-test-logs"
+    prefix = "asg-logs"
+  }
 }
 
 ```
 
 ##### Inputs
 
-| Variable                           | Type         | Description                                                                                                                                  | Required | Default                                                                   |
-| ---------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------- |
-| name                               | string       | Name of the Auto Scaling group (ASG)                                                                                                         | yes      |                                                                           |
-| ami_id                             | string       | ID of AMI used in EC2 instances of ASG                                                                                                       | yes      |                                                                           |
-| instance_type                      | string       | Instance type used to deploy instances in ASG                                                                                                | yes      |                                                                           |
-| desired_capacity                   | number       | The number of EC2 instances that will be running in the ASG                                                                                  | no       | `1`                                                                       |
-| min_size                           | number       | The minimum number of EC2 instances in the ASG                                                                                               | no       | `1`                                                                       |
-| max_size                           | number       | The maximum number of EC2 instances in the ASG                                                                                               | no       | `1`                                                                       |
-| min_instance_storage_size_in_gb    | number       | The storage size of the root EBS volume of the deployed EC2 instances                                                                        | no       | The storage AWS automatically allocates for your instance type by default |
-| key_name                           | string       | Name of key pair used for the instances                                                                                                      | no       | `null`                                                                    |
-| user_data_file_name                | string       | The name of the local file in the working directory with the user data used in the instances of the ASG                                      | no       | `null`                                                                    |
-| user_data                          | string       | User data to provide when launching instances of ASG. Use this to provide plain text instead of user_data_file_name                          | no       | `null`                                                                    |
-| availability_zones                 | list(string) | List of availability zones (AZs) names. A subnet is created for every AZ and the ASG instances are deployed across the different AZs         | yes      |                                                                           |
-| single_availability_zone           | bool         | Specify true to deploy all ASG instances in the same zone. Otherwise, the ASG will be deployed across multiple availability zones            | no       | `false`                                                                   |
-| vpc_id                             | string       | ID of VPC where the ASG will be deployed. If not provided, a new VPC will be created.                                                        | no       | `null`                                                                    |
-| vpc_cidr_block                     | string       | The CIDR block of private IP addresses of the VPC. The subnets will be located within this CIDR block.                                       | no       | `"10.0.0.0/16"`                                                           |
-| public_subnets                     | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                                     | no       | `false`                                                                   |
-| certificate_arn                    | string       | ARN of certificate used to setup HTTPs in Application Load Balancer                                                                          | no       | `null`                                                                    |
-| tags                               | map(string)  | Additional tags for the components of this module                                                                                            | no       | `{}`                                                                      |
-| health_check_path                  | string       | Destination for the health check request                                                                                                     | no       | `"/"`                                                                     |
-| target_groups                      | list(object) | List of additional target groups to attach to the ASG instances and forward traffic to                                                       | no       | `[]`                                                                      |
-| target_groups.\*.name              | string       | Name of the target group                                                                                                                     | (yes)    |                                                                           |
-| target_groups.\*.port              | number       | Port of the target group                                                                                                                     | (yes)    |                                                                           |
-| target_groups.\*.health_check_path | string       | Destination for the health check request for the target group                                                                                | no       | `"/"`                                                                     |
-| policies                           | list(object) | List of policies to attach to the ASG instances via IAM Instance Profile                                                                     | no       | `[]`                                                                      |
-| policies.\*.name                   | string       | Name of the inline policy                                                                                                                    | yes      |                                                                           |
-| policies.\*.policy                 | string       | Policy document as a JSON formatted string                                                                                                   | yes      |                                                                           |
-| permissions_boundary_arn           | string       | ARN of the permissions boundary to attach to the IAM Instance Profile                                                                        | no       | `null`                                                                    |
-| allow_all_outbound                 | bool         | Allow all outbound traffic from instances                                                                                                    | no       | `false`                                                                   |
-| allow_ssh_inbound                  | bool         | Allow ssh inbound traffic from outside the VPC                                                                                               | no       | `false`                                                                   |
-| health_check_type                  | string       | Controls how the health check for the EC2 instances under the ASG is done                                                                    | no       | `"ELB"`                                                                   |
-| multi_az_nat                       | bool         | Specify true to deploy a NAT Gateway in each availability zone (AZ) of the deployment. Otherwise, only a single NAT Gateway will be deployed | no       | `false`                                                                   |
-| loadbalancer_disabled              | bool         | Specify true to use the ASG without an ELB. By default, an ELB will be used                                                                  | no       | `false`                                                                   |
-| manual_lifecycle                   | bool         | Specify true to force the asg to wait until lifecycle actions are completed before adding instances to the load balancer                     | no       | `false`                                                                   |
-| manual_lifecycle_timeout           | number       | The maximum time, in seconds, that an instance can remain in a Pending:Wait state                                                            | no       | `null`                                                                    |
+| Variable                                                                 | Type         | Description                                                                                                                                                             | Required | Default                                                                   |
+| ------------------------------------------------------------------------ | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------- |
+| name                                                                     | string       | Name of the Auto Scaling Group (ASG)                                                                                                                                    | yes      |                                                                           |
+| ami_id                                                                   | string       | ID of AMI used in EC2 instances of ASG                                                                                                                                  | yes      |                                                                           |
+| instance_type                                                            | string       | Instance type used to deploy instances in ASG                                                                                                                           | yes      |                                                                           |
+| desired_capacity                                                         | number       | The number of EC2 instances that will be running in the ASG                                                                                                             | no       | `1`                                                                       |
+| min_size                                                                 | number       | The minimum number of EC2 instances in the ASG                                                                                                                          | no       | `1`                                                                       |
+| max_size                                                                 | number       | The maximum number of EC2 instances in the ASG                                                                                                                          | no       | `1`                                                                       |
+| min_instance_storage_size_in_gb                                          | number       | The storage size of the root EBS volume of the deployed EC2 instances                                                                                                   | no       | The storage AWS automatically allocates for your instance type by default |
+| key_name                                                                 | string       | Name of key pair used for the instances                                                                                                                                 | no       | `null`                                                                    |
+| user_data_file_name                                                      | string       | The name of the local file in the working directory with the user data used in the instances of the ASG                                                                 | no       | `null`                                                                    |
+| user_data                                                                | string       | User data to provide when launching instances of ASG. Use this to provide plain text instead of user_data_file_name                                                     | no       | `null`                                                                    |
+| availability_zones                                                       | list(string) | List of availability zones (AZs) names. A subnet is created for every AZ and the ASG instances are deployed across the different AZs                                    | yes      |                                                                           |
+| single_availability_zone                                                 | bool         | Specify true to deploy all ASG instances in the same zone. Otherwise, the ASG will be deployed across multiple availability zones                                       | no       | `false`                                                                   |
+| vpc_id                                                                   | string       | ID of VPC where the ASG will be deployed. If not provided, a new VPC will be created.                                                                                   | no       | `null`                                                                    |
+| vpc_cidr_block                                                           | string       | The CIDR block of private IP addresses of the VPC. The subnets will be located within this CIDR block.                                                                  | no       | `"10.0.0.0/16"`                                                           |
+| public_subnets                                                           | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                                                                | no       | `false`                                                                   |
+| certificate_arn                                                          | string       | ARN of certificate used to setup HTTPs in Application Load Balancer                                                                                                     | no       | `null`                                                                    |
+| tags                                                                     | map(string)  | Additional tags for the components of this module                                                                                                                       | no       | `{}`                                                                      |
+| health_check_path                                                        | string       | Destination for the health check request                                                                                                                                | no       | `"/"`                                                                     |
+| target_groups                                                            | list(object) | List of additional target groups to attach to the ASG instances and forward traffic to                                                                                  | no       | `[]`                                                                      |
+| target_groups.\*.name                                                    | string       | Name of the target group                                                                                                                                                | (yes)    |                                                                           |
+| target_groups.\*.port                                                    | number       | Port of the target group                                                                                                                                                | (yes)    |                                                                           |
+| target_groups.\*.health_check_path                                       | string       | Destination for the health check request for the target group                                                                                                           | no       | `"/"`                                                                     |
+| target_groups.\*.path_patterns_forwarded_to_target_group_on_default_port | list(string) | URL path patterns on default port (HTTPs or HTTP) that will be forwarded to the target group                                                                            | no       | `null`                                                                    |
+| target_groups.\*.path_priority                                           | number       | The priority for the rule between 1 and 50000. Leaving it unset will automatically set the rule with next available priority after the currently existing highest rule. | no       | `null`                                                                    |
+| policies                                                                 | list(object) | List of policies to attach to the ASG instances via IAM Instance Profile                                                                                                | no       | `[]`                                                                      |
+| policies.\*.name                                                         | string       | Name of the inline policy                                                                                                                                               | yes      |                                                                           |
+| policies.\*.policy                                                       | string       | Policy document as a JSON formatted string                                                                                                                              | yes      |                                                                           |
+| permissions_boundary_arn                                                 | string       | ARN of the permissions boundary to attach to the IAM Instance Profile                                                                                                   | no       | `null`                                                                    |
+| allow_all_outbound                                                       | bool         | Allow all outbound traffic from instances                                                                                                                               | no       | `false`                                                                   |
+| allow_ssh_inbound                                                        | bool         | Allow ssh inbound traffic from outside the VPC                                                                                                                          | no       | `false`                                                                   |
+| health_check_type                                                        | string       | Controls how the health check for the EC2 instances under the ASG is done                                                                                               | no       | `"ELB"`                                                                   |
+| multi_az_nat                                                             | bool         | Specify true to deploy a NAT Gateway in each availability zone (AZ) of the deployment. Otherwise, only a single NAT Gateway will be deployed                            | no       | `false`                                                                   |
+| loadbalancer_disabled                                                    | bool         | Specify true to use the ASG without an ELB. By default, an ELB will be used                                                                                             | no       | `false`                                                                   |
+| manual_lifecycle                                                         | bool         | Specify true to force the asg to wait until lifecycle actions are completed before adding instances to the load balancer                                                | no       | `false`                                                                   |
+| manual_lifecycle_timeout                                                 | number       | The maximum time, in seconds, that an instance can remain in a Pending:Wait state                                                                                       | no       | `null`                                                                    |
+| access_logs                                                              | object       | Enables access logs                                                                                                                                                     | no       | `null`                                                                    |
+| access_logs.bucket                                                       | string       | Name of the bucket where the access logs are stored                                                                                                                     | (yes)    |                                                                           |
+| access_logs.prefix                                                       | string       | Prefix for access logs within the s3 bucket, use this to set the folder within the bucket                                                                               | (yes)    |                                                                           |
 
 ##### Outputs
 
-| Output             | Type         | Description                                         |
-| ------------------ | ------------ | --------------------------------------------------- |
-| alb_dns            | string       | DNS of the Application Load Balancer of the ASG     |
-| alb_zone_id        | string       | Zone ID of the Application Load Balancer of the ASG |
-| nat_gateway_ips    | list(string) | Public IPs of the NAT gateways                      |
-| security_group_id  | string       | ID of the security group                            |
-| private_subnet_ids | list(string) | IDs of the private subnets                          |
-| public_subnet_ids  | list(string) | IDs of the public subnets                           |
+| Output                         | Type         | Description                                         |
+| ------------------------------ | ------------ | --------------------------------------------------- |
+| alb_dns                        | string       | DNS of the Application Load Balancer of the ASG     |
+| alb_zone_id                    | string       | Zone ID of the Application Load Balancer of the ASG |
+| asg_arn                        | string       | ARN of the ASG                                      |
+| asg_name                       | string       | Name of the ASG                                     |
+| nat_gateway_ips                | list(string) | Public IPs of the NAT gateways                      |
+| security_group_id              | string       | ID of the security group                            |
+| private_subnet_ids             | list(string) | IDs of the private subnets                          |
+| public_subnet_ids              | list(string) | IDs of the public subnets                           |
+| private_subnet_route_table_ids | list(string) | IDs of the route tables for the private subnets     |
+| vpc_id                         | string       | ID of the VPC                                       |
 
 #### CloudFront Distribution
 
@@ -775,6 +819,7 @@ module "cloudfront_distribution" {
 | domain_name    | string | Domain name of the CloudFront distribution    |
 | hosted_zone_id | string | Hosted zone id of the CloudFront distribution |
 | arn            | string | ARN of the CloudFront distribution            |
+| id             | string | Id of the CloudFront distribution             |
 
 #### Azure OpenID role
 
@@ -863,29 +908,65 @@ module "github_action_role" {
         ]
       })
     },
-  ],
-  inline = true
-  boundary_policy_arn = "arn:aws:iam::123456789012:policy/they-test-boundary"
-  s3StateBackend = true
-  stateLockTableRegion = "eu-central-1"
+  ]
+  inline                            = false
   INSECURE_allowAccountToAssumeRole = false # Do not enable this in production!
+  boundary_policy_arn               = "arn:aws:iam::123456789012:policy/they-test-boundary"
+
+  include_default_policies = {
+    s3StateBackend                = true
+    cloudwatch                    = true
+    cloudfront                    = true
+    cloudfront_source_bucket_arns = ["arn:aws:s3:::they-test-deployment-bucket"]
+    asg                           = true
+    iam                           = true
+    delegated_boundary_arn        = "arn:aws:iam::123456789012:policy/they-test-boundary"
+    instance_key_pair_name        = "test-key"
+    route53                       = true
+    host_zone_arn                 = "arn:aws:route53:::hostedzone/Z1234567890"
+    route53_records               = ["test*.they-code.de", "_test*.they-code.de"]
+    certificate_arns              = ["arn:aws:acm:::certificate/1234567890"]
+    dynamodb                      = true
+    dynamodb_table_names          = ["they-test-table"]
+    ecr                           = true
+    ecr_repository_arns           = ["arn:aws:ecr:::repository/they-test-repo"]
+  }
 }
 ```
 
 ##### Inputs
 
-| Variable                          | Type         | Description                                                                                                                                                                                                   | Required | Default |
-| --------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
-| name                              | string       | Name of the role                                                                                                                                                                                              | yes      |         |
-| repo                              | string       | Repository that is authorized to assume this role                                                                                                                                                             | yes      |         |
-| policies                          | list(object) | List of additional inline policies to attach to the app                                                                                                                                                       | no       | `[]`    |
-| policies.\*.name                  | string       | Name of the inline policy                                                                                                                                                                                     | yes      |         |
-| policies.\*.policy                | string       | Policy document as a JSON formatted string                                                                                                                                                                    | yes      |         |
-| inline                            | bool         | If true, the policies will be created as inline policies. If false, they will be created as managed policies. Changing this will not necessarily remove the old policies correctly, check in the AWS console! | no       | `true`  |
-| boundary_policy_arn               | string       | ARN of a boundary policy to attach to the app                                                                                                                                                                 | no       | `null`  |
-| s3StateBackend                    | bool         | Set to true if a s3 state backend was setup with the setup-tfstate module (or uses the same naming scheme for the s3 bucket and dynamoDB table). This will set the required s3 and dynamoDB permissions.      | no       | `true`  |
-| stateLockTableRegion              | string       | Region of the state lock table, if different from the default region.                                                                                                                                         | no       | `null`  |
-| INSECURE_allowAccountToAssumeRole | bool         | Set to true if you want to allow the account to assume the role. This is insecure and should only be used for testing. Do not enable this in production!                                                      | no       | `false` |
+| Variable                                               | Type         | Description                                                                                                                                                                                                   | Required | Default                                             |
+| ------------------------------------------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------- |
+| name                                                   | string       | Name of the role                                                                                                                                                                                              | yes      |                                                     |
+| repo                                                   | string       | Repository that is authorized to assume this role                                                                                                                                                             | yes      |                                                     |
+| policies                                               | list(object) | List of additional inline policies to attach to the app                                                                                                                                                       | no       | `[]`                                                |
+| policies.\*.name                                       | string       | Name of the inline policy                                                                                                                                                                                     | yes      |                                                     |
+| policies.\*.policy                                     | string       | Policy document as a JSON formatted string                                                                                                                                                                    | yes      |                                                     |
+| inline                                                 | bool         | If true, the policies will be created as inline policies. If false, they will be created as managed policies. Changing this will not necessarily remove the old policies correctly, check in the AWS console! | no       | `true`                                              |
+| INSECURE_allowAccountToAssumeRole                      | bool         | Set to true if you want to allow the account to assume the role. This is insecure and should only be used for testing. Do not enable this in production!                                                      | no       | `false`                                             |
+| boundary_policy_arn                                    | string       | ARN of a boundary policy to attach to the app                                                                                                                                                                 | no       | `null`                                              |
+| include_default_policies                               | object       | Configure the default policies that should be included in the role                                                                                                                                            | no       | `"{}"`                                              |
+| include_default_policies.s3StateBackend                | bool         | Set to true if a s3 state backend was setup with the setup-tfstate module (or uses the same naming scheme for the s3 bucket and dynamoDB table). This will set the required s3 and dynamoDB permissions.      | no       | `true`                                              |
+| include_default_policies.stateLockTableRegion          | string       | Region of the state lock table, if different from the default region                                                                                                                                          | no       | `""`                                                |
+| include_default_policies.cloudwatch                    | bool         | Set to true if the app uses CloudWatch                                                                                                                                                                        | no       | `false`                                             |
+| include_default_policies.cloudfront                    | bool         | Set to true if the app uses CloudFront                                                                                                                                                                        | no       | `false`                                             |
+| include_default_policies.cloudfront_source_bucket_arns | list(string) | The ARNs of the S3 buckets that are allowed as CloudFront sources, required if `cloudfront` is true                                                                                                           | (yes)    | `null`                                              |
+| include_default_policies.asg                           | bool         | Set to true if the app uses an Auto Scaling Group                                                                                                                                                             | no       | `false`                                             |
+| include_default_policies.ami_condition                 | object       | The condition that must be met by AMIs that are used to launch instances                                                                                                                                      | no       | `{"ec2:ImageType":"machine", "ec2:Owner":"amazon"}` |
+| include_default_policies.iam                           | bool         | Set to true if the app uses IAM roles, setting `asg` to true will automatically enable this as well                                                                                                           | no       | `false`                                             |
+| include_default_policies.delegated_boundary_arn        | string       | The ARN of the IAM policy that is used as the permissions boundary for newly created roles, required if `iam` or `asg` is true                                                                                | (yes)    | `null`                                              |
+| include_default_policies.instance_key_pair_name        | string       | The name of the key pair that is used to launch instances, required if `iam` or `asg` is true                                                                                                                 | (yes)    | `""`                                                |
+| include_default_policies.route53                       | bool         | Set to true if the app uses Route 53                                                                                                                                                                          | no       | `false`                                             |
+| include_default_policies.host_zone_arn                 | string       | The ARN of the Route 53 Hosted Zone that is used for the domain, required if `route53` is true                                                                                                                | (yes)    | `null`                                              |
+| include_default_policies.route53_records               | list(string) | The Route 53 records that are allowed to be created, supports wildcards, required if `route53` is true                                                                                                        | (yes)    | `null`                                              |
+| include_default_policies.certificate_arns              | list(string) | The ARNs of the ACM certificates that are allowed to be used, required if `route53` is true                                                                                                                   | (yes)    | `null`                                              |
+| include_default_policies.dynamodb                      | bool         | Set to true if the app uses DynamoDB                                                                                                                                                                          | no       | `false`                                             |
+| include_default_policies.dynamodb_table_names          | list(string) | The Names of DynamoDB tables that are allowed to be managed, required if `dynamodb` is true                                                                                                                   | (yes)    | `null`                                              |
+| include_default_policies.ecr                           | bool         | Set to true if the app uses ECR                                                                                                                                                                               | no       | `false`                                             |
+| include_default_policies.ecr_repository_arns           | list(string) | The ARNs of the ECR repositories that are allowed to be accessed, required if `ecr` is true                                                                                                                   | (yes)    | `null`                                              |
+| s3StateBackend                                         | bool         | @Deprecated: use `include_default_policies.s3StateBackend` instead                                                                                                                                            | no       | `true`                                              |
+| stateLockTableRegion                                   | string       | @Deprecated: use `include_default_policies.stateLockTableRegion` instead                                                                                                                                      | no       | `""`                                                |
 
 ##### Outputs
 
@@ -1093,6 +1174,7 @@ module "function_app" {
 | Output            | Type         | Description                        |
 | ----------------- | ------------ | ---------------------------------- |
 | id                | string       | The ID of the Function App         |
+| name              | string       | The name of the Function App       |
 | build             | string       | Build output                       |
 | archive_file_path | string       | Path to the generated archive file |
 | endpoint_url      | string       | Endpoint URL                       |
@@ -1285,13 +1367,15 @@ module "vm" {
 
 ##### Outputs
 
-| Output                    | Type   | Description                      |
-| ------------------------- | ------ | -------------------------------- |
-| public_ip                 | string | Public ip if enabled             |
-| network_name              | string | Name of the network              |
-| subnet_id                 | string | Id of the subnet                 |
-| network_security_group_id | string | Id of the network security group |
-| vm_username               | string | Admin username                   |
+| Output                    | Type   | Description                        |
+| ------------------------- | ------ | ---------------------------------- |
+| public_ip                 | string | Public ip if enabled               |
+| network_name              | string | Name of the network                |
+| subnet_id                 | string | Id of the subnet                   |
+| network_security_group_id | string | Id of the network security group   |
+| vm_username               | string | Admin username                     |
+| vm_id                     | string | Id of the VM                       |
+| nsg_name                  | string | Name of the network security group |
 
 #### Container Instances
 
@@ -1446,7 +1530,6 @@ module "container-apps" {
         username             = "User"
         password_secret_name = "registry-secret"
       }]
-
       secret = {
         name  = "registry-secret"
         value = "Password"
@@ -1482,7 +1565,6 @@ module "container-apps" {
         username             = "Username"
         password_secret_name = "registry-secret"
       }]
-
       secret = {
         name  = "registry-secret"
         value = "Password"
@@ -1554,6 +1636,387 @@ module "container-apps" {
 | ------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | container_apps_urls | string | URLs of the container apps. If a custom domain was used, this will be the ouput. Otherwise, the FQDN of the latest revision of each respective Container App will be the output. |
 
+#### Storage Container
+
+```hcl
+module "storage_container" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/storage-container"
+
+  name                = "they-storage-container"
+  resource_group_name = "they-dev"
+  location            = "Germany West Central"
+
+  container_access_type = "private"
+  metadata = {
+    environment = "dev"
+    department  = "it"
+  }
+
+  storage_account = {
+    # name = "customstorageaccount" # Optional: Automatically generated from container name if not specified
+    preexisting_name = null # If null, a new storage account will be created
+    tier             = "Standard"
+    replication_type = "LRS"
+    kind             = "StorageV2"
+    access_tier      = "Hot"
+    is_hns_enabled = false
+
+    # CORS configuration
+    cors_rules = [
+      {
+        allowed_headers = ["*"]
+        allowed_methods = ["GET", "POST", "PUT"]
+        allowed_origins = ["https://myapp.example.com"]
+        exposed_headers = ["*"]
+        max_age_in_seconds = 3600
+      }
+    ]
+  }
+
+  enable_static_website = true
+
+  tags = {
+    createdBy   = "Terraform"
+    environment = "dev"
+  }
+}
+```
+
+##### Inputs
+
+| Variable                                        | Type         | Description                                                                  | Required | Default        |
+|-------------------------------------------------|--------------|------------------------------------------------------------------------------|----------|----------------|
+| name                                            | string       | Name of the storage container                                                | yes      |                |
+| resource_group_name                             | string       | The name of the resource group in which to create the resources              | yes      |                |
+| location                                        | string       | The Azure region where the resources should be created                       | yes      |                |
+| container_access_type                           | string       | The access type for the container. Possible values: blob, container, private | no       | `"private"`    |
+| metadata                                        | map(string)  | A mapping of metadata to assign to the storage container                     | no       | `{}`           |
+| storage_account                                 | object       | The storage account configuration                                            | no       | see sub fields |
+| storage_account.preexisting_name                | string       | Name of an existing storage account; if null, a new one will be created      | no       | `null`         |
+| storage_account.preexisting_resource_group_name | string       | Resource group name of the existing storage account                          | no       | `null`         |
+| storage_account.name                            | string       | Name for the new storage account; if null, derived from container name       | no       | `null`         |
+| storage_account.tier                            | string       | Tier of the storage account (Standard or Premium)                            | no       | `"Standard"`   |
+| storage_account.replication_type                | string       | Replication type for the storage account                                     | no       | `"LRS"`        |
+| storage_account.kind                            | string       | Kind of storage account                                                      | no       | `"StorageV2"`  |
+| storage_account.access_tier                     | string       | Access tier for the storage account (Hot or Cool)                            | no       | `"Hot"`        |
+| storage_account.is_hns_enabled                  | bool         | Enable hierarchical namespace (required for Data Lake Gen2)                  | no       | `false`        |
+| storage_account.min_tls_version                 | string       | Minimum TLS version                                                          | no       | `"TLS1_2"`     |
+| storage_account.cors_rules                      | list(object) | List of CORS rules for the storage account                                   | no       | `null`         |
+| enable_static_website                           | bool         | Enable or disable the static website feature for the storage account         | no       | `false`        |
+| tags                                            | map(string)  | Tags for the resources                                                       | no       | `{}`           |
+
+##### Outputs
+
+| Output                    | Type   | Description                                           |
+|---------------------------|--------|-------------------------------------------------------|
+| id                        | string | The ID of the storage container                       |
+| name                      | string | The name of the storage container                     |
+| storage_account_name      | string | The name of the storage account                       |
+| storage_account_id        | string | The ID of the storage account                         |
+| primary_access_key        | string | The primary access key for the storage account        |
+| primary_connection_string | string | The primary connection string for the storage account |
+| container_url             | string | The URL of the storage container                      |
+
+#### Datadog Diagnostics
+
+```hcl
+module "diagnostics" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/monitoring/datadog"
+
+  environment             = "dev"
+  eventhub_namespace_name = "they-test"
+  handler_name            = "datadog-importer-they-test"
+  location                = "Germany West Central"
+  resource_group_name     = "they-dev"
+
+  sku      = "Basic"
+  capacity = 1
+  
+  dd_api_key = "datadog-api-key"
+  dd_site    = "datadoghq.eu"
+  dd_service = "they-diagnostics"
+  dd_tags    = "they,diagnostics"
+
+  tags = {
+    Project   = "they-terraform-examples"
+    CreatedBy = "terraform"
+  }
+}
+```
+
+##### Inputs
+
+| Variable                | Type        | Description                                                                                           | Required | Default          |
+|-------------------------|-------------|-------------------------------------------------------------------------------------------------------|----------|------------------|
+| environment             | string      | Name of project. It will also be the name of the resource group, if a resource group is to be created | no       | `"dev"`          |
+| eventhub_namespace_name | string      | Name of the eventhub namespace                                                                        | yes      |                  |
+| handler_name            | string      | Name of the logs handler                                                                              | yes      |                  |
+| location                | string      | The Azure Region where the resource should be created                                                 | yes      |                  |
+| resource_group_name     | string      | The name of the resource group in which to create the resources                                       | yes      |                  |
+| sku                     | string      | The SKU of the event hubs namespace. This is the pricing tier. Use 'Basic', 'Standard', or 'Premium'  | no       | `"Basic"`        |
+| capacity                | number      | The capacity of the event hubs namespace. This is the number of throughput units                      | no       | `1`              |
+| dd_api_key              | string      | Datadog API key                                                                                       | yes      |                  |
+| dd_site                 | string      | Datadog site                                                                                          | no       | `"datadoghq.eu"` |
+| dd_service              | string      | Sets the service name within datadog                                                                  | no       | `""`             |
+| dd_tags                 | string      | Comma-separated list of tags to send to datadog                                                       | no       | `""`             |
+| tags                    | map(string) | Map of tags to assign to the resources                                                                | no       | `{}`             |
+
+##### Outputs
+
+| Output                                        | Type   | Description                                                                                                   |
+|-----------------------------------------------|--------|---------------------------------------------------------------------------------------------------------------|
+| diagnostics                                   | object | Contains information about the event hub, can be used as `diagnostics` parameter of the azure function module |
+| diagnostics.eventhub_name                     | string | Name of the event hub                                                                                         |
+| diagnostics.namespace                         | string | Name of the event hub namespace                                                                               |
+| diagnostics.namespace_authorization_rule_name | string | Name of the authorization rule that allows produces to send logs to the event hub                             |
+
+#### Front Door
+
+```hcl
+#### Front Door
+# Create a shared Front Door profile (optional)
+resource "azurerm_cdn_frontdoor_profile" "shared_profile" {
+  name                     = "shared-frontdoor-profile"
+  resource_group_name      = "my-resource-group"
+  response_timeout_seconds = 16
+  sku_name                 = "Standard_AzureFrontDoor"
+}
+
+# Web example (static website hosting)
+module "frontdoor_web" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/frontdoor"
+
+  resource_group = {
+    name     = "my-resource-group"
+    location = "Germany West Central"
+  }
+
+  # Optional: Use shared profile instead of creating a new one
+  frontdoor_profile = {
+    id   = azurerm_cdn_frontdoor_profile.shared_profile.id
+    name = azurerm_cdn_frontdoor_profile.shared_profile.name
+  }
+
+  # Web-specific configuration for static website hosting
+  web = {
+    primary_web_host = "mystorageaccount.z6.web.core.windows.net"
+  }
+
+  # Domain configuration
+  domain    = "example"
+  subdomain = "www"
+  
+  # DNS zone configuration - if you have an existing DNS zone
+  dns_zone_name           = "example.com"
+  dns_zone_resource_group = "my-dns-resource-group"
+  
+  # Cache settings (optional)
+  cache_settings = {
+    query_string_caching_behavior = "IgnoreQueryString"
+    compression_enabled           = true
+    content_types_to_compress     = ["text/html", "text/css", "application/javascript"]
+  }
+}
+
+# Backend API example
+module "frontdoor_backend" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/frontdoor"
+
+  resource_group = {
+    name     = "my-resource-group"
+    location = "Germany West Central"
+  }
+
+  # Optional: Use shared profile instead of creating a new one
+  frontdoor_profile = {
+    id   = azurerm_cdn_frontdoor_profile.shared_profile.id
+    name = azurerm_cdn_frontdoor_profile.shared_profile.name
+  }
+
+  # Backend-specific configuration for APIs
+  backend = {
+    host                          = "10.0.0.1"  # VM public IP or other backend host
+    host_header                   = "api.example.com"
+    certificate_name_check_enabled = false
+    forwarding_protocol           = "HttpOnly"
+    http_port                     = 80
+    https_port                    = 443
+    health_probe = {
+      path         = "/health"
+      interval     = 120
+      protocol     = "Http"
+      request_type = "GET"
+    }
+  }
+
+  # Domain configuration
+  domain    = "example"
+  subdomain = "api"
+  
+  # DNS zone configuration
+  dns_zone_name           = "example.com"
+  dns_zone_resource_group = "my-dns-resource-group"
+  
+  # Cache settings for API (minimal caching)
+  cache_settings = {
+    query_string_caching_behavior = "IgnoreQueryString"
+    compression_enabled           = true
+    content_types_to_compress     = ["application/json", "text/plain"]
+  }
+}
+```
+
+##### Inputs
+
+| Variable                                     | Type         | Description                                                                                       | Required | Default                                                                               |
+|----------------------------------------------|--------------|---------------------------------------------------------------------------------------------------|----------|---------------------------------------------------------------------------------------|
+| resource_group                               | object       | The resource group where the Front Door resources will be created                                 | yes      |                                                                                       |
+| resource_group.name                          | string       | The name of the resource group                                                                    | yes      |                                                                                       |
+| resource_group.location                      | string       | The location of the resource group                                                                | yes      |                                                                                       |
+| frontdoor_profile                            | object       | Existing Front Door profile to use instead of creating a new one                                  | no       | `null`                                                                                |
+| frontdoor_profile.id                         | string       | The ID of the existing Front Door profile                                                         | (yes)    |                                                                                       |
+| frontdoor_profile.name                       | string       | The name of the existing Front Door profile                                                       | (yes)    |                                                                                       |
+| web                                          | object       | Configuration for web/frontend usage with storage account. Use this for static website hosting    | no*      | `null`                                                                                |
+| web.primary_web_host                         | string       | Primary web host of the storage account                                                           | (yes)    |                                                                                       |
+| backend                                      | object       | Configuration for backend API services                                                            | no*      | `null`                                                                                |
+| backend.host                                 | string       | Backend host (VM IP, App Service, etc.)                                                           | (yes)    |                                                                                       |
+| backend.host_header                          | string       | Host header to send to the backend                                                                | no       | Value of backend.host                                                                 |
+| backend.certificate_name_check_enabled       | bool         | Whether to check the certificate name                                                             | no       | `false`                                                                               |
+| backend.forwarding_protocol                  | string       | Protocol to use when forwarding requests to the backend                                           | no       | `"HttpOnly"`                                                                          |
+| backend.http_port                            | number       | HTTP port for the backend                                                                         | no       | `80`                                                                                  |
+| backend.https_port                           | number       | HTTPS port for the backend                                                                        | no       | `443`                                                                                 |
+| backend.health_probe                         | object       | Health probe configuration for the backend                                                        | no       | `{ path = "/", interval = 120, protocol = "Http", request_type = "GET" }`             |
+| storage_account.primary_web_host             | string       | Primary web host of the storage account                                                           | (yes)    |                                                                                       |
+| domain                                       | string       | The base domain name (without the subdomain part)                                                 | yes      |                                                                                       |
+| subdomain                                    | string       | The subdomain to use (e.g., 'www' for www.example.com)                                            | no       | `"www"`                                                                               |
+| dns_zone_name                                | string       | The name of the DNS zone where the CNAME and TXT validation records will be created               | no       | `null`                                                                                |
+| dns_zone_resource_group                      | string       | The resource group containing the DNS zone. Defaults to the same resource group as the Front Door | no       | `null`                                                                                |
+| cache_settings                               | object       | Cache settings for the Front Door                                                                 | no       | `{ query_string_caching_behavior = "IgnoreQueryString", compression_enabled = true }` |
+| cache_settings.query_string_caching_behavior | string       | Query string caching behavior                                                                     | no       | `"IgnoreQueryString"`                                                                 |
+| cache_settings.compression_enabled           | bool         | Whether compression is enabled                                                                    | no       | `true`                                                                                |
+| cache_settings.content_types_to_compress     | list(string) | Content types to compress                                                                         | no       | `["application/json", "text/plain", "text/css", "application/javascript"]`            |
+
+*You must provide exactly one of `web` or `backend`
+
+##### Outputs
+
+| Output                         | Type   | Description                                |
+|--------------------------------|--------|--------------------------------------------|
+| endpoint_url                   | string | The URL of the Front Door endpoint         |
+| custom_domain_url              | string | The URL of the custom domain               |
+| cdn_frontdoor_profile_id       | string | The ID of the Front Door profile           |
+| cdn_frontdoor_name             | string | The name of the Front Door profile         |
+| cdn_frontdoor_endpoint_id      | string | The ID of the Front Door endpoint          |
+| cdn_frontdoor_endpoint_name    | string | The name of the Front Door endpoint        |
+| custom_domain_validation_token | string | The validation token for the custom domain |
+| endpoint_host_name             | string | The host name of the Front Door endpoint   |
+| route_id                       | string | The ID of the Front Door route             |
+| route                          | object | The Front Door route resource              |
+
+#### Container Registry
+
+```hcl
+module "container_registry" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/container-registry"
+
+  name = "theyregistry"
+  resource_group = {
+    name     = "they-dev"
+    location = "Germany West Central"
+  }
+
+  # Basic configuration
+  sku           = "Standard"  # Options: Basic, Standard, Premium
+  admin_enabled = true        # Enable admin for simple authentication
+
+  # Premium SKU features
+  retention_policy_days     = 30      # Days to retain untagged manifests
+  quarantine_policy_enabled = true    # Enable quarantine for uploaded images
+  trust_policy_enabled      = true    # Enable content trust
+  export_policy_enabled     = true    # Enable export of registry data
+  
+  # Features for Standard and Premium SKUs
+  anonymous_pull_enabled = false      # Require authentication for pulls
+  
+  # More Premium SKU features
+  data_endpoint_enabled         = true              # Enable dedicated data endpoints
+  network_rule_bypass_option    = "AzureServices"   # Allow Azure services to access 
+  public_network_access_enabled = true
+  zone_redundancy_enabled       = true              # Enable multi-zone redundancy
+  
+  # Geo-replication for disaster recovery (Premium SKU only)
+  geo_replications = [
+    {
+      location                  = "West Europe"
+      zone_redundancy_enabled   = true
+      regional_endpoint_enabled = true
+      tags                      = { replica = "west-europe" }
+    }
+  ]
+
+  # Network access rules (Premium SKU only)
+  network_rule_set = {
+    default_action = "Deny"                               # Deny all by default
+    ip_rules       = ["203.0.113.0/24", "198.51.100.10"]  # Allow specific IPs
+  }
+
+  # Managed identity for registry authentication
+  identity = {
+    type         = "SystemAssigned"   # System-assigned managed identity
+    identity_ids = null               # Used for user-assigned identities
+  }
+
+  # Customer-managed keys for encryption
+  # Note: Requires a key vault and managed identity
+  encryption = {
+    key_vault_key_id   = "https://my-keyvault.vault.azure.net/keys/mykey/version"
+    identity_client_id = "00000000-0000-0000-0000-000000000000"
+  }
+
+  tags = {
+    Project     = "they-project"
+    CreatedBy   = "terraform"
+    Environment = "dev"
+  }
+}
+```
+
+##### Inputs
+
+| Variable                      | Type         | Description                                                                                            | Required | Default           |
+|-------------------------------|--------------|--------------------------------------------------------------------------------------------------------|----------|-------------------|
+| name                          | string       | Name of the container registry                                                                         | yes      |                   |
+| resource_group                | object       | The resource group where the registry will be created                                                  | yes      |                   |
+| resource_group.name           | string       | Name of the resource group                                                                             | yes      |                   |
+| resource_group.location       | string       | Location of the resource group                                                                         | yes      |                   |
+| sku                           | string       | The SKU of the container registry. Possible values are 'Basic', 'Standard', and 'Premium'              | no       | `"Standard"`      |
+| admin_enabled                 | bool         | Specifies whether the admin user is enabled                                                            | no       | `false`           |
+| retention_policy_days         | number       | The number of days to retain an untagged manifest. Only available for Premium SKU                      | no       | `7`               |
+| quarantine_policy_enabled     | bool         | Boolean value that indicates whether quarantine policy is enabled. Only available for Premium SKU      | no       | `false`           |
+| trust_policy_enabled          | bool         | Boolean value that indicates whether the trust policy is enabled. Only available for Premium SKU       | no       | `false`           |
+| export_policy_enabled         | bool         | Boolean value that indicates whether the export policy is enabled. Only available for Premium SKU      | no       | `true`            |
+| anonymous_pull_enabled        | bool         | Whether to allow anonymous pull access. Only available for Standard and Premium SKUs                   | no       | `false`           |
+| data_endpoint_enabled         | bool         | Whether to enable dedicated data endpoints for this Container Registry. Only available for Premium SKU | no       | `false`           |
+| network_rule_bypass_option    | string       | Whether to allow trusted Azure services to access a network restricted Container Registry              | no       | `"AzureServices"` |
+| geo_replications              | list(object) | A list of Azure locations where the container registry should be geo-replicated. Only for Premium SKU  | no       | `[]`              |
+| network_rule_set              | object       | Network rules for the container registry. Only available for Premium SKU                               | no       | `null`            |
+| public_network_access_enabled | bool         | Whether public network access is allowed for the container registry                                    | no       | `true`            |
+| zone_redundancy_enabled       | bool         | Whether zone redundancy is enabled for the container registry                                          | no       | `false`           |
+| identity                      | object       | The type of identity to use for the container registry                                                 | no       | `null`            |
+| encryption                    | object       | Encryption settings for the container registry                                                         | no       | `null`            |
+| tags                          | map(string)  | Tags for the resources                                                                                 | no       | `{}`              |
+
+##### Outputs
+
+| Output            | Type   | Description                                                                                  |
+|-------------------|--------|----------------------------------------------------------------------------------------------|
+| id                | string | The ID of the Container Registry                                                             |
+| name              | string | The name of the Container Registry                                                           |
+| login_server      | string | The URL that can be used to log into the container registry                                  |
+| admin_username    | string | The Username associated with the Container Registry Admin account - if admin is enabled      |
+| admin_password    | string | The Password associated with the Container Registry Admin account - if admin is enabled      |
+| identity          | object | The identity of the Container Registry                                                       |
+
 ## Contributing
 
 ### Prerequisites
@@ -1617,7 +2080,7 @@ terraform apply
 ```
 
 The resources used to manage the state of the resources deployed within the `examples` folder can be found at `examples/.setup-tfstate`.
-If you want to setup your own Terraform state management system, remove any `.terraform.lock.hcl` files within the `examples` folder, and deploy the resources at `examples/.setup-tfstate/` in your own AWS account.
+If you want to set up your own Terraform state management system, remove any `.terraform.lock.hcl` files within the `examples` folder, and deploy the resources at `examples/.setup-tfstate/` in your own AWS account.
 
 #### Clean-up
 
@@ -1629,3 +2092,5 @@ When you are done testing, please destroy the resources with `terraform destroy`
 Therefore, you need to delete the bucket manually in the AWS console.
 After that you can remove the remaining resources with `terraform destroy`.
 Keep in mind that after destroying a bucket it can take up to 24 hours until the name is available again.
+
+`
