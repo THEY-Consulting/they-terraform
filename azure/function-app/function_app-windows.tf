@@ -49,7 +49,7 @@ resource "azurerm_windows_function_app" "function_app" {
 
   site_config {
     application_insights_key = var.insights.enabled ? azurerm_application_insights.app_insights.0.instrumentation_key : null
-    # vnet_route_all_enabled   = var.needs_mdm_access
+    vnet_route_all_enabled   = var.needs_mdm_access
 
     ip_restriction {
       virtual_network_subnet_id = azurerm_subnet.subnet.0.id
