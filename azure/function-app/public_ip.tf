@@ -4,13 +4,6 @@ resource "azurerm_app_service_virtual_network_swift_connection" "app_connection"
 
   app_service_id = local.function_app.id
   subnet_id      = azurerm_subnet.subnet.0.id
-
-  depends_on = [azurerm_subnet.subnet, local.function_app]
-  lifecycle {
-    ignore_changes = [
-      subnet_id,
-    ]
-  }
 }
 
 resource "azurerm_virtual_network" "vnet" {
