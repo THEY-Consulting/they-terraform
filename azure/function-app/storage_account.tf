@@ -16,7 +16,7 @@ resource "azurerm_storage_account" "managed_storage_account" {
 
     content {
       default_action             = "Deny"
-      virtual_network_subnet_ids = [azurerm_subnet.subnet.id]
+      virtual_network_subnet_ids = [azurerm_subnet.subnet.0.id]
     }
   }
 }
