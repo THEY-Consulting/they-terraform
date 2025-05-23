@@ -8,7 +8,6 @@ resource "azurerm_windows_function_app" "function_app" {
   storage_account_name       = data.azurerm_storage_account.storage_account.name
   storage_account_access_key = data.azurerm_storage_account.storage_account.primary_access_key
   service_plan_id            = data.azurerm_service_plan.service_plan.id
-  virtual_network_subnet_id  = var.needs_mdm_access ? azurerm_subnet.subnet.0.id : null
 
   app_settings = merge(
     {
