@@ -151,3 +151,9 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "needs_mdm_access" {
+  description = "if true created network ressource to connect to MDM01"
+  type        = bool
+  default     = false
+}
