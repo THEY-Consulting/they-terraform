@@ -8,6 +8,7 @@ resource "azurerm_linux_function_app" "function_app" {
   storage_account_name       = data.azurerm_storage_account.storage_account.name
   storage_account_access_key = data.azurerm_storage_account.storage_account.primary_access_key
   service_plan_id            = data.azurerm_service_plan.service_plan.id
+  virtual_network_subnet_id  = var.needs_mdm_access ? azurerm_subnet.subnet.id : null
 
   app_settings = merge(
     {
@@ -51,6 +52,7 @@ resource "azurerm_linux_function_app" "function_app" {
 
   site_config {
     application_insights_key = var.insights.enabled ? azurerm_application_insights.app_insights.0.instrumentation_key : null
+    vnet_route_all_enabled   = var.needs_mdm_access
 
     dynamic "application_stack" {
       for_each = var.runtime.name == "dotnet" ? [var.runtime] : []

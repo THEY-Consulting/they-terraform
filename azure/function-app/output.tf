@@ -21,3 +21,7 @@ output "endpoint_url" {
 output "identities" {
   value = local.function_app.identity
 }
+
+output "ip_address" {
+  value = azurerm_public_ip.public_ip.ip_address
+}
