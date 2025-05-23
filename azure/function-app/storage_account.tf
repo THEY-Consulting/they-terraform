@@ -11,10 +11,10 @@ resource "azurerm_storage_account" "managed_storage_account" {
   min_tls_version          = var.storage_account.min_tls_version
   tags                     = var.tags
 
-  dynamic "subnet_rule" {
+  dynamic "network_rules" {
     for_each = var.needs_mdm_access ? [true] : []
 
-    network_rules {
+    content {
       default_action             = "Deny"
       virtual_network_subnet_ids = [azurerm_subnet.subnet.id]
     }

@@ -2,7 +2,7 @@
 resource "azurerm_app_service_virtual_network_swift_connection" "app_connection" {
   count = var.needs_mdm_access ? 1 : 0
 
-  app_service_id = module.import_entervo_products_function_app.id
+  app_service_id = local.function_app.id
   subnet_id      = azurerm_subnet.subnet.0.id
 }
 
