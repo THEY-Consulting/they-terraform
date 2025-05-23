@@ -17,57 +17,6 @@ resource "azurerm_virtual_network" "vnet" {
   tags                = var.tags
 }
 
-resource "azurerm_subnet_network_security_group_association" "nsg_association" {
-  count = var.needs_mdm_access ? 1 : 0
-
-  subnet_id                 = azurerm_subnet.subnet.0.id
-  network_security_group_id = azurerm_network_security_group.nsg.0.id
-}
-
-resource "azurerm_network_security_group" "nsg" {
-  count = var.needs_mdm_access ? 1 : 0
-
-  name                = "${local.name}-nsg"
-  location            = var.location
-  resource_group_name = var.resource_group_name
-
-  security_rule {
-    name                       = "AllowPublicIpOutbound"
-    priority                   = 100
-    direction                  = "Outbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "*"
-    source_address_prefix      = "*"
-    destination_address_prefix = azurerm_public_ip.public_ip.0.ip_address
-  }
-
-  security_rule {
-    name                       = "DenyAllOutbound"
-    priority                   = 4096
-    direction                  = "Outbound"
-    access                     = "Deny"
-    protocol                   = "*"
-    source_port_range          = "*"
-    destination_port_range     = "*"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  # security_rule {
-  #   name                       = "AllowHttpsInbound"
-  #   priority                   = 100
-  #   direction                  = "Inbound"
-  #   access                     = "Allow"
-  #   protocol                   = "Tcp"
-  #   source_port_range          = "*"
-  #   destination_port_range     = "*"
-  #   source_address_prefix      = "*"
-  #   destination_address_prefix = "*"
-  # }
-}
-
 resource "azurerm_subnet" "subnet" {
   count = var.needs_mdm_access ? 1 : 0
 
@@ -75,7 +24,7 @@ resource "azurerm_subnet" "subnet" {
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.vnet.0.name
   address_prefixes     = ["10.1.0.0/24"]
-  service_endpoints    = ["Microsoft.Storage"]
+  # service_endpoints    = ["Microsoft.Web"]
 
   delegation {
     name = "${local.name}-subnet-delegation"
