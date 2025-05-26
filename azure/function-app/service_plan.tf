@@ -5,7 +5,7 @@ resource "azurerm_service_plan" "managed_service_plan" {
   resource_group_name = var.resource_group_name
   location            = var.location
   os_type             = var.runtime.os == "windows" ? "Windows" : "Linux"
-  sku_name            = var.needs_mdm_access ? "P0v3" : var.service_plan.sku_name
+  sku_name            = var.needs_mdm_access ? "EP1" : var.service_plan.sku_name
 
   tags = var.tags
 }
