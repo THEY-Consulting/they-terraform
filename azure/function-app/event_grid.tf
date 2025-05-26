@@ -45,6 +45,38 @@ locals {
   ) : null
 }
 
+resource "azurerm_private_endpoint" "function_endpoint" {
+  count = var.needs_mdm_access ? 1 : 0
+
+  name                = "${local.name}-function-endpoint"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  subnet_id           = azurerm_subnet.subnet.0.id
+
+  private_service_connection {
+    name                           = "${local.name}-function-connection"
+    private_connection_resource_id = local.function_app.id
+    is_manual_connection           = false
+    subresource_names              = ["sites"]
+  }
+}
+
+resource "azurerm_private_endpoint" "storage_endpoint" {
+  count = var.needs_mdm_access ? 1 : 0
+
+  name                = "${local.name}-storage-endpoint"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  subnet_id           = azurerm_subnet.subnet.0.id
+
+  private_service_connection {
+    name                           = "${local.name}-storage-connection"
+    private_connection_resource_id = local.trigger_storage_account.id
+    is_manual_connection           = false
+    subresource_names              = ["sites"]
+  }
+}
+
 resource "azurerm_eventgrid_event_subscription" "eventgrid_subscription" {
   count = var.storage_trigger != null ? 1 : 0
 
