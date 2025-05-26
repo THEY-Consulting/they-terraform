@@ -61,7 +61,7 @@ resource "azurerm_linux_function_app" "function_app" {
 
     ip_restriction {
       # virtual_network_subnet_id = azurerm_subnet.subnet.0.id
-      ip_address = azurerm_public_ip.public_ip.0.ip_address
+      ip_address = "${azurerm_public_ip.public_ip.0.ip_address}/32"
     }
 
     dynamic "application_stack" {
