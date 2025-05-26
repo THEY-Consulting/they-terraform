@@ -39,6 +39,7 @@ data "azurerm_storage_account" "trigger_storage_account_external" {
   resource_group_name = var.storage_trigger.trigger_resource_group_name
 }
 locals {
+  function_endpoint = "https://${local.function_app.default_hostname}/api/${var.storage_trigger.function_name}"
   trigger_storage_account = var.storage_trigger != null ? (
     var.storage_trigger.trigger_storage_account_name != null ? data.azurerm_storage_account.trigger_storage_account_external[0] : data.azurerm_storage_account.trigger_storage_account_managed[0]
   ) : null

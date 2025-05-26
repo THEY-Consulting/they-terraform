@@ -1,7 +1,6 @@
 locals {
-  function_app      = var.runtime.os == "windows" ? azurerm_windows_function_app.function_app[0] : azurerm_linux_function_app.function_app[0]
-  name              = var.runtime.os == "windows" ? "${var.name}-windows-function-app" : "${var.name}-linux-function-app"
-  function_endpoint = "https://${local.function_app.default_hostname}/api/${var.storage_trigger.function_name}"
+  function_app = var.runtime.os == "windows" ? azurerm_windows_function_app.function_app[0] : azurerm_linux_function_app.function_app[0]
+  name         = var.runtime.os == "windows" ? "${var.name}-windows-function-app" : "${var.name}-linux-function-app"
 }
 
 variable "name" {
