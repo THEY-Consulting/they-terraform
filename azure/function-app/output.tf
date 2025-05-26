@@ -25,3 +25,7 @@ output "identities" {
 output "ip_address" {
   value = azurerm_public_ip.public_ip.0.ip_address
 }
+
+output "function_endpoint" {
+  value = local.function_endpoint
+}

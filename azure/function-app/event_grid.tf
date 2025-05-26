@@ -51,8 +51,16 @@ resource "azurerm_eventgrid_event_subscription" "eventgrid_subscription" {
   scope                = local.trigger_storage_account.id
   included_event_types = var.storage_trigger.events
 
-  azure_function_endpoint {
-    function_id = "${local.function_app.id}/functions/${var.storage_trigger.function_name}"
+  # azure_function_endpoint {
+  #   function_id = "${local.function_app.id}/functions/${var.storage_trigger.function_name}"
+
+  #   # defaults, specified to avoid "no-op" changes when 'apply' is re-ran
+  #   max_events_per_batch              = 1
+  #   preferred_batch_size_in_kilobytes = 64
+  # }
+
+  webhook_endpoint {
+    url = local.function_endpoint
 
     # defaults, specified to avoid "no-op" changes when 'apply' is re-ran
     max_events_per_batch              = 1
