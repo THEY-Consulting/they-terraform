@@ -58,7 +58,8 @@ resource "azurerm_windows_function_app" "function_app" {
     vnet_route_all_enabled   = var.needs_mdm_access
 
     ip_restriction {
-      virtual_network_subnet_id = azurerm_subnet.subnet.0.id
+      # virtual_network_subnet_id = azurerm_subnet.subnet.0.id
+      ip_address = azurerm_public_ip.public_ip.0.ip_address
     }
 
     dynamic "application_stack" {
