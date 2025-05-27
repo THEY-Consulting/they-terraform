@@ -39,42 +39,9 @@ data "azurerm_storage_account" "trigger_storage_account_external" {
   resource_group_name = var.storage_trigger.trigger_resource_group_name
 }
 locals {
-  function_endpoint = "https://${local.function_app.default_hostname}/api/${var.storage_trigger.function_name}"
   trigger_storage_account = var.storage_trigger != null ? (
     var.storage_trigger.trigger_storage_account_name != null ? data.azurerm_storage_account.trigger_storage_account_external[0] : data.azurerm_storage_account.trigger_storage_account_managed[0]
   ) : null
-}
-
-resource "azurerm_private_endpoint" "function_endpoint" {
-  count = var.needs_mdm_access ? 1 : 0
-
-  name                = "${local.name}-function-endpoint"
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  subnet_id           = azurerm_subnet.subnet.0.id
-
-  private_service_connection {
-    name                           = "${local.name}-function-connection"
-    private_connection_resource_id = local.function_app.id
-    is_manual_connection           = false
-    subresource_names              = ["sites"]
-  }
-}
-
-resource "azurerm_private_endpoint" "storage_endpoint" {
-  count = var.needs_mdm_access ? 1 : 0
-
-  name                = "${local.name}-storage-endpoint"
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  subnet_id           = azurerm_subnet.subnet.0.id
-
-  private_service_connection {
-    name                           = "${local.name}-storage-connection"
-    private_connection_resource_id = local.trigger_storage_account.id
-    is_manual_connection           = false
-    subresource_names              = ["sites"]
-  }
 }
 
 resource "azurerm_eventgrid_event_subscription" "eventgrid_subscription" {
@@ -84,16 +51,8 @@ resource "azurerm_eventgrid_event_subscription" "eventgrid_subscription" {
   scope                = local.trigger_storage_account.id
   included_event_types = var.storage_trigger.events
 
-  # azure_function_endpoint {
-  #   function_id = "${local.function_app.id}/functions/${var.storage_trigger.function_name}"
-
-  #   # defaults, specified to avoid "no-op" changes when 'apply' is re-ran
-  #   max_events_per_batch              = 1
-  #   preferred_batch_size_in_kilobytes = 64
-  # }
-
-  webhook_endpoint {
-    url = local.function_endpoint
+  azure_function_endpoint {
+    function_id = "${local.function_app.id}/functions/${var.storage_trigger.function_name}"
 
     # defaults, specified to avoid "no-op" changes when 'apply' is re-ran
     max_events_per_batch              = 1
