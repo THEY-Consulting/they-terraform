@@ -10,15 +10,6 @@ resource "azurerm_storage_account" "managed_storage_account" {
   account_replication_type = var.storage_account.replication_type
   min_tls_version          = var.storage_account.min_tls_version
   tags                     = var.tags
-
-  # dynamic "network_rules" {
-  #   for_each = var.needs_mdm_access ? [true] : []
-
-  #   content {
-  #     default_action             = "Deny"
-  #     virtual_network_subnet_ids = [azurerm_subnet.subnet.0.id]
-  #   }
-  # }
 }
 
 data "azurerm_storage_account" "storage_account" {

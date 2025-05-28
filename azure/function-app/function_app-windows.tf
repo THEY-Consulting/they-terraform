@@ -23,7 +23,8 @@ resource "azurerm_windows_function_app" "function_app" {
       AZURE_CLIENT_ID = data.azurerm_user_assigned_identity.identity.0.client_id
     } : {},
     {
-      STORAGE_ACCOUNT_NAME = data.azurerm_storage_account.storage_account.name
+      STORAGE_ACCOUNT_NAME       = data.azurerm_storage_account.storage_account.name
+      STORAGE_ACCOUNT_ACCESS_KEY = data.azurerm_storage_account.storage_account.primary_access_key
     },
     var.environment
   )
