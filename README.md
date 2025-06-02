@@ -1915,6 +1915,36 @@ module "frontdoor_backend" {
 | route_id                       | string | The ID of the Front Door route             |
 | route                          | object | The Front Door route resource              |
 
+#### Frontdoor Domain
+
+```hcl
+module "frontdoor_domain" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/frontdoor-domain"
+
+  resource_group_name = "they-dev"
+  dns_zone_name       = "they-azure.de"
+  subdomain           = "www"
+  frontdoor_host_name = module.frontdoor_web.endpoint_host_name
+  validation_token    = module.frontdoor_web.custom_domain_validation_token
+}
+```
+
+
+##### Inputs
+
+| Variable            | Type   | Description                                                                         | Required | Default |
+|---------------------|--------|-------------------------------------------------------------------------------------|----------|---------|
+| subdomain           | string | The subdomain to use (e.g., 'www' for www.yourdomain.com)                           | no       | `"www"` |
+| dns_zone_name       | string | The name of the DNS zone where the CNAME and TXT validation records will be created | yes      |         |
+| resource_group_name | string | The resource group containing the DNS zone                                          | yes      |         |
+| validation_token    | string | The validation token for the custom domain                                          | yes      |         |
+| frontdoor_host_name | string | The host name of the Azure Front Door endpoint                                      | yes      |         |
+
+
+##### Outputs
+
+This module does not have any outputs.
+
 #### Container Registry
 
 ```hcl
