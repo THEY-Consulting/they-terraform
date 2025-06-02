@@ -1,6 +1,6 @@
 module "domain" {
   source = "../frontdoor-domain"
-  count  = var.is_external_domain ? 0 : 1
+  count  = var.is_external_dns_zone ? 0 : 1
 
   subdomain           = var.subdomain
   resource_group_name = coalesce(var.dns_zone_resource_group, var.resource_group.name)
