@@ -6,6 +6,7 @@ resource "azurerm_container_app" "container_app" {
   resource_group_name          = local.resource_group_name
   revision_mode                = each.value.revision_mode
   workload_profile_name        = each.value.workload_profile_name
+  tags                         = var.tags
 
   dynamic "identity" {
     for_each = each.value.identity == null ? [] : [each.value.identity]
@@ -56,11 +57,13 @@ resource "azurerm_container_app" "container_app" {
   }
 
   dynamic "secret" {
-    for_each = each.value.secret == null ? [] : [each.value.secret]
+    for_each = each.value.secret == null ? [] : each.value.secret
 
     content {
-      name  = secret.value.name
-      value = secret.value.value
+      name                = secret.value.name
+      value               = secret.value.value
+      key_vault_secret_id = secret.value.key_vault_secret_id
+      identity            = secret.value.identity
     }
   }
   template {
