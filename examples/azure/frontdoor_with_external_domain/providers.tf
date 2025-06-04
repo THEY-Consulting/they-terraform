@@ -14,7 +14,7 @@ terraform {
     region         = "eu-central-1"
   }
 
-  required_version = "1.6.4"
+  required_version = ">= 1.6, < 2.0"
 }
 
 provider "azurerm" {
