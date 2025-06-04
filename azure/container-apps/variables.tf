@@ -1,3 +1,14 @@
+locals {
+  resource_group_name     = var.resource_group_name != null ? data.azurerm_resource_group.resource_group[0].name : azurerm_resource_group.resource_group[0].name
+  resource_group_location = var.resource_group_name != null ? data.azurerm_resource_group.resource_group[0].location : azurerm_resource_group.resource_group[0].location
+  certificate_names       = var.unique_environment_certificate != null ? [var.unique_environment_certificate.name] : [for app in var.container_apps : "${app.name}-certificate"]
+  app_urls = { for app_name, app in var.container_apps : app_name =>
+    var.dns_zone == null ? azurerm_container_app.container_app[app_name].latest_revision_fqdn : (
+      var.use_a_record == true ? var.dns_zone.existing_dns_zone_name : "${app.subdomain}.${var.dns_zone.existing_dns_zone_name}"
+    )
+  }
+}
+
 variable "name" {
   description = "Name of project, and of the resource group, when a new group is to be created."
   type        = string
@@ -96,6 +107,13 @@ variable "sku_log_analytics" {
   type        = string
   default     = "PerGB2018"
 }
+
+variable "tags" {
+  description = "Tags for the resources."
+  type        = map(string)
+  default     = {}
+}
+
 
 variable "container_apps" {
   type = map(object({

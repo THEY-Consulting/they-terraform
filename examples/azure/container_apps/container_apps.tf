@@ -4,6 +4,9 @@ module "container-apps" {
 
   name     = "${terraform.workspace}-nginx-test-container-apps"
   location = "Germany West Central"
+  tags = {
+    Project = "they-terraform-examples"
+  }
   container_apps = {
     nginx-app = {
       name          = "nginx-app"
