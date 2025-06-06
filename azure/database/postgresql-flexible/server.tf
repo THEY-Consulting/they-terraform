@@ -1,0 +1,35 @@
+resource "azurerm_postgresql_flexible_server" "main" {
+  name                   = var.server_name
+  resource_group_name    = var.resource_group_name
+  location               = var.location
+  version                = var.postgres_version
+  administrator_login    = var.admin_username
+  administrator_password = var.admin_password
+
+  sku_name   = var.sku_name
+  storage_mb = var.storage_mb
+  zone       = var.zone
+
+  dynamic "high_availability" {
+    for_each = var.high_availability != null ? [var.high_availability] : []
+    content {
+      mode                      = high_availability.value.mode
+      standby_availability_zone = high_availability.value.standby_availability_zone
+    }
+  }
+
+  backup_retention_days = var.backup_retention_days
+
+  public_network_access_enabled = var.enable_public_network_access
+
+  lifecycle {
+    ignore_changes = [
+      zone,
+      high_availability.0.standby_availability_zone,
+    ]
+  }
+
+  tags = var.tags
+}
+
+
