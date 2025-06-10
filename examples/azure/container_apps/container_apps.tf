@@ -2,8 +2,12 @@ module "container-apps" {
   #source = "github.com/THEY-Consulting/they-terraform//azure/container-apps"
   source = "../../../azure/container-apps"
 
-  name     = "${terraform.workspace}-nginx-test-container-apps"
-  location = "Germany West Central"
+  name                = "${terraform.workspace}-nginx-test-container-apps"
+  location            = "Germany West Central"
+  resource_group_name = "they-dev" # If nothing is specified, the module will create a new resource group with the name specified in the name variable.
+  tags = {
+    Project = "they-terraform-examples"
+  }
   container_apps = {
     nginx-app = {
       name          = "nginx-app"

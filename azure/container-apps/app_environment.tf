@@ -1,7 +1,3 @@
-locals {
-  certificate_names = var.unique_environment_certificate != null ? [var.unique_environment_certificate.name] : [for app in var.container_apps : "${app.name}-certificate"]
-}
-
 resource "azurerm_container_app_environment" "app_environment" {
   name                       = var.name
   location                   = local.resource_group_location
@@ -15,6 +11,8 @@ resource "azurerm_container_app_environment" "app_environment" {
       workload_profile_type = workload_profile.value.workload_profile_type
     }
   }
+
+  tags = var.tags
 }
 
 resource "azurerm_container_app_environment_certificate" "app_environment_certificate" {
@@ -28,6 +26,7 @@ resource "azurerm_container_app_environment_certificate" "app_environment_certif
 
   certificate_password = var.unique_environment_certificate != null ? var.unique_environment_certificate.password : ""
 
+  tags = var.tags
 }
 
 resource "null_resource" "assign_managed_identity" {
