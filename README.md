@@ -1494,11 +1494,10 @@ module "container-apps" {
 
   name                      = "they-test-container-apps"
   location                  = "Germany West Central"
-  create_new_resource_group = true
   resource_group_name       = "they-test-container-apps"
   workload_profile = {
-    name                  = "Consumption"
-    workload_profile_type = "Consumption"
+    name                  = "Workload Profile"
+    workload_profile_type = "D4"
   }
   unique_environment_certificate = {
     key_vault_secret_name = "my-cert-secret-name"
@@ -1611,13 +1610,14 @@ module "container-apps" {
 | location                             | string       | The Azure Region where the resource should be created                                                                                                                                             | yes      |              |
 | container_registry_server            | string       | The server URL of the container.                                                                                                                                                                  | no       | `null`       |
 | dns_zone                             | object       | DNS zone config required if you want to link the deployed app to a subdomain in the given dns zone. Does not create a dns zone, only a subdomain.                                                 | no       | `null`       |
+| use_a_record                         | bool         | Use this Option if you want to create an 'A' Record for your container App, instead of a CNAME record.                                                                                            | no       | `false`      |
 | dns_record_ttl                       | number       | The TTL of the DNS record                                                                                                                                                                         | no       | `300`        |
 | certificate_binding_type             | string       | The Certificate binding type.                                                                                                                                                                     | no       | `SniEnabled` |
 | enable_log_analytics                 | bool         | Enables the creation of the resource log analytics workspace for the container group                                                                                                              | no       | `false`      |
 | sku_log_analytics                    | string       | The SKU of the log analytics workspace                                                                                                                                                            | no       | `PerGB2018`  |
 | container_apps                       | map(object)  | The container apps to deploy                                                                                                                                                                      | yes      |              |
 | container_apps.name                  | string       | Name of the container app                                                                                                                                                                         | yes      |              |
-| container_app.subdomain              | string       | subdomain for the container                                                                                                                                                                       | no       |              |
+| container_app.subdomain              | string       | subdomain for the container. Necessary if using CNAME record.                                                                                                                                     | no       |              |
 | container_apps.tags                  | map(string)  | A mapping of tags to assign to the Container App.                                                                                                                                                 | no       |              |
 | container_apps.revision_mode         | string       | The revisions operational mode for the Container App. Possible values include Single and Multiple. In Single mode, a single revision is in operation at any given time.                           | yes      |              |
 | container_apps.workload_profile_name | string       | The name of the Workload Profile in the Container App Environment to place this Container App.                                                                                                    | no       |              |
@@ -1628,6 +1628,7 @@ module "container-apps" {
 | container_apps.ingress               | object       | Ingress block                                                                                                                                                                                     | no       |              |
 | container_apps.identity              | object       | Identity block that supports `type` and `identity_ids` as attributes.                                                                                                                             | no       |              |
 | container_apps.secret                | object       | Secret block                                                                                                                                                                                      | no       |              |
+| tags                                 | map(string)  | Tags of the resources                                                                                                                                                                             | no       | `{}`         |
 | container_apps.registry              | list(object) | The credentials and information needed to connect to a container registry                                                                                                                         | no       |              |
 
 ##### Outputs
@@ -1685,7 +1686,7 @@ module "storage_container" {
 ##### Inputs
 
 | Variable                                        | Type         | Description                                                                  | Required | Default        |
-|-------------------------------------------------|--------------|------------------------------------------------------------------------------|----------|----------------|
+| ----------------------------------------------- | ------------ | ---------------------------------------------------------------------------- | -------- | -------------- |
 | name                                            | string       | Name of the storage container                                                | yes      |                |
 | resource_group_name                             | string       | The name of the resource group in which to create the resources              | yes      |                |
 | location                                        | string       | The Azure region where the resources should be created                       | yes      |                |
@@ -1708,7 +1709,7 @@ module "storage_container" {
 ##### Outputs
 
 | Output                    | Type   | Description                                           |
-|---------------------------|--------|-------------------------------------------------------|
+| ------------------------- | ------ | ----------------------------------------------------- |
 | id                        | string | The ID of the storage container                       |
 | name                      | string | The name of the storage container                     |
 | storage_account_name      | string | The name of the storage account                       |
@@ -1731,7 +1732,7 @@ module "diagnostics" {
 
   sku      = "Basic"
   capacity = 1
-  
+
   dd_api_key = "datadog-api-key"
   dd_site    = "datadoghq.eu"
   dd_service = "they-diagnostics"
@@ -1747,7 +1748,7 @@ module "diagnostics" {
 ##### Inputs
 
 | Variable                | Type        | Description                                                                                           | Required | Default          |
-|-------------------------|-------------|-------------------------------------------------------------------------------------------------------|----------|------------------|
+| ----------------------- | ----------- | ----------------------------------------------------------------------------------------------------- | -------- | ---------------- |
 | environment             | string      | Name of project. It will also be the name of the resource group, if a resource group is to be created | no       | `"dev"`          |
 | eventhub_namespace_name | string      | Name of the eventhub namespace                                                                        | yes      |                  |
 | handler_name            | string      | Name of the logs handler                                                                              | yes      |                  |
@@ -1764,7 +1765,7 @@ module "diagnostics" {
 ##### Outputs
 
 | Output                                        | Type   | Description                                                                                                   |
-|-----------------------------------------------|--------|---------------------------------------------------------------------------------------------------------------|
+| --------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------- |
 | diagnostics                                   | object | Contains information about the event hub, can be used as `diagnostics` parameter of the azure function module |
 | diagnostics.eventhub_name                     | string | Name of the event hub                                                                                         |
 | diagnostics.namespace                         | string | Name of the event hub namespace                                                                               |
@@ -1805,10 +1806,11 @@ module "frontdoor_web" {
   # Domain configuration
   domain    = "example"
   subdomain = "www"
-  
+
   # DNS zone configuration - if you have an existing DNS zone
   dns_zone_name           = "example.com"
   dns_zone_resource_group = "my-dns-resource-group"
+  is_external_dns_zone    = false
   
   # Cache settings (optional)
   cache_settings = {
@@ -1852,11 +1854,11 @@ module "frontdoor_backend" {
   # Domain configuration
   domain    = "example"
   subdomain = "api"
-  
+
   # DNS zone configuration
   dns_zone_name           = "example.com"
   dns_zone_resource_group = "my-dns-resource-group"
-  
+
   # Cache settings for API (minimal caching)
   cache_settings = {
     query_string_caching_behavior = "IgnoreQueryString"
@@ -1868,40 +1870,42 @@ module "frontdoor_backend" {
 
 ##### Inputs
 
-| Variable                                     | Type         | Description                                                                                       | Required | Default                                                                               |
-|----------------------------------------------|--------------|---------------------------------------------------------------------------------------------------|----------|---------------------------------------------------------------------------------------|
-| resource_group                               | object       | The resource group where the Front Door resources will be created                                 | yes      |                                                                                       |
-| resource_group.name                          | string       | The name of the resource group                                                                    | yes      |                                                                                       |
-| resource_group.location                      | string       | The location of the resource group                                                                | yes      |                                                                                       |
-| frontdoor_profile                            | object       | Existing Front Door profile to use instead of creating a new one                                  | no       | `null`                                                                                |
-| frontdoor_profile.id                         | string       | The ID of the existing Front Door profile                                                         | (yes)    |                                                                                       |
-| frontdoor_profile.name                       | string       | The name of the existing Front Door profile                                                       | (yes)    |                                                                                       |
-| web                                          | object       | Configuration for web/frontend usage with storage account. Use this for static website hosting    | no*      | `null`                                                                                |
-| web.primary_web_host                         | string       | Primary web host of the storage account                                                           | (yes)    |                                                                                       |
-| backend                                      | object       | Configuration for backend API services                                                            | no*      | `null`                                                                                |
-| backend.host                                 | string       | Backend host (VM IP, App Service, etc.)                                                           | (yes)    |                                                                                       |
-| backend.host_header                          | string       | Host header to send to the backend                                                                | no       | Value of backend.host                                                                 |
-| backend.certificate_name_check_enabled       | bool         | Whether to check the certificate name                                                             | no       | `false`                                                                               |
-| backend.forwarding_protocol                  | string       | Protocol to use when forwarding requests to the backend                                           | no       | `"HttpOnly"`                                                                          |
-| backend.http_port                            | number       | HTTP port for the backend                                                                         | no       | `80`                                                                                  |
-| backend.https_port                           | number       | HTTPS port for the backend                                                                        | no       | `443`                                                                                 |
-| backend.health_probe                         | object       | Health probe configuration for the backend                                                        | no       | `{ path = "/", interval = 120, protocol = "Http", request_type = "GET" }`             |
-| storage_account.primary_web_host             | string       | Primary web host of the storage account                                                           | (yes)    |                                                                                       |
-| domain                                       | string       | The base domain name (without the subdomain part)                                                 | yes      |                                                                                       |
-| subdomain                                    | string       | The subdomain to use (e.g., 'www' for www.example.com)                                            | no       | `"www"`                                                                               |
-| dns_zone_name                                | string       | The name of the DNS zone where the CNAME and TXT validation records will be created               | no       | `null`                                                                                |
-| dns_zone_resource_group                      | string       | The resource group containing the DNS zone. Defaults to the same resource group as the Front Door | no       | `null`                                                                                |
-| cache_settings                               | object       | Cache settings for the Front Door                                                                 | no       | `{ query_string_caching_behavior = "IgnoreQueryString", compression_enabled = true }` |
-| cache_settings.query_string_caching_behavior | string       | Query string caching behavior                                                                     | no       | `"IgnoreQueryString"`                                                                 |
-| cache_settings.compression_enabled           | bool         | Whether compression is enabled                                                                    | no       | `true`                                                                                |
-| cache_settings.content_types_to_compress     | list(string) | Content types to compress                                                                         | no       | `["application/json", "text/plain", "text/css", "application/javascript"]`            |
+| Variable                                     | Type         | Description                                                                                                                                                       | Required | Default                                                                               |
+|----------------------------------------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------------------------------------------------------------------------------------|
+| resource_group                               | object       | The resource group where the Front Door resources will be created                                                                                                 | yes      |                                                                                       |
+| resource_group.name                          | string       | The name of the resource group                                                                                                                                    | yes      |                                                                                       |
+| resource_group.location                      | string       | The location of the resource group                                                                                                                                | yes      |                                                                                       |
+| frontdoor_profile                            | object       | Existing Front Door profile to use instead of creating a new one                                                                                                  | no       | `null`                                                                                |
+| frontdoor_profile.id                         | string       | The ID of the existing Front Door profile                                                                                                                         | (yes)    |                                                                                       |
+| frontdoor_profile.name                       | string       | The name of the existing Front Door profile                                                                                                                       | (yes)    |                                                                                       |
+| web                                          | object       | Configuration for web/frontend usage with storage account. Use this for static website hosting                                                                    | no*      | `null`                                                                                |
+| web.primary_web_host                         | string       | Primary web host of the storage account                                                                                                                           | (yes)    |                                                                                       |
+| backend                                      | object       | Configuration for backend API services                                                                                                                            | no*      | `null`                                                                                |
+| backend.host                                 | string       | Backend host (VM IP, App Service, etc.)                                                                                                                           | (yes)    |                                                                                       |
+| backend.host_header                          | string       | Host header to send to the backend                                                                                                                                | no       | Value of backend.host                                                                 |
+| backend.certificate_name_check_enabled       | bool         | Whether to check the certificate name                                                                                                                             | no       | `false`                                                                               |
+| backend.forwarding_protocol                  | string       | Protocol to use when forwarding requests to the backend                                                                                                           | no       | `"HttpOnly"`                                                                          |
+| backend.http_port                            | number       | HTTP port for the backend                                                                                                                                         | no       | `80`                                                                                  |
+| backend.https_port                           | number       | HTTPS port for the backend                                                                                                                                        | no       | `443`                                                                                 |
+| backend.health_probe                         | object       | Health probe configuration for the backend                                                                                                                        | no       | `{ path = "/", interval = 120, protocol = "Http", request_type = "GET" }`             |
+| storage_account.primary_web_host             | string       | Primary web host of the storage account                                                                                                                           | (yes)    |                                                                                       |
+| domain                                       | string       | The base domain name (without the subdomain part)                                                                                                                 | yes      |                                                                                       |
+| subdomain                                    | string       | The subdomain to use (e.g., 'www' for www.example.com)                                                                                                            | no       | `"www"`                                                                               |
+| dns_zone_name                                | string       | The name of the DNS zone where the CNAME and TXT validation records will be created                                                                               | no       | `null`                                                                                |
+| dns_zone_resource_group                      | string       | The resource group containing the DNS zone. Defaults to the same resource group as the Front Door                                                                 | no       | `null`                                                                                |
+| is_external_dns_zone                         | bool         | Set to true if the domain is managed outside of the Azure account (e.g., in AWS Route 53 or in another Azure account). If true, DNS records will not be created.  | no       | `false`                                                                               |
+| cache_settings                               | object       | Cache settings for the Front Door                                                                                                                                 | no       | `{ query_string_caching_behavior = "IgnoreQueryString", compression_enabled = true }` |
+| cache_settings.query_string_caching_behavior | string       | Query string caching behavior                                                                                                                                     | no       | `"IgnoreQueryString"`                                                                 |
+| cache_settings.compression_enabled           | bool         | Whether compression is enabled                                                                                                                                    | no       | `true`                                                                                |
+| cache_settings.content_types_to_compress     | list(string) | Content types to compress                                                                                                                                         | no       | `["application/json", "text/plain", "text/css", "application/javascript"]`            |
 
-*You must provide exactly one of `web` or `backend`
+
+\*You must provide exactly one of `web` or `backend`
 
 ##### Outputs
 
 | Output                         | Type   | Description                                |
-|--------------------------------|--------|--------------------------------------------|
+| ------------------------------ | ------ | ------------------------------------------ |
 | endpoint_url                   | string | The URL of the Front Door endpoint         |
 | custom_domain_url              | string | The URL of the custom domain               |
 | cdn_frontdoor_profile_id       | string | The ID of the Front Door profile           |
@@ -1912,6 +1916,36 @@ module "frontdoor_backend" {
 | endpoint_host_name             | string | The host name of the Front Door endpoint   |
 | route_id                       | string | The ID of the Front Door route             |
 | route                          | object | The Front Door route resource              |
+
+#### Frontdoor Domain
+
+```hcl
+module "frontdoor_domain" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/frontdoor-domain"
+
+  resource_group_name = "they-dev"
+  dns_zone_name       = "they-azure.de"
+  subdomain           = "www"
+  frontdoor_host_name = module.frontdoor_web.endpoint_host_name
+  validation_token    = module.frontdoor_web.custom_domain_validation_token
+}
+```
+
+
+##### Inputs
+
+| Variable            | Type   | Description                                                                         | Required | Default |
+|---------------------|--------|-------------------------------------------------------------------------------------|----------|---------|
+| subdomain           | string | The subdomain to use (e.g., 'www' for www.yourdomain.com)                           | no       | `"www"` |
+| dns_zone_name       | string | The name of the DNS zone where the CNAME and TXT validation records will be created | yes      |         |
+| resource_group_name | string | The resource group containing the DNS zone                                          | yes      |         |
+| validation_token    | string | The validation token for the custom domain                                          | yes      |         |
+| frontdoor_host_name | string | The host name of the Azure Front Door endpoint                                      | yes      |         |
+
+
+##### Outputs
+
+This module does not have any outputs.
 
 #### Container Registry
 
@@ -1934,16 +1968,16 @@ module "container_registry" {
   quarantine_policy_enabled = true    # Enable quarantine for uploaded images
   trust_policy_enabled      = true    # Enable content trust
   export_policy_enabled     = true    # Enable export of registry data
-  
+
   # Features for Standard and Premium SKUs
   anonymous_pull_enabled = false      # Require authentication for pulls
-  
+
   # More Premium SKU features
   data_endpoint_enabled         = true              # Enable dedicated data endpoints
-  network_rule_bypass_option    = "AzureServices"   # Allow Azure services to access 
+  network_rule_bypass_option    = "AzureServices"   # Allow Azure services to access
   public_network_access_enabled = true
   zone_redundancy_enabled       = true              # Enable multi-zone redundancy
-  
+
   # Geo-replication for disaster recovery (Premium SKU only)
   geo_replications = [
     {
@@ -1984,7 +2018,7 @@ module "container_registry" {
 ##### Inputs
 
 | Variable                      | Type         | Description                                                                                            | Required | Default           |
-|-------------------------------|--------------|--------------------------------------------------------------------------------------------------------|----------|-------------------|
+| ----------------------------- | ------------ | ------------------------------------------------------------------------------------------------------ | -------- | ----------------- |
 | name                          | string       | Name of the container registry                                                                         | yes      |                   |
 | resource_group                | object       | The resource group where the registry will be created                                                  | yes      |                   |
 | resource_group.name           | string       | Name of the resource group                                                                             | yes      |                   |
@@ -2008,14 +2042,14 @@ module "container_registry" {
 
 ##### Outputs
 
-| Output            | Type   | Description                                                                                  |
-|-------------------|--------|----------------------------------------------------------------------------------------------|
-| id                | string | The ID of the Container Registry                                                             |
-| name              | string | The name of the Container Registry                                                           |
-| login_server      | string | The URL that can be used to log into the container registry                                  |
-| admin_username    | string | The Username associated with the Container Registry Admin account - if admin is enabled      |
-| admin_password    | string | The Password associated with the Container Registry Admin account - if admin is enabled      |
-| identity          | object | The identity of the Container Registry                                                       |
+| Output         | Type   | Description                                                                             |
+| -------------- | ------ | --------------------------------------------------------------------------------------- |
+| id             | string | The ID of the Container Registry                                                        |
+| name           | string | The name of the Container Registry                                                      |
+| login_server   | string | The URL that can be used to log into the container registry                             |
+| admin_username | string | The Username associated with the Container Registry Admin account - if admin is enabled |
+| admin_password | string | The Password associated with the Container Registry Admin account - if admin is enabled |
+| identity       | object | The identity of the Container Registry                                                  |
 
 ## Contributing
 

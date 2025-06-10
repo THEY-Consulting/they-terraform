@@ -56,6 +56,12 @@ variable "dns_zone_resource_group" {
   default     = null
 }
 
+variable "is_external_dns_zone" {
+  description = "Set to true if the domain is managed outside of the Azure account (e.g., in AWS Route 53 or in another Azure account). If true, DNS records will not be created."
+  type        = bool
+  default     = false
+}
+
 variable "frontdoor_profile" {
   description = "Existing Front Door profile to use instead of creating a new one. If not provided, a new profile will be created."
   type = object({
