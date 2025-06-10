@@ -123,28 +123,6 @@ resource "azurerm_cdn_frontdoor_custom_domain" "custom_domain" {
   }
 }
 
-# Create the DNS validation TXT record
-resource "azurerm_dns_txt_record" "validation" {
-  count               = var.dns_zone_name != null ? 1 : 0
-  name                = "_dnsauth.${var.subdomain}"
-  resource_group_name = coalesce(var.dns_zone_resource_group, var.resource_group.name)
-  zone_name           = var.dns_zone_name
-  ttl                 = 3600
-
-  record {
-    value = azurerm_cdn_frontdoor_custom_domain.custom_domain.validation_token
-  }
-}
-
-resource "azurerm_dns_cname_record" "frontdoor" {
-  count               = var.dns_zone_name != null ? 1 : 0
-  name                = var.subdomain
-  resource_group_name = coalesce(var.dns_zone_resource_group, var.resource_group.name)
-  zone_name           = var.dns_zone_name
-  ttl                 = 3600
-  record              = azurerm_cdn_frontdoor_endpoint.endpoint.host_name
-}
-
 resource "azurerm_cdn_frontdoor_route" "default_route" {
   name                            = "frontdoor-${terraform.workspace}-default-route"
   cdn_frontdoor_endpoint_id       = azurerm_cdn_frontdoor_endpoint.endpoint.id
