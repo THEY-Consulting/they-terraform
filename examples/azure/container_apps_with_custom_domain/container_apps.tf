@@ -53,7 +53,8 @@ module "container-apps" {
   location                      = "Germany West Central"
   key_vault_name                = local.key_vault_name
   key_vault_resource_group_name = data.azurerm_key_vault.example.resource_group_name
-  use_a_record                  = true # commment out to use CNAME instead of A record
+  use_a_record                  = true                      # commment out to use CNAME instead of A record
+  resource_group_name           = local.resource_group_name # If nothing is specified, the module will create a new resource group with the name specified in the name variable.
 
   unique_environment_certificate = {
     name                  = azurerm_key_vault_secret.demo_cert.name
