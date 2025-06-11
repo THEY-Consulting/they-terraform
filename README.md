@@ -25,7 +25,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
   - [Azure](#azure)
     - [Function app](#function-app)
     - [MSSQL Database](#mssql-database)
-    - [Postgresql flexiible server](#postgresql-flexible-server)
+    - [Postgresql flexible server](#postgresql-flexible-server)
     - [VM](#vm)
     - [Container Apps](#container-apps)
     - [Container Instances](#container-instances)
