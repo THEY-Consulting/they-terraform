@@ -1,5 +1,5 @@
 locals {
-  location     = "North Europe" # Postgresql flexible in Germany West Central ist not available for our subscription
+  location     = "North Europe" # Postgresql flexible in Germany West Central is not available for our subscription
   project_name = "they-${terraform.workspace}-postgresql-flexible-server"
 }
 
