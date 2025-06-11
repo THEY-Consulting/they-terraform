@@ -25,7 +25,9 @@ Collection of modules to provide an easy way to create and deploy common infrast
   - [Azure](#azure)
     - [Function app](#function-app)
     - [MSSQL Database](#mssql-database)
+    - [Postgresql flexiible server](#postgresql-flexible-server)
     - [VM](#vm)
+    - [Container Apps](#container-apps)
     - [Container Instances](#container-instances)
     - [Datadog Diagnostics](#datadog-diagnostics)
     - [Frontdoor](#front-door)
@@ -1272,6 +1274,67 @@ module "mssql_database" {
 | server_domain_name         | string | Domain name of the server                                  |
 | ODBC_connection_string     | string | OBDC Connection string with a placeholder for the password |
 
+#### Postgresql flexible server
+
+```hcl
+module "postgresql_flexible_server" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/database/postgresql-flexible"
+
+  server_name         = "my_project"
+  resource_group_name = "my_resource_group"
+  location            = "Germany West Central"
+  admin_username      = "superAdmin"
+  admin_password      = sensitive("P@ssw0rd123!")
+  allow_all           = true
+  tags = {
+    Environment = "dev"
+    ManagedBy   = "terraform"
+  }
+
+}
+```
+
+##### Inputs
+
+| Variable                                    | Type         | Description                                                                             | Required | Default             |
+| ------------------------------------------- | ------------ | --------------------------------------------------------------------------------------- | -------- | ------------------- |
+| database_name                               | string       | Name of the database                                                                    | yes      |                     |
+| location                                    | string       | The Azure region where the resources should be created                                  | yes      |                     |
+| resource_group_name                         | string       | The name of the resource group in which to create the resources                         | yes      |                     |
+| server_name                                 | string       | The database server                                                                     | yes      |                     |
+| admin_username                              | string       | Administrator username                                                                  | yes      | `psqladmin`         |
+| admin_password                              | string       | Administrator password                                                                  | yes      |                     |
+| enable_public_network_access                | bool         | Enable public network access for the PostgreSQL server                                  | no       | `true`              |
+| allow_azure_services                        | bool         | Allow Azure services to access the PostgreSQL server                                    | no       | `true`              |
+| allow_all                                   | bool         | Allow all IP addresses to access the PostgreSQL server                                  | no       | `false`             |
+| allowed_ip_ranges                           | list(object) | List of allowed IP ranges for firewall rules                                            | no       | `[]`                |
+| allowed_ip_ranges.name                      | string       | Name of the firewall rule                                                               | yes      |                     |
+| allowed_ip_ranges.start_ip_address          | string       | Start ip address of the firewall rule                                                   | yes      |                     |
+| allowed_ip_ranges.end_ip_address            | string       | End ip address of the firewall rule                                                     | yes      |                     |
+| postgres_version                            | number       | PostgreSQL                                                                              | no       | `16`                |
+| high_availability                           | object       | Object of high availability configuration.                                              | no       | `null`              |
+| high_availability.mode                      | string       | The high availability mode for the PostgreSQL Flexible Server.                          | yes      |                     |
+| high_availability.standby_availability_zone | string       | Specifies the Availability Zone in which the standby Flexible Server should be located. | no       |                     |
+| zone                                        | number       | Specify the Availability Zone for the PostgreSQL Flexible server.                       | no       | `null`              |
+| sku_name                                    | string       | The sku for the database. For vCores, this also sets the maximum capacity               | no       | `"B_Standard_B1ms"` |
+| backup_retention_days                       | number       | Backup retention period in days                                                         | no       | `7`                 |
+| storage_mb                                  | number       | Storage size in MB                                                                      | no       | `32768`             |
+| collation                                   | string       | The collation of the database                                                           | no       | `"en_US.utf8"`      |
+| charset                                     | string       | The charset of the database                                                             | no       | `"UTF8"`            |
+| tags                                        | map(string)  | Map of tags to assign to the resources                                                  | no       | `{}`                |
+
+##### Outputs
+
+| Output                   | Type   | Description                                                         |
+| ------------------------ | ------ | ------------------------------------------------------------------- |
+| server_id                | string | Id of the server                                                    |
+| server_fqdn              | string | Administrator login name                                            |
+| admin_username           | string | Domain name of the server                                           |
+| connection_info          | object | Relevant connection info                                            |
+| connection_info.host     | string | host                                                                |
+| connection_info.port     | number | port                                                                |
+| connection_info.database | string | Name of database. Defaults to `postgres` if no database was created |
+
 #### VM
 
 ```hcl
@@ -1811,7 +1874,7 @@ module "frontdoor_web" {
   dns_zone_name           = "example.com"
   dns_zone_resource_group = "my-dns-resource-group"
   is_external_dns_zone    = false
-  
+
   # Cache settings (optional)
   cache_settings = {
     query_string_caching_behavior = "IgnoreQueryString"
@@ -1870,35 +1933,34 @@ module "frontdoor_backend" {
 
 ##### Inputs
 
-| Variable                                     | Type         | Description                                                                                                                                                       | Required | Default                                                                               |
-|----------------------------------------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------------------------------------------------------------------------------------|
-| resource_group                               | object       | The resource group where the Front Door resources will be created                                                                                                 | yes      |                                                                                       |
-| resource_group.name                          | string       | The name of the resource group                                                                                                                                    | yes      |                                                                                       |
-| resource_group.location                      | string       | The location of the resource group                                                                                                                                | yes      |                                                                                       |
-| frontdoor_profile                            | object       | Existing Front Door profile to use instead of creating a new one                                                                                                  | no       | `null`                                                                                |
-| frontdoor_profile.id                         | string       | The ID of the existing Front Door profile                                                                                                                         | (yes)    |                                                                                       |
-| frontdoor_profile.name                       | string       | The name of the existing Front Door profile                                                                                                                       | (yes)    |                                                                                       |
-| web                                          | object       | Configuration for web/frontend usage with storage account. Use this for static website hosting                                                                    | no*      | `null`                                                                                |
-| web.primary_web_host                         | string       | Primary web host of the storage account                                                                                                                           | (yes)    |                                                                                       |
-| backend                                      | object       | Configuration for backend API services                                                                                                                            | no*      | `null`                                                                                |
-| backend.host                                 | string       | Backend host (VM IP, App Service, etc.)                                                                                                                           | (yes)    |                                                                                       |
-| backend.host_header                          | string       | Host header to send to the backend                                                                                                                                | no       | Value of backend.host                                                                 |
-| backend.certificate_name_check_enabled       | bool         | Whether to check the certificate name                                                                                                                             | no       | `false`                                                                               |
-| backend.forwarding_protocol                  | string       | Protocol to use when forwarding requests to the backend                                                                                                           | no       | `"HttpOnly"`                                                                          |
-| backend.http_port                            | number       | HTTP port for the backend                                                                                                                                         | no       | `80`                                                                                  |
-| backend.https_port                           | number       | HTTPS port for the backend                                                                                                                                        | no       | `443`                                                                                 |
-| backend.health_probe                         | object       | Health probe configuration for the backend                                                                                                                        | no       | `{ path = "/", interval = 120, protocol = "Http", request_type = "GET" }`             |
-| storage_account.primary_web_host             | string       | Primary web host of the storage account                                                                                                                           | (yes)    |                                                                                       |
-| domain                                       | string       | The base domain name (without the subdomain part)                                                                                                                 | yes      |                                                                                       |
-| subdomain                                    | string       | The subdomain to use (e.g., 'www' for www.example.com)                                                                                                            | no       | `"www"`                                                                               |
-| dns_zone_name                                | string       | The name of the DNS zone where the CNAME and TXT validation records will be created                                                                               | no       | `null`                                                                                |
-| dns_zone_resource_group                      | string       | The resource group containing the DNS zone. Defaults to the same resource group as the Front Door                                                                 | no       | `null`                                                                                |
-| is_external_dns_zone                         | bool         | Set to true if the domain is managed outside of the Azure account (e.g., in AWS Route 53 or in another Azure account). If true, DNS records will not be created.  | no       | `false`                                                                               |
-| cache_settings                               | object       | Cache settings for the Front Door                                                                                                                                 | no       | `{ query_string_caching_behavior = "IgnoreQueryString", compression_enabled = true }` |
-| cache_settings.query_string_caching_behavior | string       | Query string caching behavior                                                                                                                                     | no       | `"IgnoreQueryString"`                                                                 |
-| cache_settings.compression_enabled           | bool         | Whether compression is enabled                                                                                                                                    | no       | `true`                                                                                |
-| cache_settings.content_types_to_compress     | list(string) | Content types to compress                                                                                                                                         | no       | `["application/json", "text/plain", "text/css", "application/javascript"]`            |
-
+| Variable                                     | Type         | Description                                                                                                                                                      | Required | Default                                                                               |
+| -------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------- |
+| resource_group                               | object       | The resource group where the Front Door resources will be created                                                                                                | yes      |                                                                                       |
+| resource_group.name                          | string       | The name of the resource group                                                                                                                                   | yes      |                                                                                       |
+| resource_group.location                      | string       | The location of the resource group                                                                                                                               | yes      |                                                                                       |
+| frontdoor_profile                            | object       | Existing Front Door profile to use instead of creating a new one                                                                                                 | no       | `null`                                                                                |
+| frontdoor_profile.id                         | string       | The ID of the existing Front Door profile                                                                                                                        | (yes)    |                                                                                       |
+| frontdoor_profile.name                       | string       | The name of the existing Front Door profile                                                                                                                      | (yes)    |                                                                                       |
+| web                                          | object       | Configuration for web/frontend usage with storage account. Use this for static website hosting                                                                   | no\*     | `null`                                                                                |
+| web.primary_web_host                         | string       | Primary web host of the storage account                                                                                                                          | (yes)    |                                                                                       |
+| backend                                      | object       | Configuration for backend API services                                                                                                                           | no\*     | `null`                                                                                |
+| backend.host                                 | string       | Backend host (VM IP, App Service, etc.)                                                                                                                          | (yes)    |                                                                                       |
+| backend.host_header                          | string       | Host header to send to the backend                                                                                                                               | no       | Value of backend.host                                                                 |
+| backend.certificate_name_check_enabled       | bool         | Whether to check the certificate name                                                                                                                            | no       | `false`                                                                               |
+| backend.forwarding_protocol                  | string       | Protocol to use when forwarding requests to the backend                                                                                                          | no       | `"HttpOnly"`                                                                          |
+| backend.http_port                            | number       | HTTP port for the backend                                                                                                                                        | no       | `80`                                                                                  |
+| backend.https_port                           | number       | HTTPS port for the backend                                                                                                                                       | no       | `443`                                                                                 |
+| backend.health_probe                         | object       | Health probe configuration for the backend                                                                                                                       | no       | `{ path = "/", interval = 120, protocol = "Http", request_type = "GET" }`             |
+| storage_account.primary_web_host             | string       | Primary web host of the storage account                                                                                                                          | (yes)    |                                                                                       |
+| domain                                       | string       | The base domain name (without the subdomain part)                                                                                                                | yes      |                                                                                       |
+| subdomain                                    | string       | The subdomain to use (e.g., 'www' for www.example.com)                                                                                                           | no       | `"www"`                                                                               |
+| dns_zone_name                                | string       | The name of the DNS zone where the CNAME and TXT validation records will be created                                                                              | no       | `null`                                                                                |
+| dns_zone_resource_group                      | string       | The resource group containing the DNS zone. Defaults to the same resource group as the Front Door                                                                | no       | `null`                                                                                |
+| is_external_dns_zone                         | bool         | Set to true if the domain is managed outside of the Azure account (e.g., in AWS Route 53 or in another Azure account). If true, DNS records will not be created. | no       | `false`                                                                               |
+| cache_settings                               | object       | Cache settings for the Front Door                                                                                                                                | no       | `{ query_string_caching_behavior = "IgnoreQueryString", compression_enabled = true }` |
+| cache_settings.query_string_caching_behavior | string       | Query string caching behavior                                                                                                                                    | no       | `"IgnoreQueryString"`                                                                 |
+| cache_settings.compression_enabled           | bool         | Whether compression is enabled                                                                                                                                   | no       | `true`                                                                                |
+| cache_settings.content_types_to_compress     | list(string) | Content types to compress                                                                                                                                        | no       | `["application/json", "text/plain", "text/css", "application/javascript"]`            |
 
 \*You must provide exactly one of `web` or `backend`
 
@@ -1931,17 +1993,15 @@ module "frontdoor_domain" {
 }
 ```
 
-
 ##### Inputs
 
 | Variable            | Type   | Description                                                                         | Required | Default |
-|---------------------|--------|-------------------------------------------------------------------------------------|----------|---------|
+| ------------------- | ------ | ----------------------------------------------------------------------------------- | -------- | ------- |
 | subdomain           | string | The subdomain to use (e.g., 'www' for www.yourdomain.com)                           | no       | `"www"` |
 | dns_zone_name       | string | The name of the DNS zone where the CNAME and TXT validation records will be created | yes      |         |
 | resource_group_name | string | The resource group containing the DNS zone                                          | yes      |         |
 | validation_token    | string | The validation token for the custom domain                                          | yes      |         |
 | frontdoor_host_name | string | The host name of the Azure Front Door endpoint                                      | yes      |         |
-
 
 ##### Outputs
 

@@ -20,7 +20,7 @@ module "postgresql_flexible_server" {
   admin_username      = "superAdmin"
   admin_password      = sensitive("P@ssw0rd123!")
   allow_all           = true
-  #database_name       = "testdb"
+  #database_name       = "testdb" #If you want to create a database, uncomment this line.
   tags = {
     Environment = "${terraform.workspace}"
     ManagedBy   = "terraform"

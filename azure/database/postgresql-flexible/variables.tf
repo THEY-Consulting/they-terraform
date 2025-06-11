@@ -7,7 +7,6 @@ variable "resource_group_name" {
 variable "location" {
   description = "Azure region"
   type        = string
-  default     = "Germany West Central"
 }
 
 variable "server_name" {
@@ -38,7 +37,7 @@ variable "admin_password" {
 variable "sku_name" {
   description = "SKU name for the server"
   type        = string
-  default     = "B_Standard_B1ms"
+  default     = "B_Standard_B1ms" # Burstable, the smallest SKU 
 }
 
 variable "postgres_version" {
@@ -56,7 +55,7 @@ variable "zone" {
 variable "high_availability" {
   description = "Object of high availability configuration."
   type = object({
-    mode                      = string
+    mode                      = string #Possible value are "SameZone" or "ZoneRedundant".
     standby_availability_zone = optional(number)
   })
   default = null
