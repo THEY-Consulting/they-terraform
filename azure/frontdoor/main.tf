@@ -139,10 +139,13 @@ resource "azurerm_cdn_frontdoor_route" "default_route" {
   supported_protocols    = ["Http", "Https"]
   link_to_default_domain = false
 
-  cache {
-    query_string_caching_behavior = var.cache_settings.query_string_caching_behavior
-    compression_enabled           = var.cache_settings.compression_enabled
-    content_types_to_compress     = var.cache_settings.content_types_to_compress
+  dynamic "cache" {
+    for_each = local.is_web_mode ? [var.cache_settings] : []
+    content {
+      query_string_caching_behavior = var.cache_settings.query_string_caching_behavior
+      compression_enabled           = var.cache_settings.compression_enabled
+      content_types_to_compress     = var.cache_settings.content_types_to_compress
+    }
   }
 }
 
