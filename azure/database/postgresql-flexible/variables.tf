@@ -46,6 +46,15 @@ variable "postgres_version" {
   default     = "16"
 }
 
+variable "pgsql_server_configurations" {
+  description = "List of PostgreSQL server configurations to apply"
+  type = list(object({
+    name  = string
+    value = string
+  }))
+  default = []
+}
+
 variable "zone" {
   description = "Specify the Availability Zone for the PostgreSQL Flexible server."
   type        = number

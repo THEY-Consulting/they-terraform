@@ -28,8 +28,13 @@ resource "azurerm_postgresql_flexible_server" "main" {
       high_availability.0.standby_availability_zone,
     ]
   }
-
   tags = var.tags
 }
 
+resource "azurerm_postgresql_flexible_server_configuration" "this" {
+  for_each = { for cfg in var.pgsql_server_configurations : cfg.name => cfg }
 
+  name      = each.value.name
+  server_id = azurerm_postgresql_flexible_server.main.id
+  value     = each.value.value
+}
