@@ -6,10 +6,21 @@ resource "azurerm_postgresql_flexible_server" "main" {
   administrator_login    = var.admin_username
   administrator_password = var.admin_password
 
-  sku_name   = var.sku_name
-  storage_mb = var.storage_mb
-  zone       = var.zone
+  sku_name          = var.sku_name
+  storage_mb        = var.storage_mb
+  storage_tier      = var.storage_tier
+  auto_grow_enabled = var.auto_grow_enabled
 
+  dynamic "maintenance_window" {
+    for_each = var.maintenance_window != null ? [var.maintenance_window] : []
+    content {
+      day_of_week  = maintenance_window.value.day_of_week
+      start_hour   = maintenance_window.value.start_hour
+      start_minute = maintenance_window.value.start_minute
+    }
+  }
+
+  zone = var.zone
   dynamic "high_availability" {
     for_each = var.high_availability != null ? [var.high_availability] : []
     content {

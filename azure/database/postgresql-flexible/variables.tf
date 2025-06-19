@@ -24,7 +24,7 @@ variable "enable_public_network_access" {
 variable "admin_username" {
   description = "Administrator username"
   type        = string
-  default     = "psqladmin"
+  default     = "psql"
 }
 
 variable "admin_password" {
@@ -38,6 +38,28 @@ variable "sku_name" {
   description = "SKU name for the server"
   type        = string
   default     = "B_Standard_B1ms" # Burstable, the smallest SKU 
+}
+
+variable "storage_tier" {
+  description = "The name of storage performance tier for IOPS of the PostgreSQL Flexible Server"
+  type        = string
+  default     = null #Possible values are P4, P6, P10, P15,P20, P30,P40, P50,P60, P70 or P80. Default value is dependant on the storage_mb value
+}
+
+variable "maintenance_window" {
+  description = "Maintenance window for the PostgreSQL server"
+  type = object({
+    day_of_week  = optional(number) #week starts on a Sunday, i.e. Sunday = 0, Monday = 1. Defaults to 0
+    start_hour   = optional(number)
+    start_minute = optional(number)
+  })
+  default = null
+}
+
+variable "auto_grow_enabled" {
+  description = "Enable auto-grow for storage"
+  type        = bool
+  default     = false
 }
 
 variable "postgres_version" {
