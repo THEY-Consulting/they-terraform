@@ -123,14 +123,13 @@ resource "azurerm_cdn_frontdoor_rule" "spa_rewrite" {
 
   conditions {
     url_path_condition {
-      operator     = "Equal"
-      match_values = ["/*"]
+      operator     = "Any"
     }
   }
 
   actions {
     url_rewrite_action {
-      source_pattern          = "/(.*)"
+      source_pattern          = "/"
       destination             = "/index.html"
       preserve_unmatched_path = false
     }
