@@ -10,7 +10,7 @@ variable "web" {
   description = "Configuration for web/frontend usage with storage account. Use this for static website hosting."
   type = object({
     primary_web_host = string
-    is_spa = optional(bool, false)
+    is_spa           = optional(bool, false)
   })
   default = null
 }
