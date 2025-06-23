@@ -1801,6 +1801,7 @@ module "frontdoor_web" {
   # Web-specific configuration for static website hosting
   web = {
     primary_web_host = "mystorageaccount.z6.web.core.windows.net"
+    is_spa           = true # Enable Single Page Application routing
   }
 
   # Domain configuration
@@ -1880,6 +1881,7 @@ module "frontdoor_backend" {
 | frontdoor_profile.name                       | string       | The name of the existing Front Door profile                                                                                                                      | (yes)    |                                                                                       |
 | web                                          | object       | Configuration for web/frontend usage with storage account. Use this for static website hosting                                                                   | no*      | `null`                                                                                |
 | web.primary_web_host                         | string       | Primary web host of the storage account                                                                                                                          | (yes)    |                                                                                       |
+| web.is_spa                                   | bool         | Enable routing for single page application                                                                                                                       | no       | `false`                                                                                 |
 | backend                                      | object       | Configuration for backend API services                                                                                                                           | no*      | `null`                                                                                |
 | backend.host                                 | string       | Backend host (VM IP, App Service, etc.)                                                                                                                          | (yes)    |                                                                                       |
 | backend.host_header                          | string       | Host header to send to the backend                                                                                                                               | no       | Value of backend.host                                                                 |

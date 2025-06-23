@@ -113,6 +113,29 @@ resource "azurerm_cdn_frontdoor_rule" "cache_rule" {
   }
 }
 
+# Redirect rules for single page applications (only relevant for web spa mode)
+resource "azurerm_cdn_frontdoor_rule" "spa_rewrite" {
+  count                     = local.is_web_mode && var.web.is_spa ? 1 : 0
+  name                      = "sparewrite"
+  cdn_frontdoor_rule_set_id = azurerm_cdn_frontdoor_rule_set.rule_set.id
+  order                     = 2
+  behavior_on_match         = "Continue"
+
+  conditions {
+    url_path_condition {
+      operator = "Any"
+    }
+  }
+
+  actions {
+    url_rewrite_action {
+      source_pattern          = "/"
+      destination             = "/index.html"
+      preserve_unmatched_path = false
+    }
+  }
+}
+
 resource "azurerm_cdn_frontdoor_custom_domain" "custom_domain" {
   name                     = "${var.web != null ? "web" : "backend"}-domain-${terraform.workspace}"
   cdn_frontdoor_profile_id = local.frontdoor_profile_id
