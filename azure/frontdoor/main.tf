@@ -5,6 +5,7 @@ locals {
 
   is_web_mode = var.web != null
   web_host    = var.web != null ? var.web.primary_web_host : null
+  is_spa_mode = var.web != null ? var.web.is_spa : false
 
   # Backend host configuration
   backend_host        = var.backend != null ? var.backend.host : null
@@ -115,7 +116,7 @@ resource "azurerm_cdn_frontdoor_rule" "cache_rule" {
 
 # Redirect rules for single page applications (only relevant for web spa mode)
 resource "azurerm_cdn_frontdoor_rule" "spa_rewrite" {
-  count                     = local.is_web_mode && var.web.is_spa ? 1 : 0
+  count                     = local.is_web_mode && local.is_spa_mode ? 1 : 0
   name                      = "sparewrite"
   cdn_frontdoor_rule_set_id = azurerm_cdn_frontdoor_rule_set.rule_set.id
   order                     = 2
