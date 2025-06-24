@@ -100,7 +100,7 @@ resource "azurerm_cdn_frontdoor_rule" "cache_rule" {
   conditions {
     url_file_extension_condition {
       operator     = "Equal"
-      match_values = ["css", "js", "ico", "png", "jpeg", "jpg", ".map"]
+      match_values = var.web.cache_file_extensions
     }
   }
 
