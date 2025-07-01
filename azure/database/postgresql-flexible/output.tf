@@ -19,12 +19,3 @@ output "admin_username" {
   value       = azurerm_postgresql_flexible_server.main.administrator_login
 }
 
-output "connection_info" {
-  description = "Connection information"
-  value = {
-    host     = azurerm_postgresql_flexible_server.main.fqdn
-    port     = 5432
-    username = azurerm_postgresql_flexible_server.main.administrator_login
-    database = var.database_name != null ? var.database_name : "postgres"
-  }
-}

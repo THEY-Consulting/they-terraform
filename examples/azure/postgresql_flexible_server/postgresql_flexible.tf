@@ -36,9 +36,6 @@ output "db_connection_string" {
   value = module.postgresql_flexible_server.db_connection_string
 }
 
-output "connection_info" {
-  value = module.postgresql_flexible_server.connection_info
-}
 
 
 

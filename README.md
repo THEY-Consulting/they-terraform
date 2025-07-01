@@ -1302,7 +1302,7 @@ module "postgresql_flexible_server" {
 | location                                    | string       | The Azure region where the resources should be created                                  | yes      |                     |
 | resource_group_name                         | string       | The name of the resource group in which to create the resources                         | yes      |                     |
 | server_name                                 | string       | The database server                                                                     | yes      |                     |
-| admin_username                              | string       | Administrator username                                                                  | yes      | `psqladmin`         |
+| admin_username                              | string       | Administrator username                                                                  | yes      | `psql`              |
 | admin_password                              | string       | Administrator password                                                                  | yes      |                     |
 | enable_public_network_access                | bool         | Enable public network access for the PostgreSQL server                                  | no       | `true`              |
 | allow_azure_services                        | bool         | Allow Azure services to access the PostgreSQL server                                    | no       | `true`              |
@@ -1311,29 +1311,35 @@ module "postgresql_flexible_server" {
 | allowed_ip_ranges.name                      | string       | Name of the firewall rule                                                               | yes      |                     |
 | allowed_ip_ranges.start_ip_address          | string       | Start ip address of the firewall rule                                                   | yes      |                     |
 | allowed_ip_ranges.end_ip_address            | string       | End ip address of the firewall rule                                                     | yes      |                     |
-| postgres_version                            | number       | PostgreSQL                                                                              | no       | `16`                |
+| postgres_version                            | number       | PostgreSQL version                                                                      | no       | `16`                |
 | high_availability                           | object       | Object of high availability configuration.                                              | no       | `null`              |
 | high_availability.mode                      | string       | The high availability mode for the PostgreSQL Flexible Server.                          | yes      |                     |
 | high_availability.standby_availability_zone | string       | Specifies the Availability Zone in which the standby Flexible Server should be located. | no       |                     |
 | zone                                        | number       | Specify the Availability Zone for the PostgreSQL Flexible server.                       | no       | `null`              |
 | sku_name                                    | string       | The sku for the database. For vCores, this also sets the maximum capacity               | no       | `"B_Standard_B1ms"` |
+| storage_mb                                  | number       | The max storage allowed for the PostgreSQL Flexible Server                              | no       | `32768`             |
+| storage_tier                                | string       | The name of storage performance tier for IOPS. Dependant on `storage_mb`                | no       | `null`              |
+| auto_grow_enabled                           | bool         | Is the storage auto grow for PostgreSQL Flexible Server enabled?                        | no       | `false`             |
+| maintenance_window                          | object       | Maintenance window (is always defined in UTC time!)                                     | no       | `null`              |
+| maintenance_window.day_of_week              | number       | The day of week, week starts on a Sunday( = 0, Monday = 1).                             | no       | `0`                 |
+| maintenance_window.start_hour               | number       | The start hour.                                                                         | no       | `0`                 |
+| maintenance_window.start_minute             | number       | The start minute                                                                        | no       | `0`                 |
 | backup_retention_days                       | number       | Backup retention period in days                                                         | no       | `7`                 |
-| storage_mb                                  | number       | Storage size in MB                                                                      | no       | `32768`             |
+| pgsql_server_configuration                  | list(object) | List of PostgreSQL server configurations to apply                                       | no       | `[]`                |
+| pgsql_server_configuration.name             | string       | Name of the config                                                                      | no       |                     |
+| pgsql_server_configuration.value            | string       | Value of the config                                                                     | no       |                     |
 | collation                                   | string       | The collation of the database                                                           | no       | `"en_US.utf8"`      |
 | charset                                     | string       | The charset of the database                                                             | no       | `"UTF8"`            |
 | tags                                        | map(string)  | Map of tags to assign to the resources                                                  | no       | `{}`                |
 
 ##### Outputs
 
-| Output                   | Type   | Description                                                         |
-| ------------------------ | ------ | ------------------------------------------------------------------- |
-| server_id                | string | Id of the server                                                    |
-| server_fqdn              | string | Administrator login name                                            |
-| admin_username           | string | Domain name of the server                                           |
-| connection_info          | object | Relevant connection info                                            |
-| connection_info.host     | string | host                                                                |
-| connection_info.port     | number | port                                                                |
-| connection_info.database | string | Name of database. Defaults to `postgres` if no database was created |
+| Output               | Type   | Description                                                                  |
+| -------------------- | ------ | ---------------------------------------------------------------------------- |
+| db_connection_string | string | Connection String that can be used to connect to created/updated db instance |
+| server_id            | string | Id of the server                                                             |
+| server_fqdn          | string | Administrator login name                                                     |
+| admin_username       | string | Domain name of the server                                                    |
 
 #### VM
 

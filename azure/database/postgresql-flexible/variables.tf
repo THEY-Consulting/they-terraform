@@ -93,7 +93,7 @@ variable "high_availability" {
 }
 
 variable "storage_mb" {
-  description = "Storage size in MB"
+  description = "The max storage allowed for the PostgreSQL Flexible Server"
   type        = number
   default     = 32768
 }
