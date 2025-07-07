@@ -25,7 +25,9 @@ Collection of modules to provide an easy way to create and deploy common infrast
   - [Azure](#azure)
     - [Function app](#function-app)
     - [MSSQL Database](#mssql-database)
+    - [Postgresql flexible server](#postgresql-flexible-server)
     - [VM](#vm)
+    - [Container Apps](#container-apps)
     - [Container Instances](#container-instances)
     - [Datadog Diagnostics](#datadog-diagnostics)
     - [Frontdoor](#front-door)
@@ -1272,6 +1274,73 @@ module "mssql_database" {
 | server_domain_name         | string | Domain name of the server                                  |
 | ODBC_connection_string     | string | OBDC Connection string with a placeholder for the password |
 
+#### Postgresql flexible server
+
+```hcl
+module "postgresql_flexible_server" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/database/postgresql-flexible"
+
+  server_name         = "my_project"
+  resource_group_name = "my_resource_group"
+  location            = "Germany West Central"
+  admin_username      = "superAdmin"
+  admin_password      = sensitive("P@ssw0rd123!")
+  allow_all           = true
+  tags = {
+    Environment = "dev"
+    ManagedBy   = "terraform"
+  }
+
+}
+```
+
+##### Inputs
+
+| Variable                                    | Type         | Description                                                                             | Required | Default             |
+| ------------------------------------------- | ------------ | --------------------------------------------------------------------------------------- | -------- | ------------------- |
+| database_name                               | string       | Name of the database                                                                    | yes      |                     |
+| location                                    | string       | The Azure region where the resources should be created                                  | yes      |                     |
+| resource_group_name                         | string       | The name of the resource group in which to create the resources                         | yes      |                     |
+| server_name                                 | string       | The database server                                                                     | yes      |                     |
+| admin_username                              | string       | Administrator username                                                                  | yes      | `psql`              |
+| admin_password                              | string       | Administrator password                                                                  | yes      |                     |
+| enable_public_network_access                | bool         | Enable public network access for the PostgreSQL server                                  | no       | `true`              |
+| allow_azure_services                        | bool         | Allow Azure services to access the PostgreSQL server                                    | no       | `true`              |
+| allow_all                                   | bool         | Allow all IP addresses to access the PostgreSQL server                                  | no       | `false`             |
+| allowed_ip_ranges                           | list(object) | List of allowed IP ranges for firewall rules                                            | no       | `[]`                |
+| allowed_ip_ranges.name                      | string       | Name of the firewall rule                                                               | yes      |                     |
+| allowed_ip_ranges.start_ip_address          | string       | Start ip address of the firewall rule                                                   | yes      |                     |
+| allowed_ip_ranges.end_ip_address            | string       | End ip address of the firewall rule                                                     | yes      |                     |
+| postgres_version                            | number       | PostgreSQL version                                                                      | no       | `16`                |
+| high_availability                           | object       | Object of high availability configuration.                                              | no       | `null`              |
+| high_availability.mode                      | string       | The high availability mode for the PostgreSQL Flexible Server.                          | yes      |                     |
+| high_availability.standby_availability_zone | string       | Specifies the Availability Zone in which the standby Flexible Server should be located. | no       |                     |
+| zone                                        | number       | Specify the Availability Zone for the PostgreSQL Flexible server.                       | no       | `null`              |
+| sku_name                                    | string       | The sku for the database. For vCores, this also sets the maximum capacity               | no       | `"B_Standard_B1ms"` |
+| storage_mb                                  | number       | The max storage allowed for the PostgreSQL Flexible Server                              | no       | `32768`             |
+| storage_tier                                | string       | The name of storage performance tier for IOPS. Dependant on `storage_mb`                | no       | `null`              |
+| auto_grow_enabled                           | bool         | Is the storage auto grow for PostgreSQL Flexible Server enabled?                        | no       | `false`             |
+| maintenance_window                          | object       | Maintenance window (is always defined in UTC time!)                                     | no       | `null`              |
+| maintenance_window.day_of_week              | number       | The day of week, week starts on a Sunday( = 0, Monday = 1).                             | no       | `0`                 |
+| maintenance_window.start_hour               | number       | The start hour.                                                                         | no       | `0`                 |
+| maintenance_window.start_minute             | number       | The start minute                                                                        | no       | `0`                 |
+| backup_retention_days                       | number       | Backup retention period in days                                                         | no       | `7`                 |
+| pgsql_server_configuration                  | list(object) | List of PostgreSQL server configurations to apply                                       | no       | `[]`                |
+| pgsql_server_configuration.name             | string       | Name of the config                                                                      | no       |                     |
+| pgsql_server_configuration.value            | string       | Value of the config                                                                     | no       |                     |
+| collation                                   | string       | The collation of the database                                                           | no       | `"en_US.utf8"`      |
+| charset                                     | string       | The charset of the database                                                             | no       | `"UTF8"`            |
+| tags                                        | map(string)  | Map of tags to assign to the resources                                                  | no       | `{}`                |
+
+##### Outputs
+
+| Output               | Type   | Description                                                                  |
+| -------------------- | ------ | ---------------------------------------------------------------------------- |
+| db_connection_string | string | Connection String that can be used to connect to created/updated db instance |
+| server_id            | string | Id of the server                                                             |
+| server_fqdn          | string | Administrator login name                                                     |
+| admin_username       | string | Domain name of the server                                                    |
+
 #### VM
 
 ```hcl
@@ -1813,7 +1882,7 @@ module "frontdoor_web" {
   dns_zone_name           = "example.com"
   dns_zone_resource_group = "my-dns-resource-group"
   is_external_dns_zone    = false
-  
+
   # Cache settings (optional)
   cache_settings = {
     query_string_caching_behavior = "IgnoreQueryString"
@@ -1903,7 +1972,6 @@ module "frontdoor_backend" {
 | cache_settings.compression_enabled           | bool         | Whether compression is enabled                                                                                                                                   | no       | `true`                                                                              |
 | cache_settings.content_types_to_compress     | list(string) | Content types to compress                                                                                                                                        | no       | `["application/json", "text/plain", "text/css", "application/javascript"]`          |
 
-
 \*You must provide exactly one of `web` or `backend`
 
 ##### Outputs
@@ -1935,17 +2003,15 @@ module "frontdoor_domain" {
 }
 ```
 
-
 ##### Inputs
 
 | Variable            | Type   | Description                                                                         | Required | Default |
-|---------------------|--------|-------------------------------------------------------------------------------------|----------|---------|
+| ------------------- | ------ | ----------------------------------------------------------------------------------- | -------- | ------- |
 | subdomain           | string | The subdomain to use (e.g., 'www' for www.yourdomain.com)                           | no       | `"www"` |
 | dns_zone_name       | string | The name of the DNS zone where the CNAME and TXT validation records will be created | yes      |         |
 | resource_group_name | string | The resource group containing the DNS zone                                          | yes      |         |
 | validation_token    | string | The validation token for the custom domain                                          | yes      |         |
 | frontdoor_host_name | string | The host name of the Azure Front Door endpoint                                      | yes      |         |
-
 
 ##### Outputs
 
