@@ -4,5 +4,4 @@ resource "azurerm_postgresql_flexible_server_database" "main" {
   server_id = azurerm_postgresql_flexible_server.main.id
   collation = var.collation
   charset   = var.charset
-
 }

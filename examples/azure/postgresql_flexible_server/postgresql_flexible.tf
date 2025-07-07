@@ -21,7 +21,7 @@ module "postgresql_flexible_server" {
     }
   ]
   tags = {
-    Environment = terraform.workspace"
+    Environment = terraform.workspace
     ManagedBy   = "terraform"
   }
 
