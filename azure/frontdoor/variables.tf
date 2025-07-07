@@ -9,7 +9,9 @@ variable "resource_group" {
 variable "web" {
   description = "Configuration for web/frontend usage with storage account. Use this for static website hosting."
   type = object({
-    primary_web_host = string
+    primary_web_host      = string
+    is_spa                = optional(bool, false)
+    cache_file_extensions = optional(list(string), ["css", "js", "ico", "png", "jpeg", "jpg", "gif", "map", "svg"])
   })
   default = null
 }
