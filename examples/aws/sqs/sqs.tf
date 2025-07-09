@@ -21,6 +21,8 @@ module "sqs" {
     name                      = "DLQ-${local.queue_name}"
     max_receive_count         = 1
     message_retention_seconds = 1209600 # 14 days, must be higher than message_retention_seconds in module
+    automated_redrive         = true
+    redrive_interval_cron     = "cron(0/2 * * * ? *)" # every 2 minutes
   }
   access_policy = jsonencode({ Version = "2012-10-17", Statement = [
     {
@@ -61,4 +63,3 @@ output "dlq_arn" {
 output "dlq_queue_name" {
   value = module.sqs.dlq_queue_name
 }
-
