@@ -1,5 +1,5 @@
 locals {
-  with_redrive = var.dead_letter_queue_config != null && var.dead_letter_queue_config.automated_redrive
+  with_redrive = try(var.dead_letter_queue_config.automated_redrive, false)
 }
 
 variable "name" {

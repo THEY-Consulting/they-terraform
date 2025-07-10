@@ -449,15 +449,16 @@ module "sqs" {
 
 ##### Outputs
 
-| Output                 | Type   | Description                                                                  |
-| ---------------------- | ------ | ---------------------------------------------------------------------------- |
-| arn                    | string | The Amazon Resource Name (ARN) identifying your SQS                          |
-| queue_name             | string | The name of the SQS                                                          |
-| queue_url              | string | The URL of the SQS                                                           |
-| topic_subscription_arn | string | The Amazon Resource Name (ARN) of the topic your SQS is subscribed to        |
-| dlq_arn                | string | The Amazon Resource Name (ARN) of the dead letter queue created for your SQS |
-| dlq_queue_name         | string | The name of the dead letter queue created for your SQS                       |
-| dlq_queue_url          | string | The URL of the dead letter queue created for your SQS                        |
+| Output                 | Type   | Description                                                                           |
+| ---------------------- | ------ | ------------------------------------------------------------------------------------- |
+| arn                    | string | The Amazon Resource Name (ARN) identifying your SQS                                   |
+| queue_name             | string | The name of the SQS                                                                   |
+| queue_url              | string | The URL of the SQS                                                                    |
+| topic_subscription_arn | string | The Amazon Resource Name (ARN) of the topic your SQS is subscribed to                 |
+| dlq_arn                | string | The Amazon Resource Name (ARN) of the dead letter queue created for your SQS          |
+| dlq_queue_name         | string | The name of the dead letter queue created for your SQS                                |
+| dlq_queue_url          | string | The URL of the dead letter queue created for your SQS                                 |
+| dlq_arn                | string | The Amazon Resource Name (ARN) of the created lambda which handles automated redrives |
 
 #### API Gateway (REST)
 
