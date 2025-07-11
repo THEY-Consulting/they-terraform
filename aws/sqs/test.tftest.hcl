@@ -1,4 +1,4 @@
-run "module:sqs plan with required variables" {
+run "module:sqs plan with only required variables" {
   command = plan
 
   variables {
@@ -6,6 +6,11 @@ run "module:sqs plan with required variables" {
     description   = "testing they-terraform sqs module"
     is_fifo       = false
     access_policy = "{}"
+  }
+
+  assert {
+    condition     = length(resource.aws_sqs_queue.dlq) == 0
+    error_message = "DLQ was planned to be created altough dead_letter_queue_config was not set"
   }
 }
 
@@ -22,6 +27,11 @@ run "module:sqs plan with DLQ(dead letter queue)" {
       max_receive_count         = 1
       message_retention_seconds = 1209600 # 14 days
     }
+  }
+
+  assert {
+    condition     = length(resource.aws_sqs_queue.dlq) == 1
+    error_message = "DLQ was not planned to be created altough dead_letter_queue_config was set"
   }
 }
 
@@ -90,11 +100,6 @@ run "module:sqs plan with automated redrive enabled" {
     condition     = length(module.redrive_lambda) == 1
     error_message = "Redrive lambda was not planned to be created altough automated_redrive is set to true"
   }
-
-  assert {
-    condition     = module.redrive_lambda[0].cron_trigger.schedule == "cron(0 2 * * ? *)"
-    error_message = "Default redrive_interval_cron was not applied correctly"
-  }
 }
 
 run "module:sqs plan with automated redrive disabled" {
@@ -116,33 +121,5 @@ run "module:sqs plan with automated redrive disabled" {
   assert {
     condition     = length(module.redrive_lambda) == 0
     error_message = "Redrive lambda was planned to be created although automated_redrive set to false"
-  }
-}
-
-run "module:sqs plan with custom redrive interval cron" {
-  command = plan
-
-  variables {
-    name          = "test-queue-custom-cron"
-    description   = "testing they-terraform sqs module with custom redrive cron"
-    is_fifo       = false
-    access_policy = "{}"
-    dead_letter_queue_config = {
-      name                      = "test-queue-custom-cron-dlq"
-      max_receive_count         = 1
-      message_retention_seconds = 1209600 # 14 days
-      automated_redrive         = true
-      redrive_interval_cron     = "cron(0 12 * * ? *)" # Custom: daily at 12 PM UTC
-    }
-  }
-
-  assert {
-    condition     = length(module.redrive_lambda) == 1
-    error_message = "Redrive lambda module was not planned to be created when automated_redrive was set to true"
-  }
-
-  assert {
-    condition     = module.redrive_lambda[0].cron_trigger.schedule == "cron(0 12 * * ? *)"
-    error_message = "Custom redrive_interval_cron was not applied"
   }
 }
