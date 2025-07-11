@@ -86,9 +86,8 @@ run "module:sqs plan with automated redrive enabled" {
     }
   }
 
-  # TODO: need to assert the plan values with the expected result. This is not working.
   assert {
-    condition     = module.sqs.dlq_redrive_lambda_arn != null
+    condition     = length(module.redrive_lambda) == 1
     error_message = "Redrive lambda was not created when automated_redrive was set to true"
   }
 }
@@ -110,7 +109,7 @@ run "module:sqs plan with automated redrive disabled" {
   }
 
   assert {
-    condition     = module.sqs.dlq_redrive_lambda_arn == null
-    error_message = "Redrive lambda was created when automated_redrive was set to false"
+    condition     = length(module.redrive_lambda) == 0
+    error_message = "Redrive lambda was created although automated_redrive was set to false"
   }
 }
