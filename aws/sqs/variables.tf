@@ -1,5 +1,6 @@
 locals {
-  with_redrive = try(var.dead_letter_queue_config.automated_redrive, false)
+  with_redrive          = try(var.dead_letter_queue_config.automated_redrive, false)
+  lambda_reference_name = replace(var.name, ".", "-") # ensures that if name contains .fifo we still get valid names for the automatically created lambda resources
 }
 
 variable "name" {

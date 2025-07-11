@@ -75,7 +75,7 @@ module "redrive_lambda" {
   count  = local.with_redrive ? 1 : 0
   source = "github.com/THEY-Consulting/they-terraform//aws/lambda"
 
-  name        = "redrive-dlq-${var.name}"
+  name        = "redrive-dlq-${local.lambda_reference_name}"
   description = "Lambda to redrive messages from DLQ back to main queue"
   runtime     = "nodejs20.x"
   timeout     = 60
@@ -88,12 +88,12 @@ module "redrive_lambda" {
   }
 
   cron_trigger = {
-    name     = "redrive-dlq-${var.name}-schedule"
+    name     = "redrive-dlq-${local.lambda_reference_name}-schedule"
     schedule = var.dead_letter_queue_config.redrive_interval_cron
   }
 
   iam_policy = [{
-    name = "allow-redrive-${var.name}"
+    name = "allow-redrive-${local.lambda_reference_name}"
     policy = jsonencode({
       Version = "2012-10-17"
       Statement = [{
