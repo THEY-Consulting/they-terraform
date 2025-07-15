@@ -4,9 +4,8 @@ import {
   ReceiveMessageCommand,
   DeleteMessageCommand,
 } from "@aws-sdk/client-sqs";
-import type { Handler } from "aws-lambda";
 
-export const handler: Handler = async (_event) => {
+export const handler = async (_event) => {
   const sqs = new SQSClient();
   const sourceQueueUrl = process.env.SOURCE_QUEUE_URL;
   const targetQueueUrl = process.env.TARGET_QUEUE_URL;
