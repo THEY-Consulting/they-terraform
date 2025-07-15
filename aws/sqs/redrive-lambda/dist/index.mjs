@@ -1,13 +1,12 @@
 import {
+  SendMessageCommand,
   SQSClient,
   ReceiveMessageCommand,
   DeleteMessageCommand,
 } from "@aws-sdk/client-sqs";
-import { SendMessageCommand } from "@aws-sdk/client-sqs";
-
-const sqs = new SQSClient();
 
 export const handler = async (_event) => {
+  const sqs = new SQSClient();
   const sourceQueueUrl = process.env.SOURCE_QUEUE_URL;
   const targetQueueUrl = process.env.TARGET_QUEUE_URL;
 
@@ -15,51 +14,47 @@ export const handler = async (_event) => {
 
   let processedCount = 0;
 
-  try {
-    while (true) {
-      const receiveParams = {
-        QueueUrl: sourceQueueUrl,
-        MaxNumberOfMessages: 10,
-        WaitTimeSeconds: 1,
-      };
+  while (true) {
+    const response = await sqs.send(
+      new ReceiveMessageCommand({
+        QueueUrl: queueUrl,
+        MaxNumberOfMessages: 5,
+        WaitTimeSeconds: 10,
+        MessageAttributeNames: ["All"],
+        MessageSystemAttributeNames: ["All"],
+      }),
+    );
 
-      const receiveResult = await sqs.send(
-        new ReceiveMessageCommand(receiveParams),
-      );
-
-      if (!receiveResult.Messages || receiveResult.Messages.length === 0) {
-        console.log("No more messages to process");
-        break;
-      }
-
-      for (const message of receiveResult.Messages) {
-        const sendParams = {
-          QueueUrl: targetQueueUrl,
-          MessageBody: message.Body,
-          MessageAttributes: message.MessageAttributes,
-        };
-
-        await sqs.send(new SendMessageCommand(sendParams));
-
-        const deleteParams = {
-          QueueUrl: sourceQueueUrl,
-          ReceiptHandle: message.ReceiptHandle,
-        };
-
-        await sqs.send(new DeleteMessageCommand(deleteParams));
-        console.log(
-          `Redrove message: ${msgString(message)} from ${sourceQueueUrl} to ${targetQueueUrl}`,
-        );
-        processedCount++;
-      }
+    if (response.Messages == undefined || response.Messages.length === 0) {
+      console.log("No more messages to process");
+      break;
     }
+    console.log(
+      `Got ${response.Messages.length} message${response.Messages.length > 1 ? "s" : ""}`,
+    );
 
-    console.log(`Successfully redrove ${processedCount} messages`);
-    return { statusCode: 200, body: JSON.stringify({ processedCount }) };
-  } catch (error) {
-    console.error("Error redriving messages:", error);
-    throw error;
+    for (const msg of receiveResult.Messages) {
+      await sqs.send(
+        new SendMessageCommand({
+          QueueUrl: targetQueueUrl,
+          MessageBody: msg.Body,
+          MessageAttributes: msg.MessageAttributes,
+        }),
+      );
+      await sqs.send(
+        new DeleteMessageCommand({
+          QueueUrl: sourceQueueUrl,
+          ReceiptHandle: msg.ReceiptHandle,
+        }),
+      );
+      console.log(
+        `Redrove message: ${msgString(msg)} from ${sourceQueueUrl} to ${targetQueueUrl}`,
+      );
+      processedCount++;
+    }
   }
+
+  console.log(`Successfully redrove ${processedCount} messages`);
 };
 
 const msgString = (msg) => {
