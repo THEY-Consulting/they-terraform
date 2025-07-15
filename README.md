@@ -428,31 +428,37 @@ module "sqs" {
 
 ##### Inputs
 
-| Variable                       | Type        | Description                                                                          | Required | Default  |
-| ------------------------------ | ----------- | ------------------------------------------------------------------------------------ | -------- | -------- |
-| access_policy                  | string      | JSON representation of the access policy.                                            | yes      |          |
-| description                    | string      | Description of the SQS                                                               | yes      |          |
-| name                           | string      | Name of the SQS                                                                      | yes      |          |
-| content_based_deduplication    | bool        | Enables or disables deduplication based on the message content                       | no       | `false`  |
-| is_fifo                        | bool        | Determines SQS type. If `true` creates a FIFO SQS, otherwise creates a standard SQS. | no       | `true`   |
-| max_message_size               | number      | Size-limit of how many bytes a message can be before Amazon SQS rejects it           | no       | `null`   |
-| message_retention_seconds      | number      | Number of seconds Amazon SQS retains a message. Defaults to 345600 (4 days)          | no       | `345600` |
-| visibility_timeout_seconds     | number      | How long a message remains invisible to other consumers while being consumed.        | no       | `null`   |
-| dead_letter_queue_config       | object      | Configuration for the dead letter queue. If provided DLQ will be created.            | no       | `null`   |
-| sns_topic_arn_for_subscription | string      | ARN of the SNS topic that the SQS queue will subscribe to, if provided.              | no       | `null`   |
-| tags                           | map(string) | Map of tags to assign to the Lambda Function and related resources                   | no       | `{}`     |
+| name                                               | type        | description                                                                          | required | default               |
+| -------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------ | -------- | --------------------- |
+| access_policy                                      | string      | JSON representation of the access policy.                                            | yes      |                       |
+| description                                        | string      | Description of the SQS                                                               | yes      |                       |
+| name                                               | string      | Name of the SQS                                                                      | yes      |                       |
+| content_based_deduplication                        | bool        | Enables or disables deduplication based on the message content                       | no       | `false`               |
+| is_fifo                                            | bool        | Determines SQS type. If `true` creates a FIFO SQS, otherwise creates a standard SQS. | no       | `true`                |
+| max_message_size                                   | number      | Size-limit of how many bytes a message can be before Amazon SQS rejects it           | no       | `null`                |
+| message_retention_seconds                          | number      | Number of seconds Amazon SQS retains a message. Defaults to 345600 (4 days)          | no       | `345600`              |
+| visibility_timeout_seconds                         | number      | How long a message remains invisible to other consumers while being consumed.        | no       | `null`                |
+| dead_letter_queue_config                           | object      | Configuration for the dead letter queue. If provided DLQ will be created.            | no       | `null`                |
+| dead_letter_queue_config.name                      | string      | Name of the dead letter queue                                                        | (yes)    |                       |
+| dead_letter_queue_config.max_receive_count         | number      | Maximum number of times a message can be received before being sent to DLQ           | (yes)    |                       |
+| dead_letter_queue_config.message_retention_seconds | number      | Number of seconds DLQ retains a message                                              | (yes)    |                       |
+| dead_letter_queue_config.automated_redrive         | bool        | Enables automatic redrive of messages from DLQ back to the main queue                | no       | `true`                |
+| dead_letter_queue_config.redrive_interval_cron     | string      | Cron expression for the redrive schedule                                             | no       | `"cron(0 2 * * ? *)"` |
+| sns_topic_arn_for_subscription                     | string      | ARN of the SNS topic that the SQS queue will subscribe to, if provided.              | no       | `null`                |
+| tags                                               | map(string) | Map of tags to assign to the Lambda Function and related resources                   | no       | `{}`                  |
 
 ##### Outputs
 
-| Output                 | Type   | Description                                                                  |
-| ---------------------- | ------ | ---------------------------------------------------------------------------- |
-| arn                    | string | The Amazon Resource Name (ARN) identifying your SQS                          |
-| queue_name             | string | The name of the SQS                                                          |
-| queue_url              | string | The URL of the SQS                                                           |
-| topic_subscription_arn | string | The Amazon Resource Name (ARN) of the topic your SQS is subscribed to        |
-| dlq_arn                | string | The Amazon Resource Name (ARN) of the dead letter queue created for your SQS |
-| dlq_queue_name         | string | The name of the dead letter queue created for your SQS                       |
-| dlq_queue_url          | string | The URL of the dead letter queue created for your SQS                        |
+| Output                 | Type   | Description                                                                           |
+| ---------------------- | ------ | ------------------------------------------------------------------------------------- |
+| arn                    | string | The Amazon Resource Name (ARN) identifying your SQS                                   |
+| queue_name             | string | The name of the SQS                                                                   |
+| queue_url              | string | The URL of the SQS                                                                    |
+| topic_subscription_arn | string | The Amazon Resource Name (ARN) of the topic your SQS is subscribed to                 |
+| dlq_arn                | string | The Amazon Resource Name (ARN) of the dead letter queue created for your SQS          |
+| dlq_queue_name         | string | The name of the dead letter queue created for your SQS                                |
+| dlq_queue_url          | string | The URL of the dead letter queue created for your SQS                                 |
+| dlq_redrive_lambda_arn | string | The Amazon Resource Name (ARN) of the created lambda which handles automated redrives |
 
 #### API Gateway (REST)
 

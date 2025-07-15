@@ -1,3 +1,8 @@
+locals {
+  with_redrive          = try(var.dead_letter_queue_config.automated_redrive, false)
+  lambda_reference_name = replace(var.name, ".", "-") # ensures that if name contains .fifo we still get valid names for the automatically created lambda resources
+}
+
 variable "name" {
   description = "Name of the SQS queue. Must end with '.fifo' for a FIFO(First-In-First-Out) queue."
   type        = string
@@ -49,6 +54,8 @@ variable "dead_letter_queue_config" {
     name                      = string
     max_receive_count         = number
     message_retention_seconds = number
+    automated_redrive         = optional(bool, true)
+    redrive_interval_cron     = optional(string, "cron(0 2 * * ? *)") # defaults to daily at 2 AM UTC
   })
   default = null
 }

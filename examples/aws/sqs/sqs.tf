@@ -61,4 +61,3 @@ output "dlq_arn" {
 output "dlq_queue_name" {
   value = module.sqs.dlq_queue_name
 }
-

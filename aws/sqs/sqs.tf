@@ -70,3 +70,42 @@ resource "aws_sns_topic_subscription" "main" {
     ignore_changes = [replay_policy]
   }
 }
+
+module "redrive_lambda" {
+  count  = local.with_redrive ? 1 : 0
+  source = "github.com/THEY-Consulting/they-terraform//aws/lambda"
+
+  name        = "redrive-dlq-${local.lambda_reference_name}"
+  description = "Lambda to redrive messages from DLQ back to main queue"
+  runtime     = "nodejs20.x"
+  timeout     = 60
+
+  source_dir = "${path.module}/redrive-lambda"
+
+  environment = {
+    SOURCE_QUEUE_URL = aws_sqs_queue.dlq[0].url
+    TARGET_QUEUE_URL = aws_sqs_queue.main.url
+  }
+
+  cron_trigger = {
+    name     = "redrive-dlq-${local.lambda_reference_name}-schedule"
+    schedule = var.dead_letter_queue_config.redrive_interval_cron
+  }
+
+  iam_policy = [{
+    name = "allow-redrive-${local.lambda_reference_name}"
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [{
+        Effect   = "Allow"
+        Action   = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAttributes"]
+        Resource = aws_sqs_queue.dlq[0].arn
+        },
+        {
+          Effect   = "Allow"
+          Action   = ["sqs:SendMessage"]
+          Resource = aws_sqs_queue.main.arn
+        }
+      ]
+  }) }]
+}
