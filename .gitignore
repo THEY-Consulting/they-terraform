@@ -48,8 +48,6 @@ terraform.rc
 ### Build files
 dist
 node_modules
-# here we actually need the files inside dist folder
-!aws/sqs/redrive-lambda/dist/
 
 # src: https://next.yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
 **/.pnp.*

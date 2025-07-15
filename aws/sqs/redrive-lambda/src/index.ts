@@ -4,8 +4,9 @@ import {
   ReceiveMessageCommand,
   DeleteMessageCommand,
 } from "@aws-sdk/client-sqs";
+import type { Handler } from "aws-lambda";
 
-export const handler = async (_event) => {
+export const handler: Handler = async (_event) => {
   const sqs = new SQSClient();
   const sourceQueueUrl = process.env.SOURCE_QUEUE_URL;
   const targetQueueUrl = process.env.TARGET_QUEUE_URL;
@@ -17,8 +18,8 @@ export const handler = async (_event) => {
   while (true) {
     const response = await sqs.send(
       new ReceiveMessageCommand({
-        QueueUrl: queueUrl,
-        MaxNumberOfMessages: 5,
+        QueueUrl: sourceQueueUrl,
+        MaxNumberOfMessages: 10,
         WaitTimeSeconds: 10,
         MessageAttributeNames: ["All"],
         MessageSystemAttributeNames: ["All"],
@@ -33,7 +34,7 @@ export const handler = async (_event) => {
       `Got ${response.Messages.length} message${response.Messages.length > 1 ? "s" : ""}`,
     );
 
-    for (const msg of receiveResult.Messages) {
+    for (const msg of response.Messages) {
       await sqs.send(
         new SendMessageCommand({
           QueueUrl: targetQueueUrl,
@@ -48,19 +49,11 @@ export const handler = async (_event) => {
         }),
       );
       console.log(
-        `Redrove message: ${msgString(msg)} from ${sourceQueueUrl} to ${targetQueueUrl}`,
+        `Redrove message: ${JSON.stringify(msg)} from ${sourceQueueUrl} to ${targetQueueUrl}`,
       );
       processedCount++;
     }
   }
 
   console.log(`Successfully redrove ${processedCount} messages`);
-};
-
-const msgString = (msg) => {
-  try {
-    return JSON.stringify(msg);
-  } catch (err) {
-    return msg;
-  }
 };
