@@ -82,6 +82,11 @@ module "redrive_lambda" {
 
   source_dir = "${path.module}/redrive-lambda"
 
+  build = {
+    enabled = false
+  }
+  is_bundle = true
+
   environment = {
     SOURCE_QUEUE_URL = aws_sqs_queue.dlq[0].url
     TARGET_QUEUE_URL = aws_sqs_queue.main.url
