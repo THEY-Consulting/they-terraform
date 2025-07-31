@@ -111,6 +111,9 @@ resource "aws_lb_target_group" "extra" {
 
   health_check {
     path = var.target_groups[count.index].health_check_path
+    timeout = var.target_groups[count.index].health_check_timeout
+    interval = var.target_groups[count.index].health_check_interval
+    unhealthy_threshold = var.target_groups[count.index].health_check_unhealthy_threshold
   }
 }
 

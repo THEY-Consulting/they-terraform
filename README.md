@@ -696,6 +696,9 @@ module "auto-scaling-group" {
     name = "api"
     port = 8080
     health_check_path = "/health"
+    health_check_timeout = 50
+    health_check_interval = 40
+    health_check_unhealthy_threshold = 5
     path_priority = 100
     path_patterns_forwarded_to_target_group_on_default_port = tolist(["/api/*", "/v1"])
   }]
@@ -755,6 +758,9 @@ module "auto-scaling-group" {
 | target_groups.\*.name                                                    | string       | Name of the target group                                                                                                                                                | (yes)    |                                                                           |
 | target_groups.\*.port                                                    | number       | Port of the target group                                                                                                                                                | (yes)    |                                                                           |
 | target_groups.\*.health_check_path                                       | string       | Destination for the health check request for the target group                                                                                                           | no       | `"/"`                                                                     |
+| target_groups.\*.health_check_timeout                                       | number       | Timeout in seconds for the health check request for the target group                                                                                                   | no       | `null`                                                                      |
+| target_groups.\*.health_check_interval                                       | number       | Interval in seconds for the health check request for the target group                                                                                                  | no       | `null`                                                                      |
+| target_groups.\*.health_check_unhealthy_threshold                        | number       | Number of consecutive health check failures before considering the target unhealthy                                                                                 | no       | `null`                                                                       |
 | target_groups.\*.path_patterns_forwarded_to_target_group_on_default_port | list(string) | URL path patterns on default port (HTTPs or HTTP) that will be forwarded to the target group                                                                            | no       | `null`                                                                    |
 | target_groups.\*.path_priority                                           | number       | The priority for the rule between 1 and 50000. Leaving it unset will automatically set the rule with next available priority after the currently existing highest rule. | no       | `null`                                                                    |
 | policies                                                                 | list(object) | List of policies to attach to the ASG instances via IAM Instance Profile                                                                                                | no       | `[]`                                                                      |
