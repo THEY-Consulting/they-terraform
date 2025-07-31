@@ -93,6 +93,9 @@ resource "aws_lb_target_group" "tg" {
 
   health_check {
     path = var.health_check_path
+    timeout = var.health_check_timeout
+    interval = var.health_check_interval
+    unhealthy_threshold = var.health_check_unhealthy_threshold
   }
 }
 

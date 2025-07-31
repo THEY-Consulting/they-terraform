@@ -114,6 +114,24 @@ variable "health_check_path" {
   default     = "/"
 }
 
+variable "health_check_timeout" {
+  description = "Timeout in seconds for the health check request"
+  type        = number
+  default     = null
+}
+
+variable "health_check_interval" {
+  description = "Interval in seconds for the health check request"
+  type        = number
+  default     = null
+}
+
+variable "health_check_unhealthy_threshold" {
+  description = "Number of consecutive health check failures before considering the target unhealthy"
+  type        = number
+  default     = null
+}
+
 variable "target_groups" {
   description = "List of additional target groups to attach to the ASG instances and forward traffic to"
   type = list(object({

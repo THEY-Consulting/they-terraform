@@ -692,6 +692,9 @@ module "auto-scaling-group" {
     environment = "dev"
   }
   health_check_path = "/health"
+  health_check_timeout = 50
+  health_check_interval = 40
+  health_check_unhealthy_threshold = 5
   target_groups = [{
     name = "api"
     port = 8080
@@ -754,6 +757,9 @@ module "auto-scaling-group" {
 | certificate_arn                                                          | string       | ARN of certificate used to setup HTTPs in Application Load Balancer                                                                                                     | no       | `null`                                                                    |
 | tags                                                                     | map(string)  | Additional tags for the components of this module                                                                                                                       | no       | `{}`                                                                      |
 | health_check_path                                                        | string       | Destination for the health check request                                                                                                                                | no       | `"/"`                                                                     |
+| health_check_timeout                                                     | number       | Timeout in seconds for the health check request                                                                                                                         | no       | `null`                                                                    |
+| health_check_interval                                                    | number       | Interval in seconds for the health check request                                                                                                                        | no       | `null`                                                                    |
+| health_check_unhealthy_threshold                                         | number       | Number of consecutive health check failures before considering the target unhealthy                                                                                     | no       | `null`                                                                    |
 | target_groups                                                            | list(object) | List of additional target groups to attach to the ASG instances and forward traffic to                                                                                  | no       | `[]`                                                                      |
 | target_groups.\*.name                                                    | string       | Name of the target group                                                                                                                                                | (yes)    |                                                                           |
 | target_groups.\*.port                                                    | number       | Port of the target group                                                                                                                                                | (yes)    |                                                                           |
