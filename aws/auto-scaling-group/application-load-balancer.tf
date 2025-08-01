@@ -92,7 +92,10 @@ resource "aws_lb_target_group" "tg" {
   vpc_id   = local.vpc_id
 
   health_check {
-    path = var.health_check_path
+    path                = var.health_check_path
+    timeout             = var.health_check_timeout
+    interval            = var.health_check_interval
+    unhealthy_threshold = var.health_check_unhealthy_threshold
   }
 }
 
@@ -110,7 +113,10 @@ resource "aws_lb_target_group" "extra" {
   vpc_id   = local.vpc_id
 
   health_check {
-    path = var.target_groups[count.index].health_check_path
+    path                = var.target_groups[count.index].health_check_path
+    timeout             = var.target_groups[count.index].health_check_timeout
+    interval            = var.target_groups[count.index].health_check_interval
+    unhealthy_threshold = var.target_groups[count.index].health_check_unhealthy_threshold
   }
 }
 
