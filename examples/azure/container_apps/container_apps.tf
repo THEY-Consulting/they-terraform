@@ -26,6 +26,10 @@ module "container-apps" {
       template = {
         max_replicas = 2
         min_replicas = 1
+        http_scale_rule = {
+          name                = "http-scale-rule"
+          concurrent_requests = 100
+        }
         containers = [
           {
             name   = "nginx"
