@@ -6,10 +6,6 @@ output "container_app_jobs" {
       name                         = job.name
       resource_group_name          = job.resource_group_name
       container_app_environment_id = job.container_app_environment_id
-
-      latest_revision_name  = job.latest_revision_name
-      latest_revision_fqdn  = job.latest_revision_fqdn
-      outbound_ip_addresses = job.outbound_ip_addresses
     }
   }
 }
