@@ -52,18 +52,6 @@ variable "is_system_assigned" {
   default     = false
 }
 
-variable "key_vault_name" {
-  description = "Name of the key vault"
-  type        = string
-  default     = null
-}
-
-variable "key_vault_resource_group_name" {
-  description = "Name of the resource group where the key vault is located"
-  type        = string
-  default     = null
-}
-
 variable "tags" {
   description = "Tags for the resources."
   type        = map(string)

@@ -1785,8 +1785,6 @@ module "container-apps-job" {
 | sku_log_analytics             | string      | The SKU of the log analytics workspace                                                                                                          | no       | `PerGB2018` |
 | workload_profile              | object      | An object that defines the workload profile of the environment. Leaving its default value means having a managed environment `Consumption Only` | no       | `null`      |
 | is_system_assigned            | bool        | If true, a system-assigned managed identity will be created for the environment                                                                 | no       | `false`     |
-| key_vault_name                | string      | Name of the key vault                                                                                                                           | no       | `null`      |
-| key_vault_resource_group_name | string      | Name of the resource group where the key vault is located                                                                                       | no       | `null`      |
 | tags                          | map(string) | Tags for the resources                                                                                                                          | no       | `{}`        |
 | container_app_jobs            | map(object) | The container app jobs to deploy                                                                                                                | yes      |             |
 
