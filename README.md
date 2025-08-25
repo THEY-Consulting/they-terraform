@@ -28,7 +28,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [Postgresql flexible server](#postgresql-flexible-server)
     - [VM](#vm)
     - [Container Apps](#container-apps)
-    - [Container App Jobs](#container-app-jobs)
+    - [Container Apps Job](#container-apps-job)
     - [Container Instances](#container-instances)
     - [Datadog Diagnostics](#datadog-diagnostics)
     - [Frontdoor](#front-door)
@@ -1725,11 +1725,11 @@ module "container-apps" {
 | ------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | container_apps_urls | string | URLs of the container apps. If a custom domain was used, this will be the ouput. Otherwise, the FQDN of the latest revision of each respective Container App will be the output. |
 
-#### Container App Jobs
+#### Container Apps Job
 
 ```hcl
-module "container-app-jobs" {
-  source = "github.com/THEY-Consulting/they-terraform//azure/container-app-jobs"
+module "container-apps-job" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/container-apps-job"
 
   name                = "they-example-apps-job"
   location            = "Germany West Central"

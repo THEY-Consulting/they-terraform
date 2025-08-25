@@ -1,6 +1,6 @@
-module "container-app-jobs" {
-  #source = "github.com/THEY-Consulting/they-terraform//azure/container-app-jobs"
-  source = "../../../azure/container-app-jobs"
+module "container-apps-job" {
+  #source = "github.com/THEY-Consulting/they-terraform//azure/container-apps-job"
+  source = "../../../azure/container-apps-job"
 
   name                = "${terraform.workspace}-manual-jobs"
   location            = "Germany West Central"
@@ -48,9 +48,9 @@ module "container-app-jobs" {
 
 # --- OUTPUT ---
 output "container_app_jobs" {
-  value = module.container-app-jobs.container_app_jobs
+  value = module.container-apps-job.container_app_jobs
 }
 
 output "environment_id" {
-  value = module.container-app-jobs.container_app_environment_id
+  value = module.container-apps-job.container_app_environment_id
 }
