@@ -1,13 +1,11 @@
 output "container_app_jobs" {
   description = "Map of container app jobs with their details"
-  value = {
-    for job_name, job in azurerm_container_app_job.container_app_job : job_name => {
-      id                           = job.id
-      name                         = job.name
-      resource_group_name          = job.resource_group_name
-      container_app_environment_id = job.container_app_environment_id
-    }
-  }
+  value = [for job_name, job in azurerm_container_app_job.container_app_job : {
+    id                           = job.id
+    name                         = job.name
+    resource_group_name          = job.resource_group_name
+    container_app_environment_id = job.container_app_environment_id
+  }]
 }
 
 output "container_app_environment_id" {

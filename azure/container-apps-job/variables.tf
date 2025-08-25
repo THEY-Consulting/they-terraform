@@ -110,7 +110,7 @@ variable "container_app_jobs" {
         memory  = string
         command = optional(list(string))
         args    = optional(list(string))
-        env = optional(set(object({
+        env = optional(list(object({
           name        = string
           secret_name = optional(string)
           value       = optional(string)
