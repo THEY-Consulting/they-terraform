@@ -11,7 +11,7 @@ module "container-apps-job" {
     Project = "they-terraform-examples"
   }
 
-  container_app_jobs = {
+  jobs = {
     hello-world = {
       name = "hello-world-job"
 
@@ -44,8 +44,8 @@ module "container-apps-job" {
 }
 
 # --- OUTPUT ---
-output "container_app_jobs" {
-  value = module.container-apps-job.container_app_jobs
+output "jobs" {
+  value = module.container-apps-job.jobs
 }
 
 output "environment_id" {

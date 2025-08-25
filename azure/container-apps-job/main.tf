@@ -1,5 +1,5 @@
 resource "azurerm_container_app_job" "container_app_job" {
-  for_each = var.container_app_jobs
+  for_each = var.jobs
 
   container_app_environment_id = var.container_app_environment_id != null ? var.container_app_environment_id : azurerm_container_app_environment.app_environment[0].id
   name                         = each.value.name

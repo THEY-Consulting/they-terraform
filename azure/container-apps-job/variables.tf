@@ -58,12 +58,12 @@ variable "tags" {
   default     = {}
 }
 
-variable "container_app_jobs" {
+variable "jobs" {
   type = map(object({
     name                  = string
     tags                  = optional(map(string))
     workload_profile_name = optional(string)
-    
+
     # Job configuration
     replica_timeout      = optional(number, 1800)  # 30 minutes default
     replica_retry_limit   = optional(number, 0)    # No retries by default
@@ -74,14 +74,14 @@ variable "container_app_jobs" {
       parallelism              = optional(number, 1)
       replica_completion_count = optional(number, 1)
     }))
-    
+
     # Schedule trigger config
     schedule_trigger_config = optional(object({
       cron_expression          = string
       parallelism              = optional(number, 1)
       replica_completion_count = optional(number, 1)
     }))
-    
+
     # Event trigger config
     event_trigger_config = optional(object({
       parallelism              = optional(number, 1)
@@ -100,7 +100,7 @@ variable "container_app_jobs" {
         }))
       })
     }))
-    
+
     # Container template
     template = object({
       containers = set(object({
@@ -139,10 +139,10 @@ variable "container_app_jobs" {
   }))
   description = "The container app jobs to deploy."
   nullable    = false
-  
+
   validation {
     condition = alltrue([
-      for job_name, job in var.container_app_jobs :
+      for job_name, job in var.jobs :
         length([
           for config in [job.manual_trigger_config, job.schedule_trigger_config, job.event_trigger_config] :
           config if config != null

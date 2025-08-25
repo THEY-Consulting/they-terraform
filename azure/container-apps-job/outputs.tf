@@ -1,4 +1,4 @@
-output "container_app_jobs" {
+output "jobs" {
   description = "Map of container app jobs with their details"
   value = [for job_name, job in azurerm_container_app_job.container_app_job : {
     id                           = job.id
