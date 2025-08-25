@@ -4,6 +4,7 @@ resource "azurerm_container_app_job" "container_app_job" {
   container_app_environment_id = var.container_app_environment_id != null ? var.container_app_environment_id : azurerm_container_app_environment.app_environment[0].id
   name                         = each.value.name
   resource_group_name          = local.resource_group_name
+  location                     = local.resource_group_location
   replica_timeout_in_seconds   = each.value.replica_timeout
   replica_retry_limit          = each.value.replica_retry_limit
   workload_profile_name        = each.value.workload_profile_name
@@ -33,27 +34,27 @@ resource "azurerm_container_app_job" "container_app_job" {
   # Event trigger configuration
   dynamic "event_trigger_config" {
     for_each = each.value.event_trigger_config != null ? [each.value.event_trigger_config] : []
-    
+
     content {
       parallelism              = event_trigger_config.value.parallelism
       replica_completion_count = event_trigger_config.value.replica_completion_count
-      
+
       scale {
         min_executions   = event_trigger_config.value.scale.min_executions
         max_executions   = event_trigger_config.value.scale.max_executions
         polling_interval = event_trigger_config.value.scale.polling_interval
-        
+
         dynamic "rules" {
           for_each = event_trigger_config.value.scale.rules
-          
+
           content {
             name     = rules.value.name
             type     = rules.value.type
             metadata = rules.value.metadata
-            
+
             dynamic "auth" {
               for_each = rules.value.auth
-              
+
               content {
                 secret_ref        = auth.value.secret_ref
                 trigger_parameter = auth.value.trigger_parameter
