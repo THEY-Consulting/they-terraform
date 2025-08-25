@@ -20,6 +20,12 @@ variable "container_app_environment_id" {
   default     = null
 }
 
+variable "subnet_id" {
+  description = "The ID of the subnet to deploy the Container Apps Environment into. Required when using a custom VNet."
+  type        = string
+  default     = null
+}
+
 variable "enable_log_analytics" {
   description = "If true, a log analytics workspace will be created."
   type        = bool

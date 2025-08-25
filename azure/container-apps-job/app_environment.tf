@@ -5,6 +5,8 @@ resource "azurerm_container_app_environment" "app_environment" {
   location                   = local.resource_group_location
   resource_group_name        = local.resource_group_name
   log_analytics_workspace_id = var.enable_log_analytics ? azurerm_log_analytics_workspace.log_analytics_workspace[0].id : null
+  infrastructure_subnet_id   = var.subnet_id
+
 
   dynamic "workload_profile" {
     for_each = var.workload_profile != null ? [var.workload_profile] : []
