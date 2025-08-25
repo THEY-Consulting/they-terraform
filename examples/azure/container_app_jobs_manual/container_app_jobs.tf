@@ -1,0 +1,56 @@
+module "container-app-jobs" {
+  #source = "github.com/THEY-Consulting/they-terraform//azure/container-app-jobs"
+  source = "../../../azure/container-app-jobs"
+
+  name                = "${terraform.workspace}-manual-jobs"
+  location            = "Germany West Central"
+  resource_group_name = "they-dev" # If nothing is specified, the module will create a new resource group with the name specified in the name variable.
+  enable_log_analytics = true
+  
+  tags = {
+    Project = "they-terraform-examples"
+  }
+  
+  container_app_jobs = {
+    batch-processor = {
+      name         = "batch-processor-job"
+      trigger_type = "Manual"
+
+      manual_trigger_config = {
+        parallelism              = 3  # Run 3 replicas in parallel
+        replica_completion_count = 3  # All 3 must complete successfully
+      }
+
+      replica_timeout     = 1800  # 30 minutes
+      replica_retry_limit = 1
+
+      template = {
+        containers = [
+          {
+            name   = "batch-worker"
+            image  = "mcr.microsoft.com/k8se/quickstart-jobs:latest"
+            cpu    = "0.25"
+            memory = "0.5Gi"
+            command = ["/bin/bash"]
+            args    = ["-c", "echo 'Processing batch job...' && sleep 30 && echo 'Batch job completed'"]
+            env = [
+              {
+                name  = "WORKER_ID"
+                value = "batch-worker"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
+
+# --- OUTPUT ---
+output "container_app_jobs" {
+  value = module.container-app-jobs.container_app_jobs
+}
+
+output "environment_id" {
+  value = module.container-app-jobs.container_app_environment_id
+}

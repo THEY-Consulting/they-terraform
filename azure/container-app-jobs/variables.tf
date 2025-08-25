@@ -1,0 +1,174 @@
+variable "name" {
+  description = "Name of project, and of the resource group, when a new group is to be created."
+  type        = string
+}
+
+variable "location" {
+  description = "The Azure region where the resources should be created."
+  type        = string
+}
+
+variable "resource_group_name" {
+  description = "Name of resource group. Set this variable if you do not want to create a new resource group, but rather use an existing one."
+  type        = string
+  default     = null
+}
+
+variable "container_app_environment_id" {
+  description = "ID of an existing Container App Environment. If not provided, a new environment will be created."
+  type        = string
+  default     = null
+}
+
+variable "enable_log_analytics" {
+  description = "If true, a log analytics workspace will be created."
+  type        = bool
+  default     = false
+}
+
+variable "log_retention" {
+  description = "Amount of days for log retention"
+  type        = number
+  default     = 30
+}
+
+variable "sku_log_analytics" {
+  description = "The SKU of the log analytics workspace."
+  type        = string
+  default     = "PerGB2018"
+}
+
+variable "workload_profile" {
+  type = object({
+    name                  = string
+    workload_profile_type = string // Possible values include Consumption, D4, D8, D16, D32, E4, E8, E16 and E32
+  })
+  default = null
+}
+
+variable "is_system_assigned" {
+  description = "If true, a system-assigned managed identity will be created for the environment."
+  type        = bool
+  default     = false
+}
+
+variable "key_vault_name" {
+  description = "Name of the key vault"
+  type        = string
+  default     = null
+}
+
+variable "key_vault_resource_group_name" {
+  description = "Name of the resource group where the key vault is located"
+  type        = string
+  default     = null
+}
+
+variable "tags" {
+  description = "Tags for the resources."
+  type        = map(string)
+  default     = {}
+}
+
+variable "container_app_jobs" {
+  type = map(object({
+    name                  = string
+    tags                  = optional(map(string))
+    workload_profile_name = optional(string)
+    
+    # Job configuration
+    replica_timeout      = optional(number, 1800)  # 30 minutes default
+    replica_retry_limit   = optional(number, 0)    # No retries by default
+    
+    # Trigger configuration - exactly one must be specified
+    trigger_type = string # "Manual", "Schedule", or "Event"
+    
+    # Manual trigger config
+    manual_trigger_config = optional(object({
+      parallelism              = optional(number, 1)
+      replica_completion_count = optional(number, 1)
+    }))
+    
+    # Schedule trigger config
+    schedule_trigger_config = optional(object({
+      cron_expression          = string
+      parallelism              = optional(number, 1)
+      replica_completion_count = optional(number, 1)
+    }))
+    
+    # Event trigger config
+    event_trigger_config = optional(object({
+      parallelism              = optional(number, 1)
+      replica_completion_count = optional(number, 1)
+      scale = object({
+        min_executions   = optional(number, 0)
+        max_executions   = optional(number, 10)
+        polling_interval = optional(number, 30)
+        rules = list(object({
+          name = string
+          type = string
+          metadata = map(string)
+          auth = optional(list(object({
+            secret_ref       = string
+            trigger_parameter = string
+          })), [])
+        }))
+      })
+    }))
+    
+    # Container template
+    template = object({
+      containers = set(object({
+        name    = string
+        image   = string
+        cpu     = string
+        memory  = string
+        command = optional(list(string))
+        args    = optional(list(string))
+        env = optional(set(object({
+          name        = string
+          secret_name = optional(string)
+          value       = optional(string)
+        })))
+      }))
+    })
+
+    identity = optional(object({
+      type         = string
+      identity_ids = optional(list(string))
+    }))
+
+    secret = optional(list(object({
+      name                = string
+      value               = optional(string)
+      key_vault_secret_id = optional(string)
+      identity            = optional(string)
+    })))
+
+    registry = optional(list(object({
+      server               = string
+      username             = optional(string)
+      password_secret_name = optional(string)
+      identity             = optional(string)
+    })))
+  }))
+  description = "The container app jobs to deploy."
+  nullable    = false
+  
+  validation {
+    condition = alltrue([
+      for job_name, job in var.container_app_jobs : contains(["Manual", "Schedule", "Event"], job.trigger_type)
+    ])
+    error_message = "trigger_type must be one of: Manual, Schedule, Event"
+  }
+  
+  validation {
+    condition = alltrue([
+      for job_name, job in var.container_app_jobs : 
+      (job.trigger_type == "Manual" && job.manual_trigger_config != null) ||
+      (job.trigger_type == "Schedule" && job.schedule_trigger_config != null) ||
+      (job.trigger_type == "Event" && job.event_trigger_config != null)
+    ])
+    error_message = "The appropriate trigger config must be provided based on trigger_type"
+  }
+}

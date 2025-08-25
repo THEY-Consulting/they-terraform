@@ -28,6 +28,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [Postgresql flexible server](#postgresql-flexible-server)
     - [VM](#vm)
     - [Container Apps](#container-apps)
+    - [Container App Jobs](#container-app-jobs)
     - [Container Instances](#container-instances)
     - [Datadog Diagnostics](#datadog-diagnostics)
     - [Frontdoor](#front-door)
@@ -1723,6 +1724,99 @@ module "container-apps" {
 | Output              | Type   | Description                                                                                                                                                                      |
 | ------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | container_apps_urls | string | URLs of the container apps. If a custom domain was used, this will be the ouput. Otherwise, the FQDN of the latest revision of each respective Container App will be the output. |
+
+#### Container App Jobs
+
+```hcl
+module "container-app-jobs" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/container-app-jobs"
+
+  name                = "they-example-apps-job"
+  location            = "Germany West Central"
+  resource_group_name = "they-dev"
+  enable_log_analytics = true
+
+  container_app_jobs = {
+    nightly-backup = {
+      name         = "nightly-backup-job"
+      trigger_type = "Schedule"
+
+      schedule_trigger_config = {
+        cron_expression          = "0 2 * * *"  # Every day at 2 AM UTC
+        parallelism              = 1
+        replica_completion_count = 1
+      }
+
+      replica_timeout     = 7200  # 2 hours
+      replica_retry_limit = 3
+
+      template = {
+        containers = [
+          {
+            name   = "backup-worker"
+            image  = "mcr.microsoft.com/k8se/quickstart-jobs:latest"
+            cpu    = "1"
+            memory = "2Gi"
+            env = [
+              {
+                name  = "BACKUP_TYPE"
+                value = "nightly"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+##### Inputs
+
+| Name                          | Type        | Description                                                                                                                                     | Required | Default     |
+|-------------------------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------|----------|-------------|
+| name                          | string      | Name of project, and of the resource group, when a new group is to be created                                                                   | yes      |             |
+| location                      | string      | The Azure region where the resources should be created                                                                                          | yes      |             |
+| resource_group_name           | string      | Name of resource group. Set this variable if you do not want to create a new resource group, but rather use an existing one                     | no       | `null`      |
+| container_app_environment_id  | string      | ID of an existing Container App Environment. If not provided, a new environment will be created                                                 | no       | `null`      |
+| enable_log_analytics          | bool        | If true, a log analytics workspace will be created                                                                                              | no       | `false`     |
+| log_retention                 | number      | Amount of days for log retention                                                                                                                | no       | `30`        |
+| sku_log_analytics             | string      | The SKU of the log analytics workspace                                                                                                          | no       | `PerGB2018` |
+| workload_profile              | object      | An object that defines the workload profile of the environment. Leaving its default value means having a managed environment `Consumption Only` | no       | `null`      |
+| is_system_assigned            | bool        | If true, a system-assigned managed identity will be created for the environment                                                                 | no       | `false`     |
+| key_vault_name                | string      | Name of the key vault                                                                                                                           | no       | `null`      |
+| key_vault_resource_group_name | string      | Name of the resource group where the key vault is located                                                                                       | no       | `null`      |
+| tags                          | map(string) | Tags for the resources                                                                                                                          | no       | `{}`        |
+| container_app_jobs            | map(object) | The container app jobs to deploy                                                                                                                | yes      |             |
+
+##### Job Configuration
+
+Each job in `container_app_jobs` supports the following configuration:
+
+| Name                    | Type         | Description                                                                         | Required | Default |
+|-------------------------|--------------|-------------------------------------------------------------------------------------|----------|---------|
+| name                    | string       | Name of the container app job                                                       | yes      |         |
+| trigger_type            | string       | Type of job trigger. Must be one of: "Manual", "Schedule", "Event"                  | yes      |         |
+| replica_timeout         | number       | Maximum time in seconds to wait for a replica to complete                           | no       | `1800`  |
+| replica_retry_limit     | number       | Maximum number of times to retry a failed replica                                   | no       | `0`     |
+| workload_profile_name   | string       | The name of the Workload Profile in the Container App Environment to place this job | no       |         |
+| manual_trigger_config   | object       | Configuration for manual jobs (required when trigger_type = "Manual")               | no       |         |
+| schedule_trigger_config | object       | Configuration for scheduled jobs (required when trigger_type = "Schedule")          | no       |         |
+| event_trigger_config    | object       | Configuration for event-driven jobs (required when trigger_type = "Event")          | no       |         |
+| template                | object       | Container template configuration                                                    | yes      |         |
+| identity                | object       | Managed identity configuration                                                      | no       |         |
+| secret                  | list(object) | List of secrets for the job                                                         | no       |         |
+| registry                | list(object) | List of container registries for private images                                     | no       |         |
+
+##### Outputs
+
+| Output                         | Type   | Description                                                                          |
+|--------------------------------|--------|--------------------------------------------------------------------------------------|
+| container_app_jobs             | object | Map of container app jobs with their details including IDs, names, and trigger types |
+| container_app_environment_id   | string | ID of the Container App Environment (created or existing)                            |
+| container_app_environment_name | string | Name of the Container App Environment                                                |
+| resource_group_name            | string | Name of the resource group                                                           |
+| log_analytics_workspace_id     | string | ID of the Log Analytics workspace (if created)                                       |
 
 #### Storage Container
 
