@@ -6,7 +6,12 @@ output "container_app_jobs" {
       name                         = job.name
       resource_group_name          = job.resource_group_name
       container_app_environment_id = job.container_app_environment_id
-      trigger_type                 = var.container_app_jobs[job_name].trigger_type
+      trigger_type                 = (
+        var.container_app_jobs[job_name].manual_trigger_config != null ? "Manual" :
+        var.container_app_jobs[job_name].schedule_trigger_config != null ? "Schedule" :
+        var.container_app_jobs[job_name].event_trigger_config != null ? "Event" :
+        "Unknown"
+      )
       latest_revision_name         = job.latest_revision_name
       latest_revision_fqdn         = job.latest_revision_fqdn
       outbound_ip_addresses        = job.outbound_ip_addresses

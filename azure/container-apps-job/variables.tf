@@ -79,10 +79,8 @@ variable "container_app_jobs" {
     # Job configuration
     replica_timeout      = optional(number, 1800)  # 30 minutes default
     replica_retry_limit   = optional(number, 0)    # No retries by default
-    
+
     # Trigger configuration - exactly one must be specified
-    trigger_type = string # "Manual", "Schedule", or "Event"
-    
     # Manual trigger config
     manual_trigger_config = optional(object({
       parallelism              = optional(number, 1)
@@ -157,18 +155,11 @@ variable "container_app_jobs" {
   
   validation {
     condition = alltrue([
-      for job_name, job in var.container_app_jobs : contains(["Manual", "Schedule", "Event"], job.trigger_type)
+      for job_name, job in var.container_app_jobs :
+      (job.manual_trigger_config != null ? 1 : 0) +
+      (job.schedule_trigger_config != null ? 1 : 0) +
+      (job.event_trigger_config != null ? 1 : 0) == 1
     ])
-    error_message = "trigger_type must be one of: Manual, Schedule, Event"
-  }
-  
-  validation {
-    condition = alltrue([
-      for job_name, job in var.container_app_jobs : 
-      (job.trigger_type == "Manual" && job.manual_trigger_config != null) ||
-      (job.trigger_type == "Schedule" && job.schedule_trigger_config != null) ||
-      (job.trigger_type == "Event" && job.event_trigger_config != null)
-    ])
-    error_message = "The appropriate trigger config must be provided based on trigger_type"
+    error_message = "Exactly one trigger configuration must be provided: manual_trigger_config, schedule_trigger_config, or event_trigger_config"
   }
 }

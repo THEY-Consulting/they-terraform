@@ -1727,6 +1727,8 @@ module "container-apps" {
 
 #### Container Apps Job
 
+Azure Container Apps Jobs enable you to run containerized tasks that execute for a finite duration and exit. The trigger type is automatically determined based on which trigger configuration you provide: `manual_trigger_config`, `schedule_trigger_config`, or `event_trigger_config`.
+
 ```hcl
 module "container-apps-job" {
   source = "github.com/THEY-Consulting/they-terraform//azure/container-apps-job"
@@ -1738,8 +1740,7 @@ module "container-apps-job" {
 
   container_app_jobs = {
     nightly-backup = {
-      name         = "nightly-backup-job"
-      trigger_type = "Schedule"
+      name = "nightly-backup-job"
 
       schedule_trigger_config = {
         cron_expression          = "0 2 * * *"  # Every day at 2 AM UTC
@@ -1796,13 +1797,12 @@ Each job in `container_app_jobs` supports the following configuration:
 | Name                    | Type         | Description                                                                         | Required | Default |
 |-------------------------|--------------|-------------------------------------------------------------------------------------|----------|---------|
 | name                    | string       | Name of the container app job                                                       | yes      |         |
-| trigger_type            | string       | Type of job trigger. Must be one of: "Manual", "Schedule", "Event"                  | yes      |         |
 | replica_timeout         | number       | Maximum time in seconds to wait for a replica to complete                           | no       | `1800`  |
 | replica_retry_limit     | number       | Maximum number of times to retry a failed replica                                   | no       | `0`     |
 | workload_profile_name   | string       | The name of the Workload Profile in the Container App Environment to place this job | no       |         |
-| manual_trigger_config   | object       | Configuration for manual jobs (required when trigger_type = "Manual")               | no       |         |
-| schedule_trigger_config | object       | Configuration for scheduled jobs (required when trigger_type = "Schedule")          | no       |         |
-| event_trigger_config    | object       | Configuration for event-driven jobs (required when trigger_type = "Event")          | no       |         |
+| manual_trigger_config   | object       | Configuration for manual jobs (exactly one trigger config must be provided)         | no       |         |
+| schedule_trigger_config | object       | Configuration for scheduled jobs (exactly one trigger config must be provided)      | no       |         |
+| event_trigger_config    | object       | Configuration for event-driven jobs (exactly one trigger config must be provided)   | no       |         |
 | template                | object       | Container template configuration                                                    | yes      |         |
 | identity                | object       | Managed identity configuration                                                      | no       |         |
 | secret                  | list(object) | List of secrets for the job                                                         | no       |         |

@@ -13,9 +13,8 @@ module "container-apps-job" {
   
   container_app_jobs = {
     queue-processor = {
-      name         = "queue-processor-job"
-      trigger_type = "Event"
-      
+      name = "queue-processor-job"
+
       event_trigger_config = {
         parallelism              = 1
         replica_completion_count = 1

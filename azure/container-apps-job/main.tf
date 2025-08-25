@@ -11,8 +11,8 @@ resource "azurerm_container_app_job" "container_app_job" {
 
   # Manual trigger configuration
   dynamic "manual_trigger_config" {
-    for_each = each.value.trigger_type == "Manual" ? [each.value.manual_trigger_config] : []
-    
+    for_each = each.value.manual_trigger_config != null ? [each.value.manual_trigger_config] : []
+
     content {
       parallelism              = manual_trigger_config.value.parallelism
       replica_completion_count = manual_trigger_config.value.replica_completion_count
@@ -21,8 +21,8 @@ resource "azurerm_container_app_job" "container_app_job" {
 
   # Schedule trigger configuration
   dynamic "schedule_trigger_config" {
-    for_each = each.value.trigger_type == "Schedule" ? [each.value.schedule_trigger_config] : []
-    
+    for_each = each.value.schedule_trigger_config != null ? [each.value.schedule_trigger_config] : []
+
     content {
       cron_expression          = schedule_trigger_config.value.cron_expression
       parallelism              = schedule_trigger_config.value.parallelism
@@ -32,7 +32,7 @@ resource "azurerm_container_app_job" "container_app_job" {
 
   # Event trigger configuration
   dynamic "event_trigger_config" {
-    for_each = each.value.trigger_type == "Event" ? [each.value.event_trigger_config] : []
+    for_each = each.value.event_trigger_config != null ? [each.value.event_trigger_config] : []
     
     content {
       parallelism              = event_trigger_config.value.parallelism

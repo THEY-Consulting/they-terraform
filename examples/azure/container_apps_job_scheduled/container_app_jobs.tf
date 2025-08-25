@@ -13,9 +13,8 @@ module "container-apps-job" {
   
   container_app_jobs = {
     nightly-backup = {
-      name         = "nightly-backup-job"
-      trigger_type = "Schedule"
-      
+      name = "nightly-backup-job"
+
       schedule_trigger_config = {
         cron_expression          = "0 2 * * *"  # Every day at 2 AM UTC
         parallelism              = 1

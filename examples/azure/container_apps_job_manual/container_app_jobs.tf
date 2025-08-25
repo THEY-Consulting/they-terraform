@@ -13,8 +13,7 @@ module "container-apps-job" {
   
   container_app_jobs = {
     batch-processor = {
-      name         = "batch-processor-job"
-      trigger_type = "Manual"
+      name = "batch-processor-job"
 
       manual_trigger_config = {
         parallelism              = 3  # Run 3 replicas in parallel
