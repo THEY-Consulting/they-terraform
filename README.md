@@ -1727,8 +1727,6 @@ module "container-apps" {
 
 #### Container Apps Job
 
-Azure Container Apps Jobs enable you to run containerized tasks that execute for a finite duration and exit. The trigger type is automatically determined based on which trigger configuration you provide: `manual_trigger_config`, `schedule_trigger_config`, or `event_trigger_config`.
-
 ```hcl
 module "container-apps-job" {
   source = "github.com/THEY-Consulting/they-terraform//azure/container-apps-job"

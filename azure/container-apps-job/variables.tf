@@ -144,9 +144,11 @@ variable "container_app_jobs" {
   validation {
     condition = alltrue([
       for job_name, job in var.container_app_jobs :
-      (job.manual_trigger_config != null ? 1 : 0) +
-      (job.schedule_trigger_config != null ? 1 : 0) +
-      (job.event_trigger_config != null ? 1 : 0) == 1
+        length(compact([
+          job.manual_trigger_config,
+          job.schedule_trigger_config,
+          job.event_trigger_config
+        ])) == 1
     ])
     error_message = "Exactly one trigger configuration must be provided: manual_trigger_config, schedule_trigger_config, or event_trigger_config"
   }
