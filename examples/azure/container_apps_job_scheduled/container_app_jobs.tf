@@ -2,46 +2,39 @@ module "container-apps-job" {
   #source = "github.com/THEY-Consulting/they-terraform//azure/container-apps-job"
   source = "../../../azure/container-apps-job"
 
-  name                = "${terraform.workspace}-scheduled-jobs"
-  location            = "Germany West Central"
-  resource_group_name = "they-dev"
+  name                 = "${terraform.workspace}-scheduled-jobs"
+  location             = "Germany West Central"
+  resource_group_name  = "they-dev"
   enable_log_analytics = true
-  
+
   tags = {
     Project = "they-terraform-examples"
   }
-  
+
   container_app_jobs = {
-    nightly-backup = {
-      name = "nightly-backup-job"
+    hello-world = {
+      name = "hello-world-job"
 
       schedule_trigger_config = {
-        cron_expression          = "0 2 * * *"  # Every day at 2 AM UTC
+        cron_expression          = "*/5 * * * *" # Every 5 minutes
         parallelism              = 1
         replica_completion_count = 1
       }
-      
-      replica_timeout     = 7200  # 2 hours
+
+      replica_timeout     = 180 # 3 minutes
       replica_retry_limit = 3
-      
+
       template = {
         containers = [
           {
-            name   = "backup-worker"
-            image  = "mcr.microsoft.com/k8se/quickstart-jobs:latest"
-            cpu    = "1"
-            memory = "2Gi"
+            name    = "backup-worker"
+            image   = "mcr.microsoft.com/k8se/quickstart-jobs:latest"
+            cpu     = "1"
+            memory  = "2Gi"
             command = ["/bin/bash"]
-            args    = ["-c", "echo 'Starting nightly backup...' && sleep 60 && echo 'Backup completed successfully'"]
+            args    = ["-c", "echo 'Hello...' && sleep 15 && echo 'world from $ENVIRONMENT!'"]
             env = [
-              {
-                name  = "BACKUP_TYPE"
-                value = "nightly"
-              },
-              {
-                name  = "RETENTION_DAYS"
-                value = "30"
-              }
+              { name = "ENVIRONMENT", value = "dev" }
             ]
           }
         ]
