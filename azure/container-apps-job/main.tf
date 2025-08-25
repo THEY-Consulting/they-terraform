@@ -47,16 +47,16 @@ resource "azurerm_container_app_job" "container_app_job" {
           for_each = event_trigger_config.value.scale.rules
 
           content {
-            name     = rules.value.name
-            type     = rules.value.type
-            metadata = rules.value.metadata
+            name             = rules.value.name
+            custom_rule_type = rules.value.type
+            metadata         = rules.value.metadata
 
-            dynamic "auth" {
+            dynamic "authentication" {
               for_each = rules.value.auth
 
               content {
-                secret_ref        = auth.value.secret_ref
-                trigger_parameter = auth.value.trigger_parameter
+                secret_name       = authentication.value.secret_name
+                trigger_parameter = authentication.value.trigger_parameter
               }
             }
           }

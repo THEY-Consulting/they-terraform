@@ -34,7 +34,7 @@ module "container-apps-job" {
               }
               auth = [
                 {
-                  secret_ref        = "queue-connection-string"
+                  secret_name       = "queue-connection-string"
                   trigger_parameter = "connection"
                 }
               ]

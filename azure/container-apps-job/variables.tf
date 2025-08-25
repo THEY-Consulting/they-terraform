@@ -94,7 +94,7 @@ variable "container_app_jobs" {
           type = string
           metadata = map(string)
           auth = optional(list(object({
-            secret_ref       = string
+            secret_name       = string
             trigger_parameter = string
           })), [])
         }))
