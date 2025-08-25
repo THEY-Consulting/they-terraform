@@ -40,9 +40,8 @@ resource "azurerm_container_app_job" "container_app_job" {
       replica_completion_count = event_trigger_config.value.replica_completion_count
 
       scale {
-        min_executions   = event_trigger_config.value.scale.min_executions
-        max_executions   = event_trigger_config.value.scale.max_executions
-        polling_interval = event_trigger_config.value.scale.polling_interval
+        min_executions = event_trigger_config.value.scale.min_executions
+        max_executions = event_trigger_config.value.scale.max_executions
 
         dynamic "rules" {
           for_each = event_trigger_config.value.scale.rules

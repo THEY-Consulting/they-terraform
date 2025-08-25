@@ -89,7 +89,6 @@ variable "container_app_jobs" {
       scale = object({
         min_executions   = optional(number, 0)
         max_executions   = optional(number, 10)
-        polling_interval = optional(number, 30)
         rules = list(object({
           name = string
           type = string
