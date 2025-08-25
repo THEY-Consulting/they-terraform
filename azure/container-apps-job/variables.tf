@@ -65,8 +65,8 @@ variable "jobs" {
     workload_profile_name = optional(string)
 
     # Job configuration
-    replica_timeout      = optional(number, 1800)  # 30 minutes default
-    replica_retry_limit   = optional(number, 0)    # No retries by default
+    replica_timeout     = optional(number, 1800) # 30 minutes default
+    replica_retry_limit = optional(number, 0)    # No retries by default
 
     # Trigger configuration - exactly one must be specified
     # Manual trigger config
@@ -87,11 +87,11 @@ variable "jobs" {
       parallelism              = optional(number, 1)
       replica_completion_count = optional(number, 1)
       scale = object({
-        min_executions   = optional(number, 0)
-        max_executions   = optional(number, 10)
+        min_executions = optional(number, 0)
+        max_executions = optional(number, 10)
         rules = list(object({
-          name = string
-          type = string
+          name     = string
+          type     = string
           metadata = map(string)
           auth = optional(list(object({
             secret_name       = string
@@ -139,14 +139,15 @@ variable "jobs" {
   }))
   description = "The container app jobs to deploy."
   nullable    = false
+  sensitive   = true
 
   validation {
     condition = alltrue([
       for job_name, job in var.jobs :
-        length([
-          for config in [job.manual_trigger_config, job.schedule_trigger_config, job.event_trigger_config] :
-          config if config != null
-        ]) == 1
+      length([
+        for config in [job.manual_trigger_config, job.schedule_trigger_config, job.event_trigger_config] :
+        config if config != null
+      ]) == 1
     ])
     error_message = "Exactly one trigger configuration must be provided: manual_trigger_config, schedule_trigger_config, or event_trigger_config"
   }

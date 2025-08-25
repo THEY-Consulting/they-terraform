@@ -1,11 +1,11 @@
 resource "azurerm_container_app_environment" "app_environment" {
   count = var.container_app_environment_id == null ? 1 : 0
-  
+
   name                       = var.name
   location                   = local.resource_group_location
   resource_group_name        = local.resource_group_name
   log_analytics_workspace_id = var.enable_log_analytics ? azurerm_log_analytics_workspace.log_analytics_workspace[0].id : null
-  
+
   dynamic "workload_profile" {
     for_each = var.workload_profile != null ? [var.workload_profile] : []
 
@@ -21,7 +21,7 @@ resource "azurerm_container_app_environment" "app_environment" {
 # Data source for existing environment if provided
 data "azurerm_container_app_environment" "existing" {
   count = var.container_app_environment_id != null ? 1 : 0
-  
+
   name                = split("/", var.container_app_environment_id)[8]
   resource_group_name = split("/", var.container_app_environment_id)[4]
 }
