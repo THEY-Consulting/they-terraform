@@ -11,7 +11,7 @@ module "container-apps-job" {
     Project = "they-terraform-examples"
   }
 
-  job_secrets = [
+  secrets = [
     {
       name  = "api-key"
       value = "secret-api-key-value"
