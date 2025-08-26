@@ -104,7 +104,7 @@ resource "azurerm_container_app_job" "container_app_job" {
 
   # Secrets configuration
   dynamic "secret" {
-    for_each = lookup(var.secrets, each.key, [])
+    for_each = var.secrets
 
     content {
       name                = secret.value.name

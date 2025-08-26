@@ -11,14 +11,12 @@ module "container-apps-job" {
     Project = "they-terraform-examples"
   }
 
-  secrets = {
-    batch-processor = [
-      {
-        name  = "database-password"
-        value = "super-secret-password"
-      }
-    ]
-  }
+  secrets = [
+    {
+      name  = "database-password"
+      value = "super-secret-password"
+    }
+  ]
 
   jobs = {
     batch-processor = {

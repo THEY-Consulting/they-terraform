@@ -11,14 +11,12 @@ module "container-apps-job" {
     Project = "they-terraform-examples"
   }
 
-  secrets = {
-    queue-processor = [
-      {
-        name  = "queue-connection-string"
-        value = "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=your-key-here;EndpointSuffix=core.windows.net"
-      }
-    ]
-  }
+  secrets = [
+    {
+      name  = "queue-connection-string"
+      value = "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=your-key-here;EndpointSuffix=core.windows.net"
+    }
+  ]
 
   jobs = {
     queue-processor = {

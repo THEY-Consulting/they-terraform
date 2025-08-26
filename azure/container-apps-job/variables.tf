@@ -80,14 +80,14 @@ variable "auto_assign_system_identity" {
 }
 
 variable "secrets" {
-  type = map(list(object({
+  type = list(object({
     name                = string
     value               = optional(string)
     key_vault_secret_id = optional(string)
     identity            = optional(string)
-  })))
-  description = "Map of job names to their secrets. Each job can have multiple secrets."
-  default     = {}
+  }))
+  description = "List of secrets shared across all jobs."
+  default     = []
   sensitive   = true
 }
 
