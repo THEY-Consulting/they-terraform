@@ -14,8 +14,8 @@ module "container-apps-job" {
   secrets = {
     batch-processor = [
       {
-        name  = "worker-id"
-        value = "batch-worker"
+        name  = "database-password"
+        value = "super-secret-password"
       }
     ]
   }
@@ -43,8 +43,16 @@ module "container-apps-job" {
             args    = ["-c", "echo 'Processing batch job...' && sleep 30 && echo 'Batch job completed'"]
             env = [
               {
-                name        = "WORKER_ID"
-                secret_name = "worker-id"
+                name  = "WORKER_ID"
+                value = "batch-worker" # Non-sensitive configuration
+              },
+              {
+                name  = "LOG_LEVEL"
+                value = "INFO" # Non-sensitive configuration
+              },
+              {
+                name        = "DATABASE_PASSWORD"
+                secret_name = "database-password" # Sensitive value from secrets
               }
             ]
           }

@@ -1736,13 +1736,9 @@ module "container-apps-job" {
   resource_group_name = "they-dev"
   enable_log_analytics = true
 
-  # Secrets are defined separately for better security
+  # Secrets are defined separately for sensitive data
   secrets = {
     nightly-backup = [
-      {
-        name  = "backup-type"
-        value = "nightly"
-      },
       {
         name                = "storage-connection"
         key_vault_secret_id = "https://myvault.vault.azure.net/secrets/storage-conn"
@@ -1773,12 +1769,16 @@ module "container-apps-job" {
             memory = "2Gi"
             env = [
               {
-                name        = "BACKUP_TYPE"
-                secret_name = "backup-type"
+                name  = "BACKUP_TYPE"
+                value = "nightly"  # Non-sensitive configuration
+              },
+              {
+                name  = "LOG_LEVEL"
+                value = "INFO"  # Non-sensitive configuration
               },
               {
                 name        = "STORAGE_CONNECTION"
-                secret_name = "storage-connection"
+                secret_name = "storage-connection"  # Sensitive connection string
               }
             ]
           }
@@ -1845,9 +1845,10 @@ module "container-apps-job" {
 | jobs.template.containers.\*.memory                              | string       | Memory allocation (e.g., "0.5Gi", "2Gi")                                                                                                        | yes      |             |
 | jobs.template.containers.\*.command                             | list(string) | Override the default command                                                                                                                    | no       |             |
 | jobs.template.containers.\*.args                                | list(string) | Override the default arguments                                                                                                                  | no       |             |
-| jobs.template.containers.\*.env                                 | list(object) | Environment variables (all must reference secrets)                                                                                             | no       |             |
+| jobs.template.containers.\*.env                                 | list(object) | Environment variables (can use direct values or secret references)                                                                             | no       |             |
 | jobs.template.containers.\*.env.\*.name                         | string       | Name of the environment variable                                                                                                                | yes      |             |
-| jobs.template.containers.\*.env.\*.secret_name                  | string       | Name of secret containing the value (must reference a secret in the secrets variable)                                                          | yes      |             |
+| jobs.template.containers.\*.env.\*.value                        | string       | Direct value for non-sensitive environment variables                                                                                           | no       |             |
+| jobs.template.containers.\*.env.\*.secret_name                  | string       | Name of secret containing the value (for sensitive data, must reference a secret in the secrets variable)                                      | no       |             |
 | jobs.identity                                                   | object       | Managed identity configuration                                                                                                                  | no       |             |
 | jobs.identity.type                                              | string       | Type of identity (`SystemAssigned`, `UserAssigned`, or `SystemAssigned,UserAssigned`)                                                           | yes      |             |
 | jobs.identity.identity_ids                                      | list(string) | List of user-assigned identity IDs                                                                                                              | no       |             |

@@ -16,10 +16,6 @@ module "container-apps-job" {
       {
         name  = "queue-connection-string"
         value = "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=your-key-here;EndpointSuffix=core.windows.net"
-      },
-      {
-        name  = "processor-type"
-        value = "queue-message"
       }
     ]
   }
@@ -71,11 +67,15 @@ module "container-apps-job" {
             env = [
               {
                 name        = "QUEUE_CONNECTION"
-                secret_name = "queue-connection-string"
+                secret_name = "queue-connection-string" # Sensitive connection string
               },
               {
-                name        = "PROCESSOR_TYPE"
-                secret_name = "processor-type"
+                name  = "PROCESSOR_TYPE"
+                value = "queue-message" # Non-sensitive configuration
+              },
+              {
+                name  = "LOG_LEVEL"
+                value = "DEBUG" # Non-sensitive configuration
               }
             ]
           }

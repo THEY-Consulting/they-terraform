@@ -145,7 +145,8 @@ variable "jobs" {
         args    = optional(list(string))
         env = optional(list(object({
           name        = string
-          secret_name = string
+          value       = optional(string)
+          secret_name = optional(string)
         })))
       }))
     })
@@ -174,5 +175,20 @@ variable "jobs" {
       ]) == 1
     ])
     error_message = "Exactly one trigger configuration must be provided: manual_trigger_config, schedule_trigger_config, or event_trigger_config"
+  }
+
+  validation {
+    condition = alltrue([
+      for job_name, job in var.jobs :
+      alltrue([
+        for container in job.template.containers :
+        container.env == null ? true : alltrue([
+          for env_var in container.env :
+          (env_var.value != null && env_var.secret_name == null) ||
+          (env_var.value == null && env_var.secret_name != null)
+        ])
+      ])
+    ])
+    error_message = "Each environment variable must have either 'value' or 'secret_name' specified, but not both."
   }
 }

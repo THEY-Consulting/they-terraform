@@ -132,6 +132,7 @@ resource "azurerm_container_app_job" "container_app_job" {
 
           content {
             name        = env.value.name
+            value       = env.value.value
             secret_name = env.value.secret_name
           }
         }

@@ -14,8 +14,8 @@ module "container-apps-job" {
   secrets = {
     hello-world = [
       {
-        name  = "environment"
-        value = "dev"
+        name  = "api-key"
+        value = "secret-api-key-value"
       }
     ]
   }
@@ -44,8 +44,12 @@ module "container-apps-job" {
             args    = ["-c", "echo 'Hello...' && sleep 15 && echo 'world from $ENVIRONMENT!'"]
             env = [
               {
-                name        = "ENVIRONMENT"
-                secret_name = "environment"
+                name  = "ENVIRONMENT"
+                value = "dev" # Non-sensitive value
+              },
+              {
+                name        = "API_KEY"
+                secret_name = "api-key" # Sensitive value from secrets
               }
             ]
           }
