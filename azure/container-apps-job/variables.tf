@@ -64,6 +64,21 @@ variable "tags" {
   default     = {}
 }
 
+variable "acr_integration" {
+  description = "Azure Container Registry integration configuration using managed identity"
+  type = object({
+    registry_id  = string  # ACR resource ID for role assignment
+    login_server = string  # ACR login server URL
+  })
+  default = null
+}
+
+variable "auto_assign_system_identity" {
+  description = "Automatically assign system-assigned managed identity to jobs that don't have identity configured"
+  type        = bool
+  default     = true
+}
+
 variable "jobs" {
   type = map(object({
     name                  = string

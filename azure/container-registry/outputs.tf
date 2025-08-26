@@ -28,3 +28,11 @@ output "identity" {
   description = "The identity of the Container Registry."
   value       = azurerm_container_registry.acr.identity
 }
+
+output "acr_config_for_container_apps" {
+  description = "ACR configuration object ready for use in container apps job module (uses managed identity)"
+  value = {
+    registry_id  = azurerm_container_registry.acr.id
+    login_server = azurerm_container_registry.acr.login_server
+  }
+}

@@ -65,9 +65,14 @@ resource "azurerm_container_app_job" "container_app_job" {
     }
   }
 
-  # Identity configuration
+  # Identity configuration - auto-assign system identity if enabled and no identity is configured
   dynamic "identity" {
-    for_each = each.value.identity == null ? [] : [each.value.identity]
+    for_each = each.value.identity != null ? [each.value.identity] : (
+      var.auto_assign_system_identity || var.acr_integration != null ? [{
+        type         = "SystemAssigned"
+        identity_ids = null
+      }] : []
+    )
 
     content {
       type         = identity.value.type
@@ -75,9 +80,19 @@ resource "azurerm_container_app_job" "container_app_job" {
     }
   }
 
-  # Registry configuration
+  # Registry configuration - merge auto-config with manual config
   dynamic "registry" {
-    for_each = each.value.registry == null ? [] : each.value.registry
+    for_each = concat(
+      var.acr_integration != null ? [
+        {
+          server               = var.acr_integration.login_server
+          identity             = "system"
+          username             = null
+          password_secret_name = null
+        }
+      ] : [],
+      each.value.registry != null ? each.value.registry : []
+    )
 
     content {
       server               = registry.value.server
@@ -89,7 +104,7 @@ resource "azurerm_container_app_job" "container_app_job" {
 
   # Secrets configuration
   dynamic "secret" {
-    for_each = each.value.secret == null ? [] : each.value.secret
+    for_each = each.value.secret != null ? each.value.secret : []
 
     content {
       name                = secret.value.name
