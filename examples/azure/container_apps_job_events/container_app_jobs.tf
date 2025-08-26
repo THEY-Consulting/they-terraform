@@ -11,6 +11,19 @@ module "container-apps-job" {
     Project = "they-terraform-examples"
   }
 
+  secrets = {
+    queue-processor = [
+      {
+        name  = "queue-connection-string"
+        value = "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=your-key-here;EndpointSuffix=core.windows.net"
+      },
+      {
+        name  = "processor-type"
+        value = "queue-message"
+      }
+    ]
+  }
+
   jobs = {
     queue-processor = {
       name = "queue-processor-job"
@@ -46,13 +59,6 @@ module "container-apps-job" {
       replica_timeout     = 1800 # 30 minutes
       replica_retry_limit = 3
 
-      secret = [
-        {
-          name  = "queue-connection-string"
-          value = "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=your-key-here;EndpointSuffix=core.windows.net"
-        }
-      ]
-
       template = {
         containers = [
           {
@@ -68,8 +74,8 @@ module "container-apps-job" {
                 secret_name = "queue-connection-string"
               },
               {
-                name  = "PROCESSOR_TYPE"
-                value = "queue-message"
+                name        = "PROCESSOR_TYPE"
+                secret_name = "processor-type"
               }
             ]
           }

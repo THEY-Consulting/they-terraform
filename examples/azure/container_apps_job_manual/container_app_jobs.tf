@@ -11,6 +11,15 @@ module "container-apps-job" {
     Project = "they-terraform-examples"
   }
 
+  secrets = {
+    batch-processor = [
+      {
+        name  = "worker-id"
+        value = "batch-worker"
+      }
+    ]
+  }
+
   jobs = {
     batch-processor = {
       name = "batch-processor-job"
@@ -34,8 +43,8 @@ module "container-apps-job" {
             args    = ["-c", "echo 'Processing batch job...' && sleep 30 && echo 'Batch job completed'"]
             env = [
               {
-                name  = "WORKER_ID"
-                value = "batch-worker"
+                name        = "WORKER_ID"
+                secret_name = "worker-id"
               }
             ]
           }

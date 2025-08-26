@@ -79,6 +79,18 @@ variable "auto_assign_system_identity" {
   default     = true
 }
 
+variable "secrets" {
+  type = map(list(object({
+    name                = string
+    value               = optional(string)
+    key_vault_secret_id = optional(string)
+    identity            = optional(string)
+  })))
+  description = "Map of job names to their secrets. These are mapped for each job with the env variable"
+  default     = {}
+  sensitive   = true
+}
+
 variable "jobs" {
   type = map(object({
     name                  = string
@@ -133,8 +145,7 @@ variable "jobs" {
         args    = optional(list(string))
         env = optional(list(object({
           name        = string
-          secret_name = optional(string)
-          value       = optional(string)
+          secret_name = string
         })))
       }))
     })
@@ -143,13 +154,6 @@ variable "jobs" {
       type         = string
       identity_ids = optional(list(string))
     }))
-
-    secret = optional(list(object({
-      name                = string
-      value               = optional(string)
-      key_vault_secret_id = optional(string)
-      identity            = optional(string)
-    })))
 
     registry = optional(list(object({
       server               = string
@@ -160,7 +164,6 @@ variable "jobs" {
   }))
   description = "The container app jobs to deploy."
   nullable    = false
-  sensitive   = true
 
   validation {
     condition = alltrue([
@@ -171,5 +174,19 @@ variable "jobs" {
       ]) == 1
     ])
     error_message = "Exactly one trigger configuration must be provided: manual_trigger_config, schedule_trigger_config, or event_trigger_config"
+  }
+
+  validation {
+    condition = alltrue([
+      for job_name, job in var.jobs :
+      alltrue([
+        for container in job.template.containers :
+        container.env == null ? true : alltrue([
+          for env_var in container.env :
+          contains(lookup(var.secrets, job_name, []) != null ? [for s in lookup(var.secrets, job_name, []) : s.name] : [], env_var.secret_name)
+        ])
+      ])
+    ])
+    error_message = "All environment variables must reference secrets defined in the secrets variable for the corresponding job. Each env.secret_name must match a secret.name in var.secrets[job_name]."
   }
 }

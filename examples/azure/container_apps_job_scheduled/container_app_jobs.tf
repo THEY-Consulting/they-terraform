@@ -11,6 +11,15 @@ module "container-apps-job" {
     Project = "they-terraform-examples"
   }
 
+  secrets = {
+    hello-world = [
+      {
+        name  = "environment"
+        value = "dev"
+      }
+    ]
+  }
+
   jobs = {
     hello-world = {
       name = "hello-world-job"
@@ -34,7 +43,10 @@ module "container-apps-job" {
             command = ["/bin/bash"]
             args    = ["-c", "echo 'Hello...' && sleep 15 && echo 'world from $ENVIRONMENT!'"]
             env = [
-              { name = "ENVIRONMENT", value = "dev" }
+              {
+                name        = "ENVIRONMENT"
+                secret_name = "environment"
+              }
             ]
           }
         ]
