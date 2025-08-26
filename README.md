@@ -1736,6 +1736,21 @@ module "container-apps-job" {
   resource_group_name = "they-dev"
   enable_log_analytics = true
 
+  # Secrets are defined separately for better security
+  secrets = {
+    nightly-backup = [
+      {
+        name  = "backup-type"
+        value = "nightly"
+      },
+      {
+        name                = "storage-connection"
+        key_vault_secret_id = "https://myvault.vault.azure.net/secrets/storage-conn"
+        identity            = "system"
+      }
+    ]
+  }
+
   jobs = {
     nightly-backup = {
       name = "nightly-backup-job"
@@ -1758,8 +1773,12 @@ module "container-apps-job" {
             memory = "2Gi"
             env = [
               {
-                name  = "BACKUP_TYPE"
-                value = "nightly"
+                name        = "BACKUP_TYPE"
+                secret_name = "backup-type"
+              },
+              {
+                name        = "STORAGE_CONNECTION"
+                secret_name = "storage-connection"
               }
             ]
           }
@@ -1787,6 +1806,11 @@ module "container-apps-job" {
 | workload_profile.workload_profile_type                          | string       | Type of workload profile. Possible values: `Consumption`, `D4`, `D8`, `D16`, `D32`, `E4`, `E8`, `E16`, `E32`                                    | (yes)    |             |
 | is_system_assigned                                              | bool         | If true, a system-assigned managed identity will be created for the environment                                                                 | no       | `false`     |
 | tags                                                            | map(string)  | Tags for the resources                                                                                                                          | no       | `{}`        |
+| secrets                                                         | map(list(object)) | Map of job names to their secrets. Each job can have multiple secrets                                                                     | no       | `{}`        |
+| secrets.\*.name                                                 | string       | Name of the secret                                                                                                                              | yes      |             |
+| secrets.\*.value                                                | string       | Direct value of the secret (stored in Terraform state - less secure)                                                                           | no       |             |
+| secrets.\*.key_vault_secret_id                                  | string       | Azure Key Vault secret ID (more secure)                                                                                                        | no       |             |
+| secrets.\*.identity                                             | string       | Identity to use for Key Vault access                                                                                                            | no       |             |
 | jobs                                                            | map(object)  | The container app jobs to deploy                                                                                                                | yes      |             |
 | jobs.name                                                       | string       | Name of the container app job                                                                                                                   | yes      |             |
 | jobs.tags                                                       | map(string)  | Tags specific to this job                                                                                                                       | no       |             |
@@ -1821,18 +1845,12 @@ module "container-apps-job" {
 | jobs.template.containers.\*.memory                              | string       | Memory allocation (e.g., "0.5Gi", "2Gi")                                                                                                        | yes      |             |
 | jobs.template.containers.\*.command                             | list(string) | Override the default command                                                                                                                    | no       |             |
 | jobs.template.containers.\*.args                                | list(string) | Override the default arguments                                                                                                                  | no       |             |
-| jobs.template.containers.\*.env                                 | list(object) | Environment variables                                                                                                                           | no       |             |
+| jobs.template.containers.\*.env                                 | list(object) | Environment variables (all must reference secrets)                                                                                             | no       |             |
 | jobs.template.containers.\*.env.\*.name                         | string       | Name of the environment variable                                                                                                                | yes      |             |
-| jobs.template.containers.\*.env.\*.value                        | string       | Value of the environment variable                                                                                                               | no       |             |
-| jobs.template.containers.\*.env.\*.secret_name                  | string       | Name of secret containing the value                                                                                                             | no       |             |
+| jobs.template.containers.\*.env.\*.secret_name                  | string       | Name of secret containing the value (must reference a secret in the secrets variable)                                                          | yes      |             |
 | jobs.identity                                                   | object       | Managed identity configuration                                                                                                                  | no       |             |
 | jobs.identity.type                                              | string       | Type of identity (`SystemAssigned`, `UserAssigned`, or `SystemAssigned,UserAssigned`)                                                           | yes      |             |
 | jobs.identity.identity_ids                                      | list(string) | List of user-assigned identity IDs                                                                                                              | no       |             |
-| jobs.secret                                                     | list(object) | List of secrets for the job                                                                                                                     | no       |             |
-| jobs.secret.\*.name                                             | string       | Name of the secret                                                                                                                              | yes      |             |
-| jobs.secret.\*.value                                            | string       | Value of the secret                                                                                                                             | no       |             |
-| jobs.secret.\*.key_vault_secret_id                              | string       | Key Vault secret ID                                                                                                                             | no       |             |
-| jobs.secret.\*.identity                                         | string       | Identity to use for Key Vault access                                                                                                            | no       |             |
 | jobs.registry                                                   | list(object) | List of container registries for private images                                                                                                 | no       |             |
 | jobs.registry.\*.server                                         | string       | Registry server URL                                                                                                                             | yes      |             |
 | jobs.registry.\*.username                                       | string       | Registry username                                                                                                                               | no       |             |
