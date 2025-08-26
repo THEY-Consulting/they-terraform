@@ -67,8 +67,8 @@ variable "tags" {
 variable "acr_integration" {
   description = "Azure Container Registry integration configuration using managed identity"
   type = object({
-    registry_id  = string  # ACR resource ID for role assignment
-    login_server = string  # ACR login server URL
+    registry_id  = string # ACR resource ID for role assignment
+    login_server = string # ACR login server URL
   })
   default = null
 }
