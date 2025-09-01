@@ -139,6 +139,31 @@ variable "container_apps" {
       }))
       max_replicas = optional(number)
       min_replicas = optional(number)
+      http_scale_rule = optional(object({
+        name                = string
+        concurrent_requests = optional(number)
+        authentication = optional(object({
+          secret_name       = bool
+          trigger_parameter = string
+        }))
+      }))
+      tcp_scale_rule = optional(object({
+        name                = string
+        concurrent_requests = optional(number)
+        authentication = optional(object({
+          secret_name       = bool
+          trigger_parameter = string
+        }))
+      }))
+      custom_scale_rule = optional(object({
+        name             = string
+        custom_rule_type = string
+        metadata         = map(string)
+        authentication = optional(object({
+          secret_name       = bool
+          trigger_parameter = string
+        }))
+      }))
     })
 
     ingress = optional(object({
