@@ -91,7 +91,7 @@ resource "azurerm_container_app_job" "container_app_job" {
       var.acr_integration != null ? [
         {
           server               = var.acr_integration.login_server
-          identity             = azurerm_user_assigned_identity.acr_identity[each.key].client_id
+          identity             = azurerm_user_assigned_identity.acr_identity[each.key].id
           username             = null
           password_secret_name = null
         }
