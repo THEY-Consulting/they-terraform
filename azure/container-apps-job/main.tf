@@ -65,13 +65,18 @@ resource "azurerm_container_app_job" "container_app_job" {
     }
   }
 
-  # Identity configuration - auto-assign system identity if enabled and no identity is configured
+  # Identity configuration - use user-assigned identity for ACR integration or system-assigned otherwise
   dynamic "identity" {
     for_each = each.value.identity != null ? [each.value.identity] : (
-      var.auto_assign_system_identity || var.acr_integration != null ? [{
-        type         = "SystemAssigned"
-        identity_ids = null
-      }] : []
+      var.acr_integration != null ? [{
+        type         = "UserAssigned"
+        identity_ids = [azurerm_user_assigned_identity.acr_identity[each.key].id]
+        }] : (
+        var.auto_assign_system_identity ? [{
+          type         = "SystemAssigned"
+          identity_ids = null
+        }] : []
+      )
     )
 
     content {
@@ -86,7 +91,7 @@ resource "azurerm_container_app_job" "container_app_job" {
       var.acr_integration != null ? [
         {
           server               = var.acr_integration.login_server
-          identity             = "system"
+          identity             = azurerm_user_assigned_identity.acr_identity[each.key].client_id
           username             = null
           password_secret_name = null
         }
@@ -139,4 +144,8 @@ resource "azurerm_container_app_job" "container_app_job" {
       }
     }
   }
+
+  # Ensure ACR role assignment is created before the container app job
+  # This prevents image pull failures during job creation
+  depends_on = [azurerm_role_assignment.acr_pull]
 }
