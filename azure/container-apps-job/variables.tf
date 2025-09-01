@@ -79,6 +79,15 @@ variable "auto_assign_system_identity" {
   default     = true
 }
 
+variable "role_assignments" {
+  description = "Role assignments that apply to ALL Container App Jobs. Each assignment grants all jobs' managed identities access to the specified scope with the given role."
+  type = list(object({
+    scope                = string # Resource ID to grant access to (e.g., storage account, key vault, resource group)
+    role_definition_name = string # Built-in role name (e.g., "Storage Blob Data Contributor", "Key Vault Secrets User")
+  }))
+  default = []
+}
+
 variable "secrets" {
   type = list(object({
     name                = string
