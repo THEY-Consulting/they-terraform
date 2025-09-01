@@ -1786,6 +1786,12 @@ module "container-apps-job" {
       }
     }
   }
+
+  diagnostics = {
+    eventhub                          = "logs"
+    namespace                         = "they-logs"
+    namespace_authorization_rule_name = "SendLogs"
+  }
 }
 ```
 
@@ -1857,6 +1863,11 @@ module "container-apps-job" {
 | jobs.registry.\*.username                                       | string       | Registry username                                                                                                                               | no       |             |
 | jobs.registry.\*.password_secret_name                           | string       | Name of secret containing registry password                                                                                                     | no       |             |
 | jobs.registry.\*.identity                                       | string       | Identity to use for registry authentication                                                                                                     | no       |             |
+| diagnostics                                                     | object       | If set, container app logs will be sent to the event hub                                                                                        | no       | `null`      |
+| diagnostics.eventhub                                            | string       | Name of the event hub                                                                                                                           | (yes)    |             |
+| diagnostics.namespace                                           | string       | Namespace of the event hub                                                                                                                      | (yes)    |             |
+| diagnostics.namespace_authorization_rule_name                   | string       | Name of the authorization rule                                                                                                                  | (yes)    |             |
+| diagnostics.namespace_resource_group_name                       | string       | Resource group name of the namespace if different from the container resource group                                                             | no       |             |
 
 ##### Outputs
 

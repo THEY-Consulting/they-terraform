@@ -91,6 +91,17 @@ variable "secrets" {
   sensitive   = true
 }
 
+variable "diagnostics" {
+  description = "If set, container app logs will be sent to the event hub."
+  type = object({
+    eventhub                          = string
+    namespace                         = string
+    namespace_authorization_rule_name = string
+    namespace_resource_group_name     = optional(string)
+  })
+  default = null
+}
+
 variable "jobs" {
   type = map(object({
     name                  = string
