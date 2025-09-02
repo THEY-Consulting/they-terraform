@@ -1,3 +1,6 @@
+# Get current Azure client configuration for tenant ID
+data "azurerm_client_config" "current" {}
+
 resource "azurerm_container_app_job" "container_app_job" {
   for_each = var.jobs
 
@@ -133,7 +136,23 @@ resource "azurerm_container_app_job" "container_app_job" {
         args    = container.value.args
 
         dynamic "env" {
-          for_each = container.value.env == null ? [] : container.value.env
+          for_each = concat(
+            # User-defined environment variables
+            container.value.env == null ? [] : container.value.env,
+            # Auto-inject Azure authentication environment variables when using user-assigned identity
+            (var.acr_integration != null || length(var.role_assignments) > 0) && each.value.identity == null ? [
+              {
+                name        = "AZURE_CLIENT_ID"
+                value       = azurerm_user_assigned_identity.shared_identity[0].client_id
+                secret_name = null
+              },
+              {
+                name        = "AZURE_TENANT_ID"
+                value       = data.azurerm_client_config.current.tenant_id
+                secret_name = null
+              }
+            ] : []
+          )
 
           content {
             name        = env.value.name
