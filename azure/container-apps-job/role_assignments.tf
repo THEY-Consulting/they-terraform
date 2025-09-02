@@ -11,7 +11,7 @@ resource "azurerm_role_assignment" "jobs" {
           key                  = "${assignment.scope}-${assignment.role_definition_name}-${job_name}"
           scope                = assignment.scope
           role_definition_name = assignment.role_definition_name
-          job_name            = job_name
+          job_name             = job_name
         }
       ]
     ]) : pair.key => pair
