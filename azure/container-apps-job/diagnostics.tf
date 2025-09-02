@@ -32,24 +32,3 @@ resource "azurerm_monitor_diagnostic_setting" "container_app_environment" {
     ]
   }
 }
-
-resource "azurerm_monitor_diagnostic_setting" "container_app_jobs" {
-  for_each = var.diagnostics == null ? {} : var.jobs
-
-  name                           = "container-app-job-${each.key}-logs-to-event-hub"
-  target_resource_id             = azurerm_container_app_job.container_app_job[each.key].id
-  eventhub_authorization_rule_id = data.azurerm_eventhub_namespace_authorization_rule.main[0].id
-  eventhub_name                  = var.diagnostics.eventhub
-
-  # Container App Jobs may not have specific log categories, but we need at least one block
-  # Using category_group to capture all available logs
-  enabled_log {
-    category_group = "allLogs"
-  }
-
-  lifecycle {
-    ignore_changes = [
-      metric // prevents continuous diffs to the (unused by us) metric block
-    ]
-  }
-}
