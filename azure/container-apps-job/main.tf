@@ -65,14 +65,14 @@ resource "azurerm_container_app_job" "container_app_job" {
     }
   }
 
-  # Identity configuration - use user-assigned identity for ACR integration or system-assigned otherwise
+  # Identity configuration - ensure identity exists if role assignments are configured
   dynamic "identity" {
     for_each = each.value.identity != null ? [each.value.identity] : (
       var.acr_integration != null ? [{
         type         = "UserAssigned"
         identity_ids = [azurerm_user_assigned_identity.acr_identity[each.key].id]
         }] : (
-        var.auto_assign_system_identity ? [{
+        var.auto_assign_system_identity || length(var.role_assignments) > 0 ? [{
           type         = "SystemAssigned"
           identity_ids = null
         }] : []

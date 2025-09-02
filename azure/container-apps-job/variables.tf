@@ -74,7 +74,7 @@ variable "acr_integration" {
 }
 
 variable "auto_assign_system_identity" {
-  description = "Automatically assign system-assigned managed identity to jobs that don't have identity configured"
+  description = "Automatically assign system-assigned managed identity to jobs that don't have identity configured. Note: If role_assignments are specified, system identities will be created automatically regardless of this setting."
   type        = bool
   default     = true
 }
