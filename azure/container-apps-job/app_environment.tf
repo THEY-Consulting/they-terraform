@@ -4,7 +4,7 @@ resource "azurerm_container_app_environment" "app_environment" {
   name                       = var.name
   location                   = local.resource_group_location
   resource_group_name        = local.resource_group_name
-  log_analytics_workspace_id = var.enable_log_analytics ? azurerm_log_analytics_workspace.log_analytics_workspace[0].id : null
+  log_analytics_workspace_id = var.diagnostics != null ? null : (var.enable_log_analytics ? azurerm_log_analytics_workspace.log_analytics_workspace[0].id : null)
   infrastructure_subnet_id   = var.subnet_id
   logs_destination           = var.diagnostics != null ? "azure-monitor" : (var.enable_log_analytics ? "log-analytics" : "none")
 
