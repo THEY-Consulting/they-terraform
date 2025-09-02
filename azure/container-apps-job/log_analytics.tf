@@ -1,5 +1,5 @@
 resource "azurerm_log_analytics_workspace" "log_analytics_workspace" {
-  count = var.enable_log_analytics ? 1 : 0
+  count = var.enable_log_analytics && var.diagnostics == null ? 1 : 0
 
   name                = "${var.name}-log-analytics"
   location            = local.resource_group_location

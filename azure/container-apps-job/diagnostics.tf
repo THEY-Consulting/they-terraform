@@ -22,10 +22,6 @@ resource "azurerm_monitor_diagnostic_setting" "container_app_environment" {
     category = "ContainerAppConsoleLogs"
   }
 
-  enabled_log {
-    category = "ContainerAppSystemLogs"
-  }
-
   lifecycle {
     ignore_changes = [
       metric // prevents continuous diffs to the (unused by us) metric block
