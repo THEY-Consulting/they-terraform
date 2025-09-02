@@ -2,6 +2,16 @@
 # This file contains role assignment resources that grant Container App Jobs' managed identities
 # access to Azure resources like Storage Accounts, Key Vaults, etc.
 
+# Data source to ensure the container app job identity is fully available
+data "azurerm_container_app_job" "jobs" {
+  for_each = length(var.role_assignments) > 0 ? var.jobs : {}
+
+  name                = azurerm_container_app_job.container_app_job[each.key].name
+  resource_group_name = azurerm_container_app_job.container_app_job[each.key].resource_group_name
+
+  depends_on = [azurerm_container_app_job.container_app_job]
+}
+
 # Create role assignments for each job and each role assignment
 resource "azurerm_role_assignment" "jobs" {
   for_each = {
@@ -19,7 +29,7 @@ resource "azurerm_role_assignment" "jobs" {
 
   scope                = each.value.scope
   role_definition_name = each.value.role_definition_name
-  principal_id         = azurerm_container_app_job.container_app_job[each.value.job_name].identity[0].principal_id
+  principal_id         = data.azurerm_container_app_job.jobs[each.value.job_name].identity[0].principal_id
 
-  depends_on = [azurerm_container_app_job.container_app_job]
+  depends_on = [data.azurerm_container_app_job.jobs]
 }
