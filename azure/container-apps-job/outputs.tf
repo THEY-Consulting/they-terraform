@@ -27,7 +27,7 @@ output "resource_group_name" {
 
 output "log_analytics_workspace_id" {
   description = "ID of the Log Analytics workspace (if created)"
-  value       = var.enable_log_analytics ? azurerm_log_analytics_workspace.log_analytics_workspace[0].id : null
+  value       = var.enable_log_analytics && var.diagnostics == null ? azurerm_log_analytics_workspace.log_analytics_workspace[0].id : null
 }
 
 output "shared_identity" {
