@@ -29,3 +29,8 @@ output "log_analytics_workspace_id" {
   description = "ID of the Log Analytics workspace (if created)"
   value       = var.enable_log_analytics ? azurerm_log_analytics_workspace.log_analytics_workspace[0].id : null
 }
+
+output "shared_identity" {
+  description = "Shared user-assigned managed identity for all jobs"
+  value       = length(azurerm_user_assigned_identity.shared_identity) > 0 ? azurerm_user_assigned_identity.shared_identity[0] : null
+}
