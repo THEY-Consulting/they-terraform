@@ -3,6 +3,8 @@
  * Maybe there is a better way to include it as a dependency but for now we have to copy/update it manually.
  * Therefore, we shouldn't change anything in this file, so we can easily copy&paste it from the repo in the future.
  *
+ * ‼️We added custom logic to handle azure container apps logs below, see lines 505 - 519 ‼️
+ *
  * Source (2025-04-16):
  * https://github.com/DataDog/datadog-serverless-functions/blob/master/azure/activity_logs_monitoring/index.js
  */
@@ -498,6 +500,23 @@ class EventhubLogHandler {
     newRecord['ddsourcecategory'] = DD_SOURCE_CATEGORY;
     newRecord['service'] = metadata.service || DD_SERVICE;
     newRecord['ddtags'] = this.createDDTags(metadata.tags);
+
+    /**
+     * ‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️
+     * THIS WAS ADDED BY US. NOT PART OF THE ORIGINAL CODE.
+     */
+    // Set log status based on properties.Stream to handle azure container apps logs
+    if (record.properties && record.properties.Stream) {
+      if (record.properties.Stream === 'stderr') {
+        newRecord['status'] = 'error';
+      } else if (record.properties.Stream === 'stdout') {
+        newRecord['status'] = 'info';
+      }
+    }
+    /**
+     * ‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️
+     */
+
     return newRecord;
   }
 
