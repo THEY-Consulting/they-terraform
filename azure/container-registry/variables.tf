@@ -130,3 +130,12 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "service_principal_access" {
+  description = "Configuration for service principal access to the container registry. When provided, automatically assigns the necessary permissions."
+  type = object({
+    principal_id = string
+    role         = optional(string, "User Access Administrator")
+  })
+  default = null
+}

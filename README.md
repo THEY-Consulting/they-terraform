@@ -28,6 +28,7 @@ Collection of modules to provide an easy way to create and deploy common infrast
     - [Postgresql flexible server](#postgresql-flexible-server)
     - [VM](#vm)
     - [Container Apps](#container-apps)
+    - [Container Apps Job](#container-apps-job)
     - [Container Instances](#container-instances)
     - [Datadog Diagnostics](#datadog-diagnostics)
     - [Frontdoor](#front-door)
@@ -1724,6 +1725,167 @@ module "container-apps" {
 | ------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | container_apps_urls | string | URLs of the container apps. If a custom domain was used, this will be the ouput. Otherwise, the FQDN of the latest revision of each respective Container App will be the output. |
 
+#### Container Apps Job
+
+```hcl
+module "container-apps-job" {
+  source = "github.com/THEY-Consulting/they-terraform//azure/container-apps-job"
+
+  name                = "they-example-apps-job"
+  location            = "Germany West Central"
+  resource_group_name = "they-dev"
+  enable_log_analytics = true
+
+  # Secrets are defined separately for sensitive data
+  secrets = {
+    nightly-backup = [
+      {
+        name                = "storage-connection"
+        key_vault_secret_id = "https://myvault.vault.azure.net/secrets/storage-conn"
+        identity            = "system"
+      }
+    ]
+  }
+
+  jobs = {
+    nightly-backup = {
+      name = "nightly-backup-job"
+
+      schedule_trigger_config = {
+        cron_expression          = "0 2 * * *"  # Every day at 2 AM UTC
+        parallelism              = 1
+        replica_completion_count = 1
+      }
+
+      replica_timeout     = 7200  # 2 hours
+      replica_retry_limit = 3
+
+      template = {
+        containers = [
+          {
+            name   = "backup-worker"
+            image  = "mcr.microsoft.com/k8se/quickstart-jobs:latest"
+            cpu    = "1"
+            memory = "2Gi"
+            env = [
+              {
+                name  = "BACKUP_TYPE"
+                value = "nightly"  # Non-sensitive configuration
+              },
+              {
+                name  = "LOG_LEVEL"
+                value = "INFO"  # Non-sensitive configuration
+              },
+              {
+                name        = "STORAGE_CONNECTION"
+                secret_name = "storage-connection"  # Sensitive connection string
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+
+  diagnostics = {
+    eventhub                          = "logs"
+    namespace                         = "they-logs"
+    namespace_authorization_rule_name = "SendLogs"
+  }
+}
+```
+
+##### Inputs
+
+| Name                                                            | Type         | Description                                                                                                                                                  | Required | Default     |
+|-----------------------------------------------------------------|--------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|-------------|
+| name                                                            | string       | Name of project, and of the resource group, when a new group is to be created                                                                                | yes      |             |
+| location                                                        | string       | The Azure region where the resources should be created                                                                                                       | yes      |             |
+| resource_group_name                                             | string       | Name of resource group. Set this variable if you do not want to create a new resource group, but rather use an existing one                                  | no       | `null`      |
+| container_app_environment_id                                    | string       | ID of an existing Container App Environment. If not provided, a new environment will be created                                                              | no       | `null`      |
+| subnet_id                                                       | string       | The ID of the subnet to deploy the Container Apps Environment into. Required when using a custom VNet                                                        | no       | `null`      |
+| enable_log_analytics                                            | bool         | If true, a log analytics workspace will be created                                                                                                           | no       | `false`     |
+| log_retention                                                   | number       | Amount of days for log retention                                                                                                                             | no       | `30`        |
+| sku_log_analytics                                               | string       | The SKU of the log analytics workspace                                                                                                                       | no       | `PerGB2018` |
+| workload_profile                                                | object       | An object that defines the workload profile of the environment. Leaving its default value means having a managed environment `Consumption Only`              | no       | `null`      |
+| workload_profile.name                                           | string       | Name of the workload profile                                                                                                                                 | (yes)    |             |
+| workload_profile.workload_profile_type                          | string       | Type of workload profile. Possible values: `Consumption`, `D4`, `D8`, `D16`, `D32`, `E4`, `E8`, `E16`, `E32`                                                 | (yes)    |             |
+| is_system_assigned                                              | bool         | If true, a system-assigned managed identity will be created for the environment                                                                              | no       | `false`     |
+| role_assignments                                                | list(object) | Role assignments that apply to ALL Container App Jobs. Each assignment grants all jobs' managed identities access to the specified scope with the given role | no       | `[]`        |
+| role_assignments.*.scope                                        | string       | Resource ID to grant access to (e.g., storage account, key vault, resource group)                                                                            | (yes)    |             |
+| role_assignments.*.role_definition_name                         | string       | Built-in role name (e.g., "Storage Blob Data Contributor", "Key Vault Secrets User")                                                                         | (yes)    |             |
+| secrets                                                         | list(object) | List of secrets shared across all jobs.                                                                                                                      | no       | `[]`        |
+| secrets.\*.name                                                 | string       | Name of the secret                                                                                                                                           | yes      |             |
+| secrets.\*.value                                                | string       | Direct value of the secret (stored in Terraform state - less secure)                                                                                         | no       |             |
+| secrets.\*.key_vault_secret_id                                  | string       | Azure Key Vault secret ID (more secure)                                                                                                                      | no       |             |
+| secrets.\*.identity                                             | string       | Identity to use for Key Vault access                                                                                                                         | no       |             |
+| jobs                                                            | map(object)  | The container app jobs to deploy                                                                                                                             | yes      |             |
+| jobs.name                                                       | string       | Name of the container app job                                                                                                                                | yes      |             |
+| jobs.tags                                                       | map(string)  | Tags specific to this job                                                                                                                                    | no       |             |
+| jobs.workload_profile_name                                      | string       | The name of the Workload Profile in the Container App Environment to place this job                                                                          | no       |             |
+| jobs.replica_timeout                                            | number       | Maximum time in seconds to wait for a replica to complete                                                                                                    | no       | `1800`      |
+| jobs.replica_retry_limit                                        | number       | Maximum number of times to retry a failed replica                                                                                                            | no       | `0`         |
+| jobs.manual_trigger_config                                      | object       | Configuration for manual jobs (exactly one trigger config must be provided)                                                                                  | no       |             |
+| jobs.manual_trigger_config.parallelism                          | number       | Number of parallel executions                                                                                                                                | no       | `1`         |
+| jobs.manual_trigger_config.replica_completion_count             | number       | Number of replicas that need to complete                                                                                                                     | no       | `1`         |
+| jobs.schedule_trigger_config                                    | object       | Configuration for scheduled jobs (exactly one trigger config must be provided)                                                                               | no       |             |
+| jobs.event_trigger_config                                       | object       | Configuration for event-driven jobs (exactly one trigger config must be provided)                                                                            | no       |             |
+| jobs.event_trigger_config.parallelism                           | number       | Number of parallel executions                                                                                                                                | no       | `1`         |
+| jobs.event_trigger_config.replica_completion_count              | number       | Number of replicas that need to complete                                                                                                                     | no       | `1`         |
+| jobs.event_trigger_config.scale                                 | object       | Scaling configuration for event-driven jobs                                                                                                                  | yes      |             |
+| jobs.event_trigger_config.scale.min_executions                  | number       | Minimum number of executions                                                                                                                                 | no       | `0`         |
+| jobs.event_trigger_config.scale.max_executions                  | number       | Maximum number of executions                                                                                                                                 | no       | `10`        |
+| jobs.event_trigger_config.scale.rules                           | list(object) | List of scaling rules                                                                                                                                        | yes      |             |
+| jobs.event_trigger_config.scale.rules.\*.name                   | string       | Name of the scaling rule                                                                                                                                     | yes      |             |
+| jobs.event_trigger_config.scale.rules.\*.type                   | string       | Type of the scaling rule                                                                                                                                     | yes      |             |
+| jobs.event_trigger_config.scale.rules.metadata                  | map(string)  | Metadata for the scaling rule                                                                                                                                | yes      |             |
+| jobs.event_trigger_config.scale.rules.auth                      | list(object) | Authentication configuration for the rule                                                                                                                    | no       | `[]`        |
+| jobs.event_trigger_config.scale.rules.auth.\*.secret_name       | string       | Name of the secret containing auth information                                                                                                               | yes      |             |
+| jobs.event_trigger_config.scale.rules.auth.\*.trigger_parameter | string       | Parameter name for the trigger                                                                                                                               | yes      |             |
+| jobs.schedule_trigger_config.cron_expression                    | string       | Cron expression for scheduling (e.g., "0 2 * * *")                                                                                                           | yes      |             |
+| jobs.schedule_trigger_config.parallelism                        | number       | Number of parallel executions                                                                                                                                | no       | `1`         |
+| jobs.schedule_trigger_config.replica_completion_count           | number       | Number of replicas that need to complete                                                                                                                     | no       | `1`         |
+| jobs.template                                                   | object       | Container template configuration                                                                                                                             | yes      |             |
+| jobs.template.containers                                        | set(object)  | Set of container configurations                                                                                                                              | yes      |             |
+| jobs.template.containers.\*.name                                | string       | Name of the container                                                                                                                                        | yes      |             |
+| jobs.template.containers.\*.image                               | string       | Container image name                                                                                                                                         | yes      |             |
+| jobs.template.containers.\*.cpu                                 | string       | CPU allocation (e.g., "0.25", "1")                                                                                                                           | yes      |             |
+| jobs.template.containers.\*.memory                              | string       | Memory allocation (e.g., "0.5Gi", "2Gi")                                                                                                                     | yes      |             |
+| jobs.template.containers.\*.command                             | list(string) | Override the default command                                                                                                                                 | no       |             |
+| jobs.template.containers.\*.args                                | list(string) | Override the default arguments                                                                                                                               | no       |             |
+| jobs.template.containers.\*.env                                 | list(object) | Environment variables (can use direct values or secret references)                                                                                           | no       |             |
+| jobs.template.containers.\*.env.\*.name                         | string       | Name of the environment variable                                                                                                                             | yes      |             |
+| jobs.template.containers.\*.env.\*.value                        | string       | Direct value for non-sensitive environment variables                                                                                                         | no       |             |
+| jobs.template.containers.\*.env.\*.secret_name                  | string       | Name of secret containing the value (for sensitive data, must reference a secret in the secrets variable)                                                    | no       |             |
+| jobs.identity                                                   | object       | Managed identity configuration                                                                                                                               | no       |             |
+| jobs.identity.type                                              | string       | Type of identity (`SystemAssigned`, `UserAssigned`, or `SystemAssigned,UserAssigned`)                                                                        | yes      |             |
+| jobs.identity.identity_ids                                      | list(string) | List of user-assigned identity IDs                                                                                                                           | no       |             |
+| jobs.registry                                                   | list(object) | List of container registries for private images                                                                                                              | no       |             |
+| jobs.registry.\*.server                                         | string       | Registry server URL                                                                                                                                          | yes      |             |
+| jobs.registry.\*.username                                       | string       | Registry username                                                                                                                                            | no       |             |
+| jobs.registry.\*.password_secret_name                           | string       | Name of secret containing registry password                                                                                                                  | no       |             |
+| jobs.registry.\*.identity                                       | string       | Identity to use for registry authentication                                                                                                                  | no       |             |
+| diagnostics                                                     | object       | If set, container app logs will be sent to the event hub                                                                                                     | no       | `null`      |
+| diagnostics.eventhub                                            | string       | Name of the event hub                                                                                                                                        | (yes)    |             |
+| diagnostics.namespace                                           | string       | Namespace of the event hub                                                                                                                                   | (yes)    |             |
+| diagnostics.namespace_authorization_rule_name                   | string       | Name of the authorization rule                                                                                                                               | (yes)    |             |
+| diagnostics.namespace_resource_group_name                       | string       | Resource group name of the namespace if different from the container resource group                                                                          | no       |             |
+| tags                                                            | map(string)  | Tags for the resources                                                                                                                                       | no       | `{}`        |
+
+##### Outputs
+
+| Output                               | Type         | Description                                                       |
+|--------------------------------------|--------------|-------------------------------------------------------------------|
+| jobs                                 | list(object) | Map of container app jobs with their details                      |
+| jobs.\*.id                           | string       | The ID of the container app job                                   |
+| jobs.\*.name                         | string       | The name of the container app job                                 |
+| jobs.\*.resource_group_name          | string       | The resource group name where the job is deployed                 |
+| jobs.\*.container_app_environment_id | string       | The ID of the Container App Environment where the job is deployed |
+| container_app_environment_id         | string       | ID of the Container App Environment (created or existing)         |
+| container_app_environment_name       | string       | Name of the Container App Environment                             |
+| resource_group_name                  | string       | Name of the resource group                                        |
+| log_analytics_workspace_id           | string       | ID of the Log Analytics workspace (if created)                    |
+
 #### Storage Container
 
 ```hcl
@@ -2088,6 +2250,11 @@ module "container_registry" {
     identity_ids = null               # Used for user-assigned identities
   }
 
+  service_principal_access = {
+    principal_id = "..." # Service principal to grant access, for example a GitHub Action
+    role      = "User Access Administrator"               # Role to assign to the service principal
+  }
+
   # Customer-managed keys for encryption
   # Note: Requires a key vault and managed identity
   encryption = {
@@ -2105,28 +2272,29 @@ module "container_registry" {
 
 ##### Inputs
 
-| Variable                      | Type         | Description                                                                                            | Required | Default           |
-| ----------------------------- | ------------ | ------------------------------------------------------------------------------------------------------ | -------- | ----------------- |
-| name                          | string       | Name of the container registry                                                                         | yes      |                   |
-| resource_group                | object       | The resource group where the registry will be created                                                  | yes      |                   |
-| resource_group.name           | string       | Name of the resource group                                                                             | yes      |                   |
-| resource_group.location       | string       | Location of the resource group                                                                         | yes      |                   |
-| sku                           | string       | The SKU of the container registry. Possible values are 'Basic', 'Standard', and 'Premium'              | no       | `"Standard"`      |
-| admin_enabled                 | bool         | Specifies whether the admin user is enabled                                                            | no       | `false`           |
-| retention_policy_days         | number       | The number of days to retain an untagged manifest. Only available for Premium SKU                      | no       | `7`               |
-| quarantine_policy_enabled     | bool         | Boolean value that indicates whether quarantine policy is enabled. Only available for Premium SKU      | no       | `false`           |
-| trust_policy_enabled          | bool         | Boolean value that indicates whether the trust policy is enabled. Only available for Premium SKU       | no       | `false`           |
-| export_policy_enabled         | bool         | Boolean value that indicates whether the export policy is enabled. Only available for Premium SKU      | no       | `true`            |
-| anonymous_pull_enabled        | bool         | Whether to allow anonymous pull access. Only available for Standard and Premium SKUs                   | no       | `false`           |
-| data_endpoint_enabled         | bool         | Whether to enable dedicated data endpoints for this Container Registry. Only available for Premium SKU | no       | `false`           |
-| network_rule_bypass_option    | string       | Whether to allow trusted Azure services to access a network restricted Container Registry              | no       | `"AzureServices"` |
-| geo_replications              | list(object) | A list of Azure locations where the container registry should be geo-replicated. Only for Premium SKU  | no       | `[]`              |
-| network_rule_set              | object       | Network rules for the container registry. Only available for Premium SKU                               | no       | `null`            |
-| public_network_access_enabled | bool         | Whether public network access is allowed for the container registry                                    | no       | `true`            |
-| zone_redundancy_enabled       | bool         | Whether zone redundancy is enabled for the container registry                                          | no       | `false`           |
-| identity                      | object       | The type of identity to use for the container registry                                                 | no       | `null`            |
-| encryption                    | object       | Encryption settings for the container registry                                                         | no       | `null`            |
-| tags                          | map(string)  | Tags for the resources                                                                                 | no       | `{}`              |
+| Variable                      | Type         | Description                                                                                                                          | Required | Default           |
+|-------------------------------| ------------ |--------------------------------------------------------------------------------------------------------------------------------------| -------- | ----------------- |
+| name                          | string       | Name of the container registry                                                                                                       | yes      |                   |
+| resource_group                | object       | The resource group where the registry will be created                                                                                | yes      |                   |
+| resource_group.name           | string       | Name of the resource group                                                                                                           | yes      |                   |
+| resource_group.location       | string       | Location of the resource group                                                                                                       | yes      |                   |
+| sku                           | string       | The SKU of the container registry. Possible values are 'Basic', 'Standard', and 'Premium'                                            | no       | `"Standard"`      |
+| admin_enabled                 | bool         | Specifies whether the admin user is enabled                                                                                          | no       | `false`           |
+| retention_policy_days         | number       | The number of days to retain an untagged manifest. Only available for Premium SKU                                                    | no       | `7`               |
+| quarantine_policy_enabled     | bool         | Boolean value that indicates whether quarantine policy is enabled. Only available for Premium SKU                                    | no       | `false`           |
+| trust_policy_enabled          | bool         | Boolean value that indicates whether the trust policy is enabled. Only available for Premium SKU                                     | no       | `false`           |
+| export_policy_enabled         | bool         | Boolean value that indicates whether the export policy is enabled. Only available for Premium SKU                                    | no       | `true`            |
+| anonymous_pull_enabled        | bool         | Whether to allow anonymous pull access. Only available for Standard and Premium SKUs                                                 | no       | `false`           |
+| data_endpoint_enabled         | bool         | Whether to enable dedicated data endpoints for this Container Registry. Only available for Premium SKU                               | no       | `false`           |
+| network_rule_bypass_option    | string       | Whether to allow trusted Azure services to access a network restricted Container Registry                                            | no       | `"AzureServices"` |
+| geo_replications              | list(object) | A list of Azure locations where the container registry should be geo-replicated. Only for Premium SKU                                | no       | `[]`              |
+| network_rule_set              | object       | Network rules for the container registry. Only available for Premium SKU                                                             | no       | `null`            |
+| public_network_access_enabled | bool         | Whether public network access is allowed for the container registry                                                                  | no       | `true`            |
+| zone_redundancy_enabled       | bool         | Whether zone redundancy is enabled for the container registry                                                                        | no       | `false`           |
+| identity                      | object       | The type of identity to use for the container registry                                                                               | no       | `null`            |
+| service_principal_access      | object       | Configuration for service principal access to the container registry. When provided, automatically assigns the necessary permissions | no       | `null`            |
+| encryption                    | object       | Encryption settings for the container registry                                                                                       | no       | `null`            |
+| tags                          | map(string)  | Tags for the resources                                                                                                               | no       | `{}`              |
 
 ##### Outputs
 
