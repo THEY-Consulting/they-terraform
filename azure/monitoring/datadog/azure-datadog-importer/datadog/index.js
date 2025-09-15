@@ -3,7 +3,7 @@
  * Maybe there is a better way to include it as a dependency but for now we have to copy/update it manually.
  * Therefore, we shouldn't change anything in this file, so we can easily copy&paste it from the repo in the future.
  *
- * ‼️We added custom logic to handle azure container apps logs below, see lines 505 - 519 ‼️
+ * ‼️We added custom logic to handle azure container apps logs below, see lines 505 - 526 ‼️
  *
  * Source (2025-04-16):
  * https://github.com/DataDog/datadog-serverless-functions/blob/master/azure/activity_logs_monitoring/index.js
@@ -507,11 +507,20 @@ class EventhubLogHandler {
      */
     // Set log status based on properties.Stream to handle azure container apps logs
     if (record.properties && record.properties.Stream) {
-      if (record.properties.Stream === 'stderr') {
-        newRecord['status'] = 'error';
-      } else if (record.properties.Stream === 'stdout') {
-        newRecord['status'] = 'info';
+      let streamStatus = record.properties.Stream === 'stderr' ? 'error' : 'info';
+
+      let messageStatus = null;
+      if (record.properties?.Log) {
+        try {
+          // Try to parse as JSON (for structured logs like Pino)
+          messageStatus = JSON.parse(record.properties?.Log)?.level?.toLowerCase();
+        } catch {
+          // Fall back to stream-based detection
+          messageStatus = null
+        }
       }
+
+      newRecord['status'] = ['error', 'warn', 'info', 'debug'].includes(messageStatus) ? messageStatus : streamStatus;
     }
     /**
      * ‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️
