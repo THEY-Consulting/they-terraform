@@ -512,8 +512,8 @@ class EventhubLogHandler {
       if (record.properties?.Log) {
         try {
           // Try to parse as JSON (for structured logs like Pino)
-          const log = JSON.parse(record.properties?.Log);
-          if (log) {
+          const log = JSON.parse(record.properties.Log);
+          if (log && typeof log === 'object') {
             // check for supported datadog levels
             if (['error', 'warn', 'info', 'debug'].includes(log.level?.toLowerCase())) {
               newRecord['status'] = log.level.toLowerCase();
