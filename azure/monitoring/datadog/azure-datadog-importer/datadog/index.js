@@ -3,7 +3,7 @@
  * Maybe there is a better way to include it as a dependency but for now we have to copy/update it manually.
  * Therefore, we shouldn't change anything in this file, so we can easily copy&paste it from the repo in the future.
  *
- * ‼️We added custom logic to handle azure container apps logs below, see lines 505 - 532 ‼️
+ * ‼️We added custom logic to handle azure container apps logs below, see lines 505 - 537 ‼️
  *
  * Source (2025-04-16):
  * https://github.com/DataDog/datadog-serverless-functions/blob/master/azure/activity_logs_monitoring/index.js
