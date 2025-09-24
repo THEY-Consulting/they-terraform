@@ -505,11 +505,16 @@ class EventhubLogHandler {
      * ‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️
      * THIS WAS ADDED BY US. NOT PART OF THE ORIGINAL CODE.
      */
+    // set message based on properties.message to handle azure function logs
+    if (record?.properties?.message) {
+      newRecord['message'] = record.properties.message;
+    }
+
     // Set log status based on properties.Stream to handle azure container apps logs
-    if (record.properties && record.properties.Stream) {
+    if (record?.properties?.Stream) {
       newRecord['status'] = record.properties.Stream === 'stderr' ? 'error' : 'info';
 
-      if (record.properties?.Log) {
+      if (record.properties.Log) {
         try {
           // Try to parse as JSON (for structured logs like Pino)
           const log = JSON.parse(record.properties.Log);
