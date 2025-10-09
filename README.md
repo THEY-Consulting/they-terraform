@@ -1164,7 +1164,7 @@ module "function_app" {
 | insights.sku                                       | string       | SKU for application insights                                                                                            | no       | `"PerGB2018"`                          |
 | insights.retention_in_days                         | number       | Retention for application insights in days                                                                              | no       | `30`                                   |
 | runtime                                            | object       | The runtime environment                                                                                                 | no       | see sub fields                         |
-| runtime.name                                       | string       | The runtime environment name, valid values are `dotnet`, `java`, `node`, and `powershell`. Linux also supports `python` | no       | `"node"`                               |
+| runtime.name                                       | string       | The runtime environment name, valid values are `dotnet`, `java`, `node`, and `powershell`. Linux also supports `python` and `go` | no       | `"node"`                               |
 | runtime.version                                    | string       | The runtime environment version. Depends on the runtime.                                                                | no       | `"~18"`                                |
 | runtime.os                                         | string       | The os where the function app runs, valid values are `windows` and `linux`                                              | no       | `"windows"`                            |
 | environment                                        | map(string)  | Map of environment variables that are accessible from the function code during execution                                | no       | `{}`                                   |
@@ -1189,6 +1189,21 @@ module "function_app" {
 | identity.name                                      | string       | Name of the identity                                                                                                    | (yes)    |                                        |
 | assign_system_identity                             | bool         | If true, a system identity will be assigned to the function app.                                                        | no       | `false`                                |
 | tags                                               | map(string)  | Map of tags to assign to the function app and related resources                                                         | no       | `{}`                                   |
+
+**Note: Go Runtime Requirements**
+
+When using `runtime.name = "go"`, the following requirements apply:
+- **Operating System**: Must use `runtime.os = "linux"` (Windows is not supported by Azure for custom handlers)
+- **Build Configuration**: Must set `build.enabled = false` (Go binaries must be pre-compiled before deployment)
+- **Runtime Version**: The `runtime.version` field is informational only. The actual Go version is determined by the compiled binary, not by Azure
+- **Pre-compiled Binary**: You must compile the Go binary before running Terraform:
+  ```bash
+  CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o handler handler.go
+  ```
+- **Custom Handler Configuration**: Your `source_dir` must include a `host.json` file with custom handler configuration
+- **Architecture**: Azure App Service only supports x86-64 (AMD64) architecture. Always compile with `GOARCH=amd64`.
+
+You may also use `runtime.name = "custom"` to use a custom runtime. In this case, you must also set `build.enabled = false` and provide a pre-compiled binary in the `source_dir`. Same architecture requirements apply.
 
 ##### Outputs
 
