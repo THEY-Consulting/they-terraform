@@ -199,9 +199,141 @@ Example GitHub Actions workflow:
     terraform apply -auto-approve
 ```
 
+## Using Other Trigger Types
+
+Go custom handlers support **all Azure Functions trigger types**, not just HTTP triggers. The extension bundle configured in `host.json` provides access to all trigger and binding types.
+
+### Supported Triggers
+
+- ✅ HTTP triggers (this example)
+- ✅ Timer triggers (scheduled jobs)
+- ✅ Blob Storage triggers
+- ✅ Queue triggers
+- ✅ Event Grid triggers
+- ✅ Service Bus triggers
+- ✅ Cosmos DB triggers
+- ✅ Event Hub triggers
+
+### Example: Timer Trigger
+
+**Create `scheduled-job/function.json`:**
+```json
+{
+  "bindings": [
+    {
+      "name": "myTimer",
+      "type": "timerTrigger",
+      "direction": "in",
+      "schedule": "0 */5 * * * *"
+    }
+  ]
+}
+```
+
+**Add handler in `handler.go`:**
+```go
+mux.HandleFunc("/scheduled-job", func(w http.ResponseWriter, r *http.Request) {
+    slog.Info("Timer triggered job started")
+
+    // Your scheduled logic here
+
+    w.WriteHeader(http.StatusOK)
+})
+```
+
+### Example: Blob Storage Trigger
+
+**Create `process-blob/function.json`:**
+```json
+{
+  "bindings": [
+    {
+      "name": "myBlob",
+      "type": "blobTrigger",
+      "direction": "in",
+      "path": "uploads/{name}",
+      "connection": "AzureWebJobsStorage"
+    }
+  ]
+}
+```
+
+**Add handler in `handler.go`:**
+```go
+type BlobTriggerPayload struct {
+    Data struct {
+        BlobURL string `json:"blobUrl"`
+    } `json:"Data"`
+}
+
+mux.HandleFunc("/process-blob", func(w http.ResponseWriter, r *http.Request) {
+    var payload BlobTriggerPayload
+    json.NewDecoder(r.Body).Decode(&payload)
+
+    slog.Info("Processing blob", "url", payload.Data.BlobURL)
+
+    // Process the blob
+
+    w.WriteHeader(http.StatusOK)
+})
+```
+
+### Example: Queue Trigger
+
+**Create `process-queue/function.json`:**
+```json
+{
+  "bindings": [
+    {
+      "name": "myQueueItem",
+      "type": "queueTrigger",
+      "direction": "in",
+      "queueName": "myqueue",
+      "connection": "AzureWebJobsStorage"
+    }
+  ]
+}
+```
+
+**Add handler in `handler.go`:**
+```go
+type QueueMessage struct {
+    Data string `json:"Data"`
+}
+
+mux.HandleFunc("/process-queue", func(w http.ResponseWriter, r *http.Request) {
+    var msg QueueMessage
+    json.NewDecoder(r.Body).Decode(&msg)
+
+    slog.Info("Processing queue message", "data", msg.Data)
+
+    // Process the message
+
+    w.WriteHeader(http.StatusOK)
+})
+```
+
+### Important Notes for Non-HTTP Triggers
+
+1. **Custom Handler Payload Format**: For non-HTTP triggers, Azure sends data in a specific JSON format. You may want to set `enableForwardingHttpRequest: false` in `host.json` for more control.
+
+2. **Connection Strings**: Add required connection strings to your Terraform configuration:
+   ```hcl
+   environment = {
+     AzureWebJobsStorage = "your-storage-connection-string"
+   }
+   ```
+
+3. **Route Naming**: The route in your Go handler must match the function folder name:
+   - Folder: `process-blob/` → Route: `/process-blob`
+   - Folder: `scheduled-job/` → Route: `/scheduled-job`
+
+4. **Extension Bundle**: Already configured in `host.json` with version `[4.*, 5.0.0)`, which provides all trigger types.
+
 ## References
 
 - [Azure Functions Custom Handlers](https://learn.microsoft.com/en-us/azure/azure-functions/functions-custom-handlers)
+- [Azure Functions Triggers and Bindings](https://learn.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings)
 - [Create a Go function using Visual Studio Code](https://learn.microsoft.com/en-us/azure/azure-functions/create-first-function-vs-code-other)
 - [Azure App Service Architecture Support](https://learn.microsoft.com/en-us/azure/app-service/tutorial-custom-container)
 
