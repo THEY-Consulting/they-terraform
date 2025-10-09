@@ -25,6 +25,11 @@ variable "runtime" {
     condition     = var.runtime.name != "python" || var.runtime.os != "windows"
     error_message = "Python is not supported on Windows."
   }
+
+  validation {
+    condition     = var.runtime.name != "go" || var.runtime.os != "windows"
+    error_message = "Go is not supported on Windows."
+  }
 }
 
 variable "source_dir" {
