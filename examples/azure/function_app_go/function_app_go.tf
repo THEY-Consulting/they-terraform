@@ -11,12 +11,12 @@ module "function_app_go" {
 
   runtime = {
     name    = "go"
-    version = "1.25"  # Informational only - actual Go version determined by compiled binary
+    version = "1.25" # Informational only - actual Go version determined by compiled binary
     os      = "linux"
   }
 
   build = {
-    enabled = false  # Go binaries must be pre-compiled before deployment
+    enabled = false # Go binaries must be pre-compiled before deployment
   }
 
   tags = {
