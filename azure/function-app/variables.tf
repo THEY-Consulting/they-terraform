@@ -27,8 +27,8 @@ variable "runtime" {
   }
 
   validation {
-    condition     = var.runtime.name != "go" || var.runtime.os != "windows"
-    error_message = "Go is not supported on Windows."
+    condition     = (var.runtime.name != "go" && var.runtime.name != "custom") || var.runtime.os != "windows"
+    error_message = "Go and custom runtimes are not supported on Windows."
   }
 }
 

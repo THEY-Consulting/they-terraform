@@ -88,7 +88,7 @@ resource "azurerm_linux_function_app" "function_app" {
     }
 
     dynamic "application_stack" {
-      for_each = var.runtime.name == "go" ? [var.runtime] : []
+      for_each = (var.runtime.name == "go" || var.runtime.name == "custom") ? [var.runtime] : []
       content {
         use_custom_runtime = true
       }

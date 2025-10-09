@@ -1258,6 +1258,8 @@ When using `runtime.name = "go"`, the following requirements apply:
 - **Custom Handler Configuration**: Your `source_dir` must include a `host.json` file with custom handler configuration
 - **Architecture**: Azure App Service only supports x86-64 (AMD64) architecture. Always compile with `GOARCH=amd64`.
 
+You may also use `runtime.name = "custom"` to use a custom runtime. In this case, you must also set `build.enabled = false` and provide a pre-compiled binary in the `source_dir`. Same architecture requirements apply.
+
 ##### Outputs
 
 | Output            | Type         | Description                        |

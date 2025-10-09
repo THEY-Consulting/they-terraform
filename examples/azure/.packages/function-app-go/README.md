@@ -2,6 +2,15 @@
 
 This example demonstrates how to deploy a Go-based Azure Function using custom handlers.
 
+## Language Agnostic
+
+While this example uses **Go**, Azure Functions custom handlers work with **any language** that can:
+- Compile to a native binary
+- Listen on an HTTP port
+- Handle HTTP requests
+
+You could use **Rust**, **C++**, **Zig**, **Nim**, or any other compiled language. The Terraform module and Azure Functions runtime don't care about the source language - they only interact with the compiled binary and the configuration files (`host.json`, `function.json`).
+
 ## Prerequisites
 
 - [Go](https://go.dev/dl/) (version 1.21 or later)
