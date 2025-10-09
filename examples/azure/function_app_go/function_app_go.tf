@@ -11,7 +11,7 @@ module "function_app_go" {
 
   runtime = {
     name    = "go"
-    version = "1.23"  # Informational only - actual Go version determined by compiled binary
+    version = "1.25"  # Informational only - actual Go version determined by compiled binary
     os      = "linux"
   }
 
