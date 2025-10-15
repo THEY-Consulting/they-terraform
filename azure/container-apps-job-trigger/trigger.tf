@@ -28,7 +28,7 @@ module "trigger_function_app" {
   is_bundle = true
   build = {
     enabled = true
-    command = "yarn install && yarn run build"
+    command = "yarn install --no-immutable && yarn run build" # yarn version can differ between local and ci
   }
 
   # Use the user-assigned identity we created above
