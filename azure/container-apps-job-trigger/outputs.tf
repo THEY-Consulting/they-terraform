@@ -21,3 +21,7 @@ output "endpoint_url" {
 output "identities" {
   value = module.trigger_function_app.identities
 }
+
+output "function_name" {
+  value = "TriggerContainerJob"
+}
