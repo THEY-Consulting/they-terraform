@@ -9,7 +9,7 @@ resource "azurerm_user_assigned_identity" "trigger_identity" {
 
 # Grant the identity permission to trigger the Container Apps Job
 resource "azurerm_role_assignment" "trigger_job_contributor" {
-  scope                = var.target.container_app_environment_id
+  scope                = var.target_container_app_job_id
   role_definition_name = "Contributor"
   principal_id         = azurerm_user_assigned_identity.trigger_identity.principal_id
 }
@@ -23,11 +23,7 @@ module "calculate_statistics_trigger_function_app" {
   resource_group_name = var.resource_group_name
   environment = {
     AzureWebJobsFeatureFlags = "EnableWorkerIndexing"
-    SENTRY_DSN               = var.sentry_dsn
-    SENTRY_ENV               = var.sentry_env
-    ENVIRONMENT              = var.environment
-    VERSION                  = var.version_tag
-    AZURE_JOB_RESOURCE_ID    = var.target.job_resource_id
+    AZURE_JOB_RESOURCE_ID    = var.target_container_app_job_id
   }
   is_bundle = true
   build = {
