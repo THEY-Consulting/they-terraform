@@ -11,8 +11,7 @@ BUILD_COMMAND=$3
 cd "$SOURCE_PATH"
 
 # build
-# Source nvm if available to ensure correct node/yarn version
-if ! BUILD_RESULT=$(sh -c "[ -s ~/.nvm/nvm.sh ] && source ~/.nvm/nvm.sh && nvm use 2>/dev/null; $BUILD_COMMAND");
+if ! BUILD_RESULT=$(sh -c "$BUILD_COMMAND");
 then
   echo "$BUILD_RESULT" >&2
   exit 1
