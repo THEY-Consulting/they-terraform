@@ -14,7 +14,7 @@ resource "azurerm_role_assignment" "trigger_job_contributor" {
   principal_id         = azurerm_user_assigned_identity.trigger_identity.principal_id
 }
 
-module "calculate_statistics_trigger_function_app" {
+module "trigger_function_app" {
   source = "../function-app"
 
   name                = var.name
