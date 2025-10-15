@@ -22,6 +22,6 @@ output "identities" {
   value = module.trigger_function_app.identities
 }
 
-output "function_name" {
+output "job_name" {
   value = "TriggerContainerJob"
 }
