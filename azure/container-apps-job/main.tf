@@ -140,8 +140,9 @@ resource "azurerm_container_app_job" "container_app_job" {
             # Auto-inject job name as an environment variable
             [
               {
-                name  = "APP_NAME"
-                value = container.value.name
+                name        = "APP_NAME"
+                value       = container.value.name
+                secret_name = null
               }
             ],
             # User-defined environment variables
