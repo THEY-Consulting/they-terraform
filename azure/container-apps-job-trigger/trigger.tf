@@ -27,13 +27,12 @@ module "calculate_statistics_trigger_function_app" {
     SENTRY_ENV               = var.sentry_env
     ENVIRONMENT              = var.environment
     VERSION                  = var.version_tag
-    AZURE_SUBSCRIPTION_ID    = var.target.subscription_id
-    AZURE_RESOURCE_GROUP     = var.target.resource_group_name
-    AZURE_JOB_NAME           = var.target.name
+    AZURE_JOB_RESOURCE_ID    = var.target.job_resource_id
   }
   is_bundle = true
   build = {
-    enabled = false # we build the function app manually to reduce deployment time
+    enabled = true
+    command = "yarn install && yarn run build"
   }
 
   # Use the user-assigned identity we created above

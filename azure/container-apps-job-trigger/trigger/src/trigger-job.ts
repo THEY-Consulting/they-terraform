@@ -1,36 +1,20 @@
 import { DefaultAzureCredential } from '@azure/identity';
 import { type Config } from './config';
-import {
-  type EnvironmentVar,
-  type JobExecutionResult,
-  type JobParams,
-  JobConfigurationSchema,
-  JobExecutionResponseSchema,
-} from './types';
-import { validateData } from './validation';
+import { Api, Container, ExecutionResponse, JobConfigResponse, JobParams } from './types';
 
-/**
- * Triggers an Azure Container Apps Job with custom parameters
- */
-export async function triggerContainerJob(
-  config: Config,
-  params: JobParams,
-): Promise<JobExecutionResult> {
+const getAccessToken = async () => {
   const credential = new DefaultAzureCredential();
-  const apiVersion = '2024-03-01';
-  const baseUrl = 'https://management.azure.com';
-
-  // Get access token
   const tokenResponse = await credential.getToken('https://management.azure.com/.default');
-  const accessToken = tokenResponse.token;
+  return tokenResponse.token;
+};
 
-  // Step 1: Fetch current job configuration
-  const jobConfigUrl = `${baseUrl}/subscriptions/${config.azureSubscriptionId}/resourceGroups/${config.azureResourceGroup}/providers/Microsoft.App/jobs/${config.azureJobName}?api-version=${apiVersion}`;
+const getJobContainers = async (config: Config, api: Api) => {
+  const jobConfigUrl = `${api.baseUrl}${config.azureJobResourceId}?api-version=${api.apiVersion}`;
 
   const configResponse = await fetch(jobConfigUrl, {
     method: 'GET',
     headers: {
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Bearer ${api.accessToken}`,
       'Content-Type': 'application/json',
     },
   });
@@ -40,44 +24,35 @@ export async function triggerContainerJob(
     throw new Error(`Failed to fetch job configuration: ${configResponse.status} ${errorText}`);
   }
 
-  const jobConfigData = await configResponse.json();
-  const jobConfig = validateData(jobConfigData, JobConfigurationSchema);
-  const container = jobConfig.properties.template.containers[0];
-
-  if (!container) {
+  const jobConfig = await configResponse.json() as JobConfigResponse;
+  if (!jobConfig.properties.template.containers.length) {
     throw new Error('No container found in job configuration');
   }
 
-  // Step 2: Build environment variables
-  // Auto-generate env var names by uppercasing the parameter names
-  const customEnvVars: EnvironmentVar[] = Object.entries(params).map(([key, value]) => ({
-    name: key.toUpperCase(),
-    value: String(value),
-  }));
+  return jobConfig.properties.template.containers;
+};
 
-  // Merge existing env vars with custom overrides
-  const customVarNames = new Set(customEnvVars.map((v) => v.name));
-  const existingEnvVars = container.env.filter((v) => !customVarNames.has(v.name));
-  const mergedEnvVars = [...existingEnvVars, ...customEnvVars];
+const getMergedContainerConfigs = (containers: Container[], overrides: JobParams) => {
+  return containers.map((container) => {
+    const remaining = container.env.filter((v) => !overrides[v.name]);
+    const newVars = Object.entries(overrides).map(([name, value]) => ({ name, value }));
 
-  // Step 3: Trigger the job
-  const startJobUrl = `${baseUrl}/subscriptions/${config.azureSubscriptionId}/resourceGroups/${config.azureResourceGroup}/providers/Microsoft.App/jobs/${config.azureJobName}/start?api-version=${apiVersion}`;
+    return {
+      name: container.name,
+      image: container.image,
+      resources: container.resources,
+      env: [...remaining, ...newVars],
+    };
+  });
+};
 
-  const requestBody = {
-    containers: [
-      {
-        name: container.name,
-        image: container.image,
-        resources: container.resources,
-        env: mergedEnvVars,
-      },
-    ],
-  };
-
+const executeContainerJob = async (containers: Container[], config: Config, api: Api) => {
+  const startJobUrl = `${api.baseUrl}${config.azureJobResourceId}/start?api-version=${api.apiVersion}`;
+  const requestBody = { containers };
   const startResponse = await fetch(startJobUrl, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Bearer ${api.accessToken}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(requestBody),
@@ -88,11 +63,25 @@ export async function triggerContainerJob(
     throw new Error(`Failed to start job: ${startResponse.status} ${errorText}`);
   }
 
-  const executionData = await startResponse.json();
-  const executionResponse = validateData(executionData, JobExecutionResponseSchema);
+  const { id, name } = await startResponse.json() as ExecutionResponse;
 
-  return {
-    executionId: executionResponse.id,
-    executionName: executionResponse.name,
+  return { id, name };
+};
+
+/**
+ * Triggers an Azure Container Apps Job with custom parameters
+ */
+export async function triggerContainerJob(
+  config: Config,
+  params: JobParams,
+) {
+  const api = {
+    baseUrl: 'https://management.azure.com',
+    apiVersion: '2024-03-01',
+    accessToken: await getAccessToken(),
   };
+
+  const containers = await getJobContainers(config, api);
+  const mergedContainers = getMergedContainerConfigs(containers, params);
+  return await executeContainerJob(mergedContainers, config, api);
 }

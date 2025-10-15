@@ -33,7 +33,7 @@ variable "resource_group_name" {
 variable "target" {
   description = "Target Container App Job to trigger"
   type = object({
-    name                         = string
+    job_resource_id              = string
     container_app_environment_id = string
   })
 }

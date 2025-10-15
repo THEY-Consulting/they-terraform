@@ -3,9 +3,7 @@ export type Config = {
   version: string;
   sentryDsn: string;
   sentryEnv: string;
-  azureSubscriptionId: string;
-  azureResourceGroup: string;
-  azureJobName: string;
+  azureJobResourceId: string;
 };
 
 export function createEnvConfig(): Config {
@@ -14,9 +12,7 @@ export function createEnvConfig(): Config {
     'VERSION',
     'SENTRY_DSN',
     'SENTRY_ENV',
-    'AZURE_SUBSCRIPTION_ID',
-    'AZURE_RESOURCE_GROUP',
-    'AZURE_JOB_NAME',
+    'AZURE_JOB_RESOURCE_ID',
   ]);
 
   return {
@@ -24,9 +20,7 @@ export function createEnvConfig(): Config {
     version: env.VERSION,
     sentryDsn: env.SENTRY_DSN,
     sentryEnv: env.SENTRY_ENV,
-    azureSubscriptionId: env.AZURE_SUBSCRIPTION_ID,
-    azureResourceGroup: env.AZURE_RESOURCE_GROUP,
-    azureJobName: env.AZURE_JOB_NAME,
+    azureJobResourceId: env.AZURE_JOB_RESOURCE_ID,
   };
 }
 
