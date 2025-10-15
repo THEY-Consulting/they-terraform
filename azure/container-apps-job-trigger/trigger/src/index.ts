@@ -5,7 +5,7 @@ import { triggerContainerJob } from './trigger-job';
 import { JobParams } from './types';
 
 const main = async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
-  context.log('🚀 Trigger Calculate Statistics Function invoked');
+  context.log('🚀 Container App Job Trigger invoked');
   const cfg = createEnvConfig();
   const app = await newApp(cfg, context);
 
@@ -43,7 +43,7 @@ const main = async (request: HttpRequest, context: InvocationContext): Promise<H
 };
 
 // Register HTTP trigger
-app.http('CalculateStatisticsTrigger', {
+app.http('TriggerContainerJob', {
   methods: ['POST'],
   authLevel: 'function', // Requires function key for authentication
   handler: main,
