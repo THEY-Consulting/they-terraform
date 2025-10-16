@@ -11,7 +11,7 @@ BUILD_COMMAND=$3
 cd "$SOURCE_PATH"
 
 # build
-if ! BUILD_RESULT=$($BUILD_COMMAND);
+if ! BUILD_RESULT=$(sh -c "$BUILD_COMMAND");
 then
   echo "$BUILD_RESULT" >&2
   exit 1

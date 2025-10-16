@@ -1,0 +1,21 @@
+{
+  "name": "@they/container-apps-job-trigger",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "packageManager": "yarn@3.5.1",
+  "scripts": {
+    "dev": "NODE_ENV=local ts-node src/index.ts",
+    "build": "tsc && esbuild src/index.ts --bundle --platform=node --sourcemap=inline --target=node20 --outdir=dist --keep-names --external:@azure/functions-core",
+    "test": "jest --runInBand"
+  },
+  "dependencies": {
+    "@azure/functions": "4.7.0",
+    "@azure/identity": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "esbuild": "^0.25.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8"
+  }
+}
