@@ -25,7 +25,7 @@ module "trigger_function_app" {
     AzureWebJobsFeatureFlags = "EnableWorkerIndexing"
     AZURE_JOB_RESOURCE_ID    = var.target_container_app_job_id
   }
-  is_bundle = false # Need node_modules for @azure/functions on Windows
+  is_bundle = true
   build = {
     enabled = true
     command = "yarn install --no-immutable && yarn run build" # yarn version can differ between local and ci

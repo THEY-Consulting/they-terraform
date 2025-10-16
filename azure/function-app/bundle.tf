@@ -9,7 +9,7 @@ data "external" "builder" {
 
 data "archive_file" "function_zip" {
   type        = "zip"
-  output_path = coalesce(var.archive.output_path, "${path.cwd}/dist/${var.name}/azure-function-app.zip")
+  output_path = coalesce(var.archive.output_path, "${path.root}/dist/${var.name}/azure-function-app.zip")
   source_dir  = var.source_dir
   excludes    = var.is_bundle ? concat(var.archive.excludes, ["**/node_modules/**", "**/.yarn/**"]) : var.archive.excludes
 
