@@ -50,11 +50,32 @@ resource "azurerm_windows_function_app" "function_app" {
   site_config {
     application_insights_key = var.insights.enabled ? azurerm_application_insights.app_insights.0.instrumentation_key : null
 
-    application_stack {
-      dotnet_version          = var.runtime.name == "dotnet" ? var.runtime.version : null
-      java_version            = var.runtime.name == "java" ? var.runtime.version : null
-      node_version            = var.runtime.name == "node" ? var.runtime.version : null
-      powershell_core_version = var.runtime.name == "powershell" ? var.runtime.version : null
+    dynamic "application_stack" {
+      for_each = var.runtime.name == "dotnet" ? [var.runtime] : []
+      content {
+        dotnet_version = application_stack.value.version
+      }
+    }
+
+    dynamic "application_stack" {
+      for_each = var.runtime.name == "java" ? [var.runtime] : []
+      content {
+        java_version = application_stack.value.version
+      }
+    }
+
+    dynamic "application_stack" {
+      for_each = var.runtime.name == "node" ? [var.runtime] : []
+      content {
+        node_version = application_stack.value.version
+      }
+    }
+
+    dynamic "application_stack" {
+      for_each = var.runtime.name == "powershell" ? [var.runtime] : []
+      content {
+        powershell_core_version = application_stack.value.version
+      }
     }
 
     # required to be able to trigger the function app from the portal
