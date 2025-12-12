@@ -87,7 +87,7 @@ resource "aws_lb_listener_rule" "https_listener_extra_rules" {
 
 resource "aws_lb_target_group" "tg" {
   name     = var.name
-  port     = 80
+  port     = var.asg_destination_port
   protocol = "HTTP"
   vpc_id   = local.vpc_id
 

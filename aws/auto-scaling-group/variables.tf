@@ -108,6 +108,12 @@ variable "certificate_arn" {
   default     = null # Variable is optional.
 }
 
+variable "asg_destination_port" {
+  description = "Destination port where the default ALB listener (443/https) will route to"
+  type        = number
+  default     = 80
+}
+
 variable "health_check_path" {
   description = "Destination for the health check request"
   type        = string
