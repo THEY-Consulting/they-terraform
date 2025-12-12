@@ -688,6 +688,7 @@ module "auto-scaling-group" {
   vpc_cidr_block = "10.0.0.0/16"
   public_subnets = false
   certificate_arn = data.aws_acm_certificate.certificate.arn
+  asg_destination_port = 8080
   tags = {
     createdBy = "terraform"
     environment = "dev"
@@ -756,6 +757,7 @@ module "auto-scaling-group" {
 | vpc_cidr_block                                                           | string       | The CIDR block of private IP addresses of the VPC. The subnets will be located within this CIDR block.                                                                  | no       | `"10.0.0.0/16"`                                                           |
 | public_subnets                                                           | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                                                                | no       | `false`                                                                   |
 | certificate_arn                                                          | string       | ARN of certificate used to setup HTTPs in Application Load Balancer                                                                                                     | no       | `null`                                                                    |
+| asg_destination_port                                                     | number       | Destination port where the default ALB listener (443/https) will route to                                                                                               | no       | `80`                                                                      |
 | tags                                                                     | map(string)  | Additional tags for the components of this module                                                                                                                       | no       | `{}`                                                                      |
 | health_check_path                                                        | string       | Destination for the health check request                                                                                                                                | no       | `"/"`                                                                     |
 | health_check_timeout                                                     | number       | Timeout in seconds for the health check request                                                                                                                         | no       | `null`                                                                    |
