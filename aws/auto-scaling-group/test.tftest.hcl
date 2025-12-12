@@ -26,14 +26,14 @@ run "module:auto-scaling-group plan with custom destination port 8080" {
   command = plan
 
   variables {
-    name                  = "test-asg-custom-port-8080"
-    ami_id                = "ami-0ba27d9989b7d8c5d" # Amazon Linux 2023 arm64 for eu-central-1
-    instance_type         = "t4g.nano"
-    desired_capacity      = 1
-    min_size              = 1
-    max_size              = 1
-    availability_zones    = ["eu-central-1a", "eu-central-1b"]
-    asg_destination_port  = 8080
+    name                 = "test-asg-custom-port-8080"
+    ami_id               = "ami-0ba27d9989b7d8c5d" # Amazon Linux 2023 arm64 for eu-central-1
+    instance_type        = "t4g.nano"
+    desired_capacity     = 1
+    min_size             = 1
+    max_size             = 1
+    availability_zones   = ["eu-central-1a", "eu-central-1b"]
+    asg_destination_port = 8080
   }
 
   assert {
