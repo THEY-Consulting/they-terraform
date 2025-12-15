@@ -24,7 +24,6 @@ module "auto-scaling-group" {
   user_data_file_name = "user_data.sh"
   availability_zones  = data.aws_availability_zones.azs.names[*] # Use AZs of region defined by provider.
   certificate_arn     = data.aws_acm_certificate.certificate.arn
-  # trust_store_arn_s3  = "arn:aws:s3:::my-trust-store-bucket/truststore.pem" # Uncomment to enable mTLS
 }
 
 # --- OUTPUT ---

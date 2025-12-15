@@ -114,8 +114,8 @@ variable "asg_destination_port" {
   default     = 80
 }
 
-variable "trust_store_arn_s3" {
-  description = "Trust store ARN of default ALB listener (443/https) used for mutual authentication via mTLS."
+variable "trust_store_arn" {
+  description = "Trust store ARN for the default ALB listener (443/https), used for mutual authentication via mTLS."
   type        = string
   default     = null # Optional
 }
