@@ -109,9 +109,15 @@ variable "certificate_arn" {
 }
 
 variable "asg_destination_port" {
-  description = "Destination port where the default ALB listener (443/https) will route to"
+  description = "Destination port where the default ALB listener (443/https) will route to."
   type        = number
   default     = 80
+}
+
+variable "trust_store_arn" {
+  description = "Trust store ARN for the default ALB listener (443/https), used for mutual authentication via mTLS."
+  type        = string
+  default     = null # Optional
 }
 
 variable "health_check_path" {
