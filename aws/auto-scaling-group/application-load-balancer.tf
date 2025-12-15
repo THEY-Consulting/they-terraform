@@ -57,7 +57,7 @@ resource "aws_lb_listener" "lb_listener_https" {
   # Do not create an HTTPs listener,
   # if no certificate_arn is provided.
   count             = var.certificate_arn != null ? 1 : 0
-  load_balancer_arn = var.loadbalancer_disabled ? null : aws_lb.lb[0].arn # see line 18/32 
+  load_balancer_arn = var.loadbalancer_disabled ? null : aws_lb.lb[0].arn # see line 18/32
   port              = "443"
   protocol          = "HTTPS"
   certificate_arn   = var.certificate_arn
@@ -65,6 +65,15 @@ resource "aws_lb_listener" "lb_listener_https" {
   default_action {
     type             = "forward"
     target_group_arn = var.loadbalancer_disabled ? null : aws_lb_target_group.tg.arn
+  }
+
+  dynamic "mutual_authentication" {
+    for_each = var.trust_store_arn_s3 != null ? [1] : []
+    content {
+      mode = "verify"
+      trust_store_arn = var.trust_store_arn_s3
+      ignore_client_certificate_expiry = false
+    }
   }
 }
 
