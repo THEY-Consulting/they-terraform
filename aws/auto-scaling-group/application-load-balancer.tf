@@ -70,8 +70,8 @@ resource "aws_lb_listener" "lb_listener_https" {
   dynamic "mutual_authentication" {
     for_each = var.trust_store_arn != null ? [1] : []
     content {
-      mode = "verify"
-      trust_store_arn = var.trust_store_arn
+      mode                             = "verify"
+      trust_store_arn                  = var.trust_store_arn
       ignore_client_certificate_expiry = false
     }
   }
