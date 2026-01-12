@@ -137,6 +137,14 @@ resource "azurerm_container_app_job" "container_app_job" {
 
         dynamic "env" {
           for_each = concat(
+            # Auto-inject job name as an environment variable
+            [
+              {
+                name        = "APP_NAME"
+                value       = container.value.name
+                secret_name = null
+              }
+            ],
             # User-defined environment variables
             container.value.env == null ? [] : container.value.env,
             # Auto-inject Azure authentication environment variables when using user-assigned identity

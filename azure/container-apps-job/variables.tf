@@ -116,6 +116,7 @@ variable "jobs" {
     name                  = string
     tags                  = optional(map(string))
     workload_profile_name = optional(string)
+    enable_job_trigger    = optional(bool, false)
 
     # Job configuration
     replica_timeout     = optional(number, 1800) # 30 minutes default

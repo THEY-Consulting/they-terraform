@@ -34,3 +34,8 @@ output "shared_identity" {
   description = "Shared user-assigned managed identity for all jobs"
   value       = length(azurerm_user_assigned_identity.shared_identity) > 0 ? azurerm_user_assigned_identity.shared_identity[0] : null
 }
+
+output "job_triggers" {
+  description = "Job triggers with their basic information"
+  value       = module.job_triggers
+}
