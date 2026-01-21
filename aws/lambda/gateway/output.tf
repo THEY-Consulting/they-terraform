@@ -11,3 +11,7 @@ output "endpoint_urls" {
     )
   ]
 }
+
+output "stage_arn" {
+  value = aws_api_gateway_stage.stage.arn
+}

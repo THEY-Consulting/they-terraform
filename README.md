@@ -566,6 +566,7 @@ module "api_gateway" {
 | ------------- | ------------ | --------------------------------- |
 | invoke_url    | string       | The invoke URL of the api gateway |
 | endpoint_urls | list(string) | List of all endpoint URLs         |
+| stage_arn     | string       | The ARN of the API Gateway stage  |
 
 #### S3 Bucket
 
