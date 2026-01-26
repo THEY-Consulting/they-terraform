@@ -63,7 +63,7 @@ variable "auto_grow_enabled" {
 }
 
 variable "postgres_version" {
-  description = "PostgreSQL version"
+  description = "PostgreSQL version to use for initial creation. Note: Version changes after creation are managed outside of Terraform and will be ignored."
   type        = string
   default     = "16"
 }
