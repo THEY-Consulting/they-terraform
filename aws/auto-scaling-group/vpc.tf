@@ -1,7 +1,7 @@
 locals {
   # The total maximum value of NAT Gateways is one NAT Gateway for each
-  # availability zone.
-  number_of_nat_gateways = var.multi_az_nat ? length(aws_subnet.instances_subnets) : 1
+  # availability zone. NAT Gateways are only needed when instances are in private subnets.
+  number_of_nat_gateways = var.public_subnets ? 0 : (var.multi_az_nat ? length(aws_subnet.instances_subnets) : 1)
   vpc_id                 = var.vpc_id == null ? aws_vpc.vpc[0].id : var.vpc_id
 }
 
@@ -161,7 +161,7 @@ resource "aws_route_table" "rt_public_subnets" {
 }
 
 resource "aws_route_table_association" "rta_private" {
-  count = length(aws_subnet.instances_subnets)
+  count = var.public_subnets ? 0 : length(aws_subnet.instances_subnets)
 
   # If you do not choose a multi-AZ NAT Gateway deployment, there is only
   # one single NAT Gateway, so there is only one single route table routing
