@@ -24,7 +24,7 @@ resource "aws_cloudwatch_event_target" "cw_event_target" {
 resource "aws_lambda_permission" "cron_trigger_lambda_func_permission" {
   count = var.cron_trigger != null ? 1 : 0
 
-  statement_id  = "allow-execution-${aws_cloudwatch_event_rule.cw_event_rule.0.name}"
+  statement_id  = "allow-execution-${aws_cloudwatch_event_rule.cw_event_rule.0.name}-${substr(local.lambda_func.arn, -8, 8)}"
   action        = "lambda:InvokeFunction"
   function_name = local.lambda_func.function_name
   principal     = "events.amazonaws.com"
@@ -57,7 +57,7 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
 resource "aws_lambda_permission" "bucket_trigger_lambda_func_permission" {
   count = var.bucket_trigger != null ? 1 : 0
 
-  statement_id  = "allow-execution-${var.bucket_trigger.bucket}-${var.bucket_trigger.name}"
+  statement_id  = "allow-execution-${var.bucket_trigger.bucket}-${var.bucket_trigger.name}-${substr(local.lambda_func.arn, -8, 8)}"
   action        = "lambda:InvokeFunction"
   function_name = local.lambda_func.function_name
   principal     = "s3.amazonaws.com"
