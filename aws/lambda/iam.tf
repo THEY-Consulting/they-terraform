@@ -25,7 +25,7 @@ resource "aws_iam_role" "role" {
       Statement = [{
         Effect   = "Allow"
         Action   = ["logs:CreateLogStream", "logs:PutLogEvents"]
-        Resource = "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${var.name}:*"
+        Resource = "arn:aws:logs:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${var.name}:*"
       }]
     })
   }
@@ -94,5 +94,3 @@ resource "aws_iam_role_policy_attachment" "sqs_permissions" {
   policy_arn = aws_iam_policy.sqs_permissions[0].arn
   role       = aws_iam_role.role[0].name
 }
-
-

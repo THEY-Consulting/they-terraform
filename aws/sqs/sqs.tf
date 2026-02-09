@@ -19,7 +19,7 @@ resource "aws_sqs_queue" "dlq" {
         "Sid": "AllowSQSActions",
         "Effect": "Allow",
         "Action": "SQS:*",
-        "Resource": "arn:aws:sqs:${data.aws_region.current.name}:${data.aws_caller_identity.current.id}:${var.name}"
+        "Resource": "arn:aws:sqs:${data.aws_region.current.id}:${data.aws_caller_identity.current.id}:${var.name}"
       }
     ]
   }

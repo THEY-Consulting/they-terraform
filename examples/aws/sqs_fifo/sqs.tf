@@ -30,7 +30,7 @@ module "sqs" {
         AWS = data.aws_caller_identity.current.arn
       },
       Action   = ["SQS:*"],
-      Resource = "arn:aws:sqs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:${local.queue_name}"
+      Resource = "arn:aws:sqs:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:${local.queue_name}"
     }
     ]
   })
@@ -61,4 +61,3 @@ output "dlq_arn" {
 output "dlq_queue_name" {
   value = module.sqs.dlq_queue_name
 }
-

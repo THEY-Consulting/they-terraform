@@ -35,7 +35,7 @@ output "policies" {
     {
       Effect = "Allow"
       Principal = {
-        Service = ["logs.${data.aws_region.current.name}.amazonaws.com"]
+        Service = ["logs.${data.aws_region.current.id}.amazonaws.com"]
       }
       Action   = ["s3:GetBucketAcl"]
       Resource = "arn:aws:s3:::${var.bucket_name}",
@@ -43,7 +43,7 @@ output "policies" {
     {
       Effect = "Allow"
       Principal = {
-        Service = ["logs.${data.aws_region.current.name}.amazonaws.com"]
+        Service = ["logs.${data.aws_region.current.id}.amazonaws.com"]
       }
       Action   = ["s3:PutObject"]
       Resource = "arn:aws:s3:::${var.bucket_name}/*",
