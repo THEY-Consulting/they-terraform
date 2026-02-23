@@ -73,7 +73,7 @@ resource "aws_sns_topic_subscription" "main" {
 
 module "redrive_lambda" {
   count  = local.with_redrive ? 1 : 0
-  source = "github.com/THEY-Consulting/they-terraform//aws/lambda"
+  source = "../lambda"
 
   name        = "redrive-dlq-${local.lambda_reference_name}"
   description = "Lambda to redrive messages from DLQ back to main queue"
