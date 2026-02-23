@@ -9,10 +9,8 @@ resource "azurerm_eventhub_namespace" "main" {
 }
 
 resource "azurerm_eventhub" "main" {
-  name                = "logs"
-  resource_group_name = var.resource_group_name
-
-  namespace_name    = azurerm_eventhub_namespace.main.name
+  name              = "logs"
+  namespace_id      = azurerm_eventhub_namespace.main.id
   partition_count   = 1
   message_retention = 1
 }

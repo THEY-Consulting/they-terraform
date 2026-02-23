@@ -20,10 +20,9 @@ module "mssql_database_dtu" {
     allow_all                    = true
   }
 
-  sku_name                    = "Basic"
-  min_capacity                = 0
-  max_size_gb                 = 2
-  auto_pause_delay_in_minutes = 0
+  sku_name     = "Basic"
+  min_capacity = 0
+  max_size_gb  = 2
 
   tags = {
     Project   = "they-terraform-examples"

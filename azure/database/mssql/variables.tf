@@ -79,7 +79,7 @@ variable "storage_account_type" {
 }
 
 variable "auto_pause_delay_in_minutes" {
-  description = "Time in minutes after which database is automatically paused. A value of -1 means that automatic pause is disabled."
+  description = "Time in minutes after which database is automatically paused. A value of -1 means that automatic pause is disabled. Only applicable to serverless databases (SKU names containing '_S_')."
   type        = number
   default     = 60
 }
