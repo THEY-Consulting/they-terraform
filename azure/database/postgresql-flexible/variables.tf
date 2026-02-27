@@ -56,10 +56,12 @@ variable "maintenance_window" {
   default = null
 }
 
-variable "auto_grow_enabled" {
-  description = "Enable auto-grow for storage"
-  type        = bool
-  default     = false
+variable "storage_setup" {
+  description = "Storage configuration for the PostgreSQL Flexible Server. This configuration is only used during server creation and cannot be modified via Terraform after creation. To change storage settings after creation, use the Azure Portal or Azure CLI."
+  type = object({
+    size_mb   = number # Initial storage size in MB. Azure only allows storage increases, never decreases.
+    auto_grow = bool   # Enable automatic storage growth. When enabled, Azure will automatically increase storage as needed.
+  })
 }
 
 variable "postgres_version" {
@@ -90,12 +92,6 @@ variable "high_availability" {
     standby_availability_zone = optional(number)
   })
   default = null
-}
-
-variable "storage_mb" {
-  description = "The max storage allowed for the PostgreSQL Flexible Server"
-  type        = number
-  default     = 32768
 }
 
 variable "backup_retention_days" {

@@ -7,9 +7,9 @@ resource "azurerm_postgresql_flexible_server" "main" {
   administrator_password = var.admin_password
 
   sku_name          = var.sku_name
-  storage_mb        = var.storage_mb
+  storage_mb        = var.storage_setup.size_mb
   storage_tier      = var.storage_tier
-  auto_grow_enabled = var.auto_grow_enabled
+  auto_grow_enabled = var.storage_setup.auto_grow
 
   dynamic "maintenance_window" {
     for_each = var.maintenance_window != null ? [var.maintenance_window] : []
@@ -34,14 +34,13 @@ resource "azurerm_postgresql_flexible_server" "main" {
   public_network_access_enabled = var.enable_public_network_access
 
   lifecycle {
-    ignore_changes = concat(
-      [
-        version,
-        zone,
-        high_availability.0.standby_availability_zone,
-      ],
-      var.auto_grow_enabled ? [storage_mb] : [] # Only ignore storage_mb when auto_grow_enabled = true
-    )
+    ignore_changes = [
+      version,
+      zone,
+      high_availability.0.standby_availability_zone,
+      storage_mb,        # Creation-time only - managed in Azure after creation
+      auto_grow_enabled, # Creation-time only - managed in Azure after creation
+    ]
   }
   tags = var.tags
 }
