@@ -34,12 +34,14 @@ resource "azurerm_postgresql_flexible_server" "main" {
   public_network_access_enabled = var.enable_public_network_access
 
   lifecycle {
-    ignore_changes = [
-      version,
-      zone,
-      high_availability.0.standby_availability_zone,
-      storage_mb, # Managed by Azure when auto_grow_enabled = true
-    ]
+    ignore_changes = concat(
+      [
+        version,
+        zone,
+        high_availability.0.standby_availability_zone,
+      ],
+      var.auto_grow_enabled ? [storage_mb] : [] # Only ignore storage_mb when auto_grow_enabled = true
+    )
   }
   tags = var.tags
 }
