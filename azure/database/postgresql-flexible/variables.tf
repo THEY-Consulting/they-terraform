@@ -56,16 +56,16 @@ variable "maintenance_window" {
   default = null
 }
 
-variable "storage_mb" {
-  description = "The max storage allowed for the PostgreSQL Flexible Server"
-  type        = number
-  default     = 32768
-}
-
 variable "auto_grow_enabled" {
   description = "Enable auto-grow for storage"
   type        = bool
   default     = false
+}
+
+variable "storage_mb" {
+  description = "The max storage allowed for the PostgreSQL Flexible Server"
+  type        = number
+  default     = 32768
 }
 
 variable "postgres_version" {
