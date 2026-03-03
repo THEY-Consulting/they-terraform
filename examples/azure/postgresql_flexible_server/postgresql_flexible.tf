@@ -15,6 +15,10 @@ module "postgresql_flexible_server" {
   admin_password      = sensitive("P@ssw0rd123!")
   allow_all           = true
   #database_name       = "testdb" #If you want to create a database, uncomment this line.
+
+  storage_mb        = 32768
+  auto_grow_enabled = true
+
   pgsql_server_configurations = [{
     name  = "azure.extensions",
     value = "UUID-OSSP,BTREE_GIST"

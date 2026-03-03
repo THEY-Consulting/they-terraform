@@ -38,6 +38,8 @@ resource "azurerm_postgresql_flexible_server" "main" {
       version,
       zone,
       high_availability.0.standby_availability_zone,
+      storage_mb,        # Creation-time only - managed in Azure after creation
+      auto_grow_enabled, # Creation-time only - managed in Azure after creation
     ]
   }
   tags = var.tags
