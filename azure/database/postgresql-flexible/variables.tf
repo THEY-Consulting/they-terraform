@@ -62,12 +62,6 @@ variable "auto_grow_enabled" {
   default     = false
 }
 
-variable "storage_mb" {
-  description = "The max storage allowed for the PostgreSQL Flexible Server"
-  type        = number
-  default     = 32768
-}
-
 variable "postgres_version" {
   description = "PostgreSQL version to use for initial creation. Note: Version changes after creation are managed outside of Terraform and will be ignored."
   type        = string
@@ -87,6 +81,12 @@ variable "zone" {
   description = "Specify the Availability Zone for the PostgreSQL Flexible server."
   type        = number
   default     = null
+}
+
+variable "storage_mb" {
+  description = "The max storage allowed for the PostgreSQL Flexible Server"
+  type        = number
+  default     = 32768
 }
 
 variable "high_availability" {
