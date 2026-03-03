@@ -83,12 +83,6 @@ variable "zone" {
   default     = null
 }
 
-variable "storage_mb" {
-  description = "The max storage allowed for the PostgreSQL Flexible Server"
-  type        = number
-  default     = 32768
-}
-
 variable "high_availability" {
   description = "Object of high availability configuration."
   type = object({
@@ -96,6 +90,12 @@ variable "high_availability" {
     standby_availability_zone = optional(number)
   })
   default = null
+}
+
+variable "storage_mb" {
+  description = "The max storage allowed for the PostgreSQL Flexible Server"
+  type        = number
+  default     = 32768
 }
 
 variable "backup_retention_days" {
