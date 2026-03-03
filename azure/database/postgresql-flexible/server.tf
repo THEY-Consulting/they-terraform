@@ -7,9 +7,9 @@ resource "azurerm_postgresql_flexible_server" "main" {
   administrator_password = var.admin_password
 
   sku_name          = var.sku_name
-  storage_mb        = var.storage_setup.size_mb
+  storage_mb        = var.storage_mb
   storage_tier      = var.storage_tier
-  auto_grow_enabled = var.storage_setup.auto_grow
+  auto_grow_enabled = var.auto_grow_enabled
 
   dynamic "maintenance_window" {
     for_each = var.maintenance_window != null ? [var.maintenance_window] : []
