@@ -16,10 +16,8 @@ module "postgresql_flexible_server" {
   allow_all           = true
   #database_name       = "testdb" #If you want to create a database, uncomment this line.
 
-  storage_setup = {
-    size_mb   = 32768 # 32 GB initial storage
-    auto_grow = true  # Enable automatic storage growth
-  }
+  storage_mb        = 32768
+  auto_grow_enabled = true
 
   pgsql_server_configurations = [{
     name  = "azure.extensions",
