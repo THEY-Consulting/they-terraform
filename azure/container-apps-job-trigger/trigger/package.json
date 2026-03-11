@@ -9,12 +9,12 @@
     "test": "jest --runInBand"
   },
   "dependencies": {
-    "@azure/functions": "4.7.0",
+    "@azure/functions": "^4.11.2",
     "@azure/identity": "^4.0.0"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "esbuild": "^0.25.6",
+    "@types/node": "^25.4.0",
+    "esbuild": "^0.27.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.8"
   }
