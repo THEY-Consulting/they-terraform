@@ -5,7 +5,7 @@
   "packageManager": "yarn@3.5.1",
   "scripts": {
     "dev": "NODE_ENV=local ts-node src/index.ts",
-    "build": "tsc && esbuild src/index.ts --bundle --platform=node --sourcemap=inline --target=node20 --outdir=dist --keep-names --external:@azure/functions-core",
+    "build": "tsc && esbuild src/index.ts --bundle --platform=node --sourcemap=inline --target=node22 --outdir=dist --keep-names --external:@azure/functions-core",
     "test": "jest --runInBand"
   },
   "dependencies": {
@@ -13,7 +13,7 @@
     "@azure/identity": "^4.0.0"
   },
   "devDependencies": {
-    "@types/node": "^25.4.0",
+    "@types/node": "^22.15.1",
     "esbuild": "^0.27.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.8"
