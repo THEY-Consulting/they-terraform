@@ -163,7 +163,7 @@ locals {
         "ec2:CreateVpc",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:vpc/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:vpc/*",
       ]
       Condition : {
         StringEquals : {
@@ -186,7 +186,7 @@ locals {
         "ec2:CreateVpcEndpoint",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:vpc/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:vpc/*",
       ]
       Condition : {
         StringEquals : {
@@ -203,7 +203,7 @@ locals {
         "ec2:CreateSubnet",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:subnet/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:subnet/*",
       ],
       Condition : {
         StringEquals : {
@@ -224,7 +224,7 @@ locals {
         "ec2:CreateTags",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:subnet/*"
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:subnet/*"
       ],
       Condition : {
         StringEquals : {
@@ -241,7 +241,7 @@ locals {
         "ec2:CreateSecurityGroup",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:security-group/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:security-group/*",
       ],
       Condition : {
         StringEquals : {
@@ -262,7 +262,7 @@ locals {
         "ec2:CreateTags",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:security-group/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:security-group/*",
       ],
       Condition : {
         StringEquals : {
@@ -280,7 +280,7 @@ locals {
         "ec2:CreateTags",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:security-group-rule/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:security-group-rule/*",
       ],
       Condition : {
         StringEquals : {
@@ -296,7 +296,7 @@ locals {
         "ec2:CreateTags",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:security-group-rule/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:security-group-rule/*",
       ],
       Condition : {
         StringEquals : {
@@ -313,7 +313,7 @@ locals {
         "ec2:CreateInternetGateway",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:internet-gateway/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:internet-gateway/*",
       ]
       Condition : {
         StringEquals : {
@@ -332,7 +332,7 @@ locals {
         "ec2:CreateTags",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:internet-gateway/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:internet-gateway/*",
       ]
       Condition : {
         StringEquals : {
@@ -349,7 +349,7 @@ locals {
         "ec2:CreateRouteTable",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:route-table/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:route-table/*",
       ]
       Condition : {
         StringEquals : {
@@ -370,7 +370,7 @@ locals {
         "ec2:CreateTags",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:route-table/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:route-table/*",
       ]
       Condition : {
         StringEquals : {
@@ -386,7 +386,7 @@ locals {
         "ec2:ReplaceRouteTableAssociation",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:route-table/*", # TODO: Can we limit this to the default route table somehow?
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:route-table/*", # TODO: Can we limit this to the default route table somehow?
       ]
     },
 
@@ -409,7 +409,7 @@ locals {
         "ec2:CreateNatGateway",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:natgateway/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:natgateway/*",
       ],
       Condition : {
         StringEquals : {
@@ -426,7 +426,7 @@ locals {
         "ec2:CreateTags",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:natgateway/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:natgateway/*",
       ],
       Condition : {
         StringEquals : {
@@ -443,7 +443,7 @@ locals {
         "ec2:AllocateAddress",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:elastic-ip/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:elastic-ip/*",
       ],
       Condition : {
         StringEquals : {
@@ -461,7 +461,7 @@ locals {
         "ec2:CreateTags",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:elastic-ip/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:elastic-ip/*",
       ],
       Condition : {
         StringEquals : {
@@ -477,7 +477,7 @@ locals {
         "ec2:DisassociateAddress",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:*/*",
       ],
     },
 
@@ -489,7 +489,7 @@ locals {
         "ec2:CreateVpcEndpoint"
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:vpc-endpoint/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:vpc-endpoint/*",
       ]
       Condition : {
         StringEquals : {
@@ -506,7 +506,7 @@ locals {
         "ec2:DeleteVpcEndpoints",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:vpc-endpoint/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:vpc-endpoint/*",
       ]
       Condition : {
         StringEquals : {
@@ -542,9 +542,9 @@ locals {
         "elasticloadbalancing:addTags",
       ],
       Resource : [
-        "arn:aws:elasticloadbalancing:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:loadbalancer/app/${var.name}-*/*",
-        "arn:aws:elasticloadbalancing:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:targetgroup/${var.name}-*/*",
-        "arn:aws:elasticloadbalancing:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:listener/app/${var.name}-*/*",
+        "arn:aws:elasticloadbalancing:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:loadbalancer/app/${var.name}-*/*",
+        "arn:aws:elasticloadbalancing:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:targetgroup/${var.name}-*/*",
+        "arn:aws:elasticloadbalancing:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:listener/app/${var.name}-*/*",
       ],
       Condition : {
         StringEquals : {
@@ -560,7 +560,7 @@ locals {
         "elasticloadbalancing:CreateLoadBalancer",
       ],
       Resource : [
-        "arn:aws:elasticloadbalancing:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:loadbalancer/app/${var.name}-*/*",
+        "arn:aws:elasticloadbalancing:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:loadbalancer/app/${var.name}-*/*",
       ],
       Condition : {
         StringEquals : {
@@ -578,7 +578,7 @@ locals {
         "elasticloadbalancing:CreateListener",
       ],
       Resource : [
-        "arn:aws:elasticloadbalancing:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:loadbalancer/app/${var.name}-*/*",
+        "arn:aws:elasticloadbalancing:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:loadbalancer/app/${var.name}-*/*",
       ],
       Condition : {
         StringEquals : {
@@ -594,7 +594,7 @@ locals {
         "elasticloadbalancing:CreateListener",
       ],
       Resource : [
-        "arn:aws:elasticloadbalancing:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:listener/app/${var.name}-*/*"
+        "arn:aws:elasticloadbalancing:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:listener/app/${var.name}-*/*"
       ],
       Condition : {
         StringEquals : {
@@ -611,7 +611,7 @@ locals {
         "elasticloadbalancing:DeleteListener",
       ],
       Resource : [
-        "arn:aws:elasticloadbalancing:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:listener/app/${var.name}-*/*",
+        "arn:aws:elasticloadbalancing:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:listener/app/${var.name}-*/*",
       ],
       Condition : {
         StringEquals : {
@@ -627,7 +627,7 @@ locals {
         "elasticloadbalancing:CreateTargetGroup",
       ],
       Resource : [
-        "arn:aws:elasticloadbalancing:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:targetgroup/${var.name}-*/*",
+        "arn:aws:elasticloadbalancing:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:targetgroup/${var.name}-*/*",
       ],
       Condition : {
         StringEquals : {
@@ -644,7 +644,7 @@ locals {
         "elasticloadbalancing:DeleteTargetGroup",
       ],
       Resource : [
-        "arn:aws:elasticloadbalancing:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:targetgroup/${var.name}-*/*",
+        "arn:aws:elasticloadbalancing:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:targetgroup/${var.name}-*/*",
       ],
       Condition : {
         StringEquals : {
@@ -677,7 +677,7 @@ locals {
         "autoscaling:CreateAutoScalingGroup",
       ],
       Resource : [
-        "arn:aws:autoscaling:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:autoScalingGroup:*:autoScalingGroupName/*"
+        "arn:aws:autoscaling:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:autoScalingGroup:*:autoScalingGroupName/*"
       ]
       Condition : {
         StringEquals : {
@@ -701,7 +701,7 @@ locals {
         "autoscaling:CancelInstanceRefresh",
       ],
       Resource : [
-        "arn:aws:autoscaling:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:autoScalingGroup:*:autoScalingGroupName/*"
+        "arn:aws:autoscaling:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:autoScalingGroup:*:autoScalingGroupName/*"
       ]
       Condition : {
         StringEquals : {
@@ -718,7 +718,7 @@ locals {
         "ec2:CreateVolume",
       ],
       "Resource" : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:volume/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:volume/*",
       ],
       Condition : {
         StringEquals : {
@@ -735,7 +735,7 @@ locals {
         "ec2:CreateTags",
       ],
       "Resource" : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:volume/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:volume/*",
       ],
       Condition : {
         StringEquals : {
@@ -752,7 +752,7 @@ locals {
         "ec2:CreateLaunchTemplate",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:launch-template/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:launch-template/*",
       ]
       Condition : {
         StringEquals : {
@@ -771,7 +771,7 @@ locals {
         "ec2:CreateTags",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:launch-template/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:launch-template/*",
       ]
       Condition : {
         StringEquals : {
@@ -787,7 +787,7 @@ locals {
         "ec2:RunInstances",
       ]
       "Resource" : [
-        "arn:aws:ec2:${data.aws_region.current.name}::image/ami-*",
+        "arn:aws:ec2:${data.aws_region.current.id}::image/ami-*",
       ],
       "Condition" : {
         "StringEquals" : var.include_default_policies.ami_condition
@@ -801,8 +801,8 @@ locals {
         "ec2:RunInstances",
       ],
       Resource : [
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:subnet/*",
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:security-group/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:subnet/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:security-group/*",
       ],
       Condition : {
         "StringEquals" : {
@@ -819,10 +819,10 @@ locals {
       ],
       "Resource" : [
         # TODO: do we need to limit this further? Can we?
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:volume/*", # This should be fine as we don't allow AttachVolume permissions
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:instance/*",
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:network-interface/*",
-        "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:key-pair/${var.include_default_policies.instance_key_pair_name}",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:volume/*", # This should be fine as we don't allow AttachVolume permissions
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:instance/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:network-interface/*",
+        "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:key-pair/${var.include_default_policies.instance_key_pair_name}",
       ]
     },
 

@@ -66,7 +66,7 @@ module "lambda-datadog" {
   count = var.dd_api_key != null ? 1 : 0
 
   source  = "DataDog/lambda-datadog/aws"
-  version = "2.0.0"
+  version = "4.6.0"
 
   environment_variables = merge({
     "DD_API_KEY" : var.dd_api_key

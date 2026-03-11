@@ -2,7 +2,7 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 locals {
-  stateLockTableRegion = coalesce(var.include_default_policies.stateLockTableRegion, var.stateLockTableRegion, data.aws_region.current.name)
+  stateLockTableRegion = coalesce(var.include_default_policies.stateLockTableRegion, var.stateLockTableRegion, data.aws_region.current.id)
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -43,15 +43,15 @@ resource "aws_iam_role" "github_oidc_role" {
   name               = "github-action-${var.name}"
   assume_role_policy = local.assume_role_policy
 
-  dynamic "inline_policy" {
-    for_each = var.inline ? local.policies : []
-    content {
-      name   = inline_policy.value.name
-      policy = inline_policy.value.policy
-    }
-  }
-
   permissions_boundary = var.boundary_policy_arn
+}
+
+resource "aws_iam_role_policy" "inline_policy" {
+  count = var.inline ? length(local.policies) : 0
+
+  name   = local.policies[count.index].name
+  role   = aws_iam_role.github_oidc_role.name
+  policy = local.policies[count.index].policy
 }
 
 resource "aws_iam_policy" "policy" {

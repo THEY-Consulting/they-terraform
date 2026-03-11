@@ -60,7 +60,6 @@ module "lambda_with_build" {
 
   description = "Test typescript lambda with build step"
   name        = "they-test-build"
-  runtime     = "nodejs20.x"
   source_dir  = "packages/lambda-typescript"
 }
 ```
@@ -258,12 +257,12 @@ module "lambda" {
 ##### Inputs
 
 | Variable                      | Type         | Description                                                                                                                        | Required | Default                    |
-| ----------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------- |
+| ----------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------- |----------|----------------------------|
 | name                          | string       | Name of the lambda function                                                                                                        | yes      |                            |
 | description                   | string       | Description of the lambda function                                                                                                 | yes      |                            |
 | source_dir                    | string       | Directory containing the lambda function                                                                                           | yes      |                            |
 | handler                       | string       | Function entrypoint                                                                                                                | no       | `"index.handler"`          |
-| runtime                       | string       | The runtime that the function is executed with, e.g. 'nodejs20.x'.                                                                 | yes      |                            |
+| runtime                       | string       | The runtime that the function is executed with, e.g. 'nodejs20.x'.                                                                 | no       | `nodejs24.x`               |
 | architectures                 | list(string) | The instruction set architecture that the function supports                                                                        | no       | `["arm64"]`                |
 | publish                       | bool         | Whether to publish creation/change as new Lambda Function Version                                                                  | no       | `true`                     |
 | memory_size                   | number       | Amount of memory in MB your Lambda Function can use at runtime                                                                     | no       | `128`                      |
@@ -345,7 +344,7 @@ module "sns" {
           "SNS:AddPermission",
           "SNS:Subscribe"
         ],
-        Resource = "arn:aws:sns:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:${local.topic_name}",
+        Resource = "arn:aws:sns:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:${local.topic_name}",
       }
     ]
   })
@@ -414,7 +413,7 @@ module "sqs" {
         AWS = data.aws_caller_identity.current.arn
       },
       Action   = ["SQS:*"],
-      Resource = "arn:aws:sqs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:${local.queue_name}"
+      Resource = "arn:aws:sqs:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:${local.queue_name}"
     }
   ]
   })
@@ -1051,18 +1050,19 @@ module "lambda_with_outbound_proxy" {
 
 ##### Inputs
 
-| Name                                                                                 | Description                                                                                                          | Type          | Required | Default |
-| ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | ------------- | -------- | :-----: |
-| <a name="input_eip_allocation_id"></a> [eip_allocation_id](#input_eip_allocation_id) | The allocation id of the elastic ip address. The public ip of this eip will be used as the outbound ip of the proxy. | `string`      | no       | `null`  |
-| <a name="input_name"></a> [name](#input_name)                                        | Name/Prefix of resources created by this module.                                                                     | `string`      | no       |  null   |
-| <a name="input_tags"></a> [tags](#input_tags)                                        | Map of tags to assign to the created resources of this module.                                                       | `map(string)` | no       |  `{}`   |
+| Name              | Description                                                                                                         | Type          | Required | Default |
+|-------------------|---------------------------------------------------------------------------------------------------------------------| ------------- | -------- | :-----: |
+| eip_allocation_id | The allocation id of the elastic ip address. The public ip of this eip will be used as the outbound ip of the proxy | `string`      | no       | `null`  |
+| name              | Name/Prefix of resources created by this module                                                                     | `string`      | no       |  null   |
+| tags              | Map of tags to assign to the created resources of this module                                                       | `map(string)` | no       |  `{}`   |
 
 ##### Outputs
 
-| Name                                                              | Description                                                                                       |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| <a name="output_vpc_arn"></a> [vpc_arn](#output_vpc_arn)          | Arn of the created vpc.                                                                           |
-| <a name="output_vpc_config"></a> [vpc_config](#output_vpc_config) | By attaching this config to the vpc_config block of a lambda function it uses the outbound proxy. |
+| Name               | Description                                                                                      |
+|--------------------|--------------------------------------------------------------------------------------------------|
+| vpc_config         | By attaching this config to the vpc_config block of a lambda function it uses the outbound proxy |
+| vpc_arn            | Arn of the created vpc                                                                           |
+| public_outbound_ip | Public ip the lambda function is using to make requests                                          |
 
 ### Azure
 
@@ -1098,7 +1098,7 @@ module "function_app" {
 
   runtime = {
     name = "node"
-    version = "~18"
+    version = "24"
   }
 
   environment = {
@@ -1148,51 +1148,51 @@ module "function_app" {
 
 ##### Inputs
 
-| Variable                                           | Type         | Description                                                                                                             | Required | Default                                |
-| -------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------- |
-| name                                               | string       | Name of the function app                                                                                                | yes      |                                        |
-| source_dir                                         | string       | Directory containing the function code                                                                                  | yes      |                                        |
-| location                                           | string       | The Azure region where the resources should be created                                                                  | yes      |                                        |
-| resource_group_name                                | string       | The name of the resource group in which to create the function app                                                      | yes      |                                        |
-| storage_account                                    | object       | The storage account                                                                                                     | no       | see sub fields                         |
-| storage_account.preexisting_name                   | string       | Name of an existing storage account, if this is `null` a new storage account will be created                            | no       | `null`                                 |
-| storage_account.is_hns_enabled                     | bool         | Makes the storage account a "data lake storage" if enabled.                                                             | no       | `false`                                |
-| storage_account.tier                               | string       | Tier of the newly created storage account, ignored if `storage_account.preexisting_name` is set                         | no       | `"Standard"`                           |
-| storage_account.replication_type                   | string       | Replication type of the newly created storage account, ignored if `storage_account.preexisting_name` is set             | no       | `"RAGRS"`                              |
-| storage_account.min_tls_version                    | string       | Min TLS version of the newly created storage account, ignored if `storage_account.preexisting_name` is set              | no       | `"TLS1_2"`                             |
-| service_plan                                       | object       | The service plan                                                                                                        | no       | see sub fields                         |
-| service_plan.name                                  | string       | Name of an existing service plan, if this is `null` a new service plan will be created                                  | no       | `null`                                 |
-| service_plan.sku_name                              | string       | SKU name of the service plan, ignored if `service_plan.name` is set                                                     | no       | `"Y1"`                                 |
-| insights                                           | object       | Application insights                                                                                                    | no       | see sub fields                         |
-| insights.enabled                                   | bool         | Enable/Disable application insights                                                                                     | no       | `true`                                 |
-| insights.sku                                       | string       | SKU for application insights                                                                                            | no       | `"PerGB2018"`                          |
-| insights.retention_in_days                         | number       | Retention for application insights in days                                                                              | no       | `30`                                   |
-| runtime                                            | object       | The runtime environment                                                                                                 | no       | see sub fields                         |
+| Variable                                           | Type         | Description                                                                                                                      | Required | Default                                |
+| -------------------------------------------------- | ------------ |----------------------------------------------------------------------------------------------------------------------------------| -------- |----------------------------------------|
+| name                                               | string       | Name of the function app                                                                                                         | yes      |                                        |
+| source_dir                                         | string       | Directory containing the function code                                                                                           | yes      |                                        |
+| location                                           | string       | The Azure region where the resources should be created                                                                           | yes      |                                        |
+| resource_group_name                                | string       | The name of the resource group in which to create the function app                                                               | yes      |                                        |
+| storage_account                                    | object       | The storage account                                                                                                              | no       | see sub fields                         |
+| storage_account.preexisting_name                   | string       | Name of an existing storage account, if this is `null` a new storage account will be created                                     | no       | `null`                                 |
+| storage_account.is_hns_enabled                     | bool         | Makes the storage account a "data lake storage" if enabled.                                                                      | no       | `false`                                |
+| storage_account.tier                               | string       | Tier of the newly created storage account, ignored if `storage_account.preexisting_name` is set                                  | no       | `"Standard"`                           |
+| storage_account.replication_type                   | string       | Replication type of the newly created storage account, ignored if `storage_account.preexisting_name` is set                      | no       | `"RAGRS"`                              |
+| storage_account.min_tls_version                    | string       | Min TLS version of the newly created storage account, ignored if `storage_account.preexisting_name` is set                       | no       | `"TLS1_2"`                             |
+| service_plan                                       | object       | The service plan                                                                                                                 | no       | see sub fields                         |
+| service_plan.name                                  | string       | Name of an existing service plan, if this is `null` a new service plan will be created                                           | no       | `null`                                 |
+| service_plan.sku_name                              | string       | SKU name of the service plan, ignored if `service_plan.name` is set                                                              | no       | `"Y1"`                                 |
+| insights                                           | object       | Application insights                                                                                                             | no       | see sub fields                         |
+| insights.enabled                                   | bool         | Enable/Disable application insights                                                                                              | no       | `true`                                 |
+| insights.sku                                       | string       | SKU for application insights                                                                                                     | no       | `"PerGB2018"`                          |
+| insights.retention_in_days                         | number       | Retention for application insights in days                                                                                       | no       | `30`                                   |
+| runtime                                            | object       | The runtime environment                                                                                                          | no       | see sub fields                         |
 | runtime.name                                       | string       | The runtime environment name, valid values are `dotnet`, `java`, `node`, and `powershell`. Linux also supports `python` and `go` | no       | `"node"`                               |
-| runtime.version                                    | string       | The runtime environment version. Depends on the runtime.                                                                | no       | `"~18"`                                |
-| runtime.os                                         | string       | The os where the function app runs, valid values are `windows` and `linux`                                              | no       | `"windows"`                            |
-| environment                                        | map(string)  | Map of environment variables that are accessible from the function code during execution                                | no       | `{}`                                   |
-| build                                              | object       | Build configuration                                                                                                     | no       | see sub fields                         |
-| build.enabled                                      | bool         | Enable/Disable running build command                                                                                    | no       | `true`                                 |
-| build.command                                      | string       | Build command to use                                                                                                    | no       | `"yarn run build"`                     |
-| build.build_dir                                    | string       | Directory where the compiled lambda files are generated, relative to the lambda source directory                        | no       | `"dist"`                               |
-| is_bundle                                          | bool         | If true, node_modules and .yarn directories will be excluded from the archive.                                          | no       | `false`                                |
-| archive                                            | object       | Archive configuration                                                                                                   | no       | see sub fields                         |
-| archive.output_path                                | string       | Directory where the zipped file is generated, relative to the terraform file                                            | no       | `"dist/{name}/azure-function-app.zip"` |
-| archive.excludes                                   | list(string) | List of strings with files that are excluded from the zip file                                                          | no       | `[]`                                   |
-| storage_trigger                                    | object       | Trigger the azure function through storage event grid subscription                                                      | no       | `null`                                 |
-| storage_trigger.function_name                      | string       | Name of the function that should be triggered                                                                           | (yes)    |                                        |
-| storage_trigger.events                             | list(string) | List of event names that should trigger the function                                                                    | (yes)    |                                        |
-| storage_trigger.subject_filter                     | object       | filter events for the event subscription                                                                                | no       | `null`                                 |
-| storage_trigger.subject_filter.subject_begins_with | string       | A string to filter events for an event subscription based on a resource path prefix                                     | no       | `null`                                 |
-| storage_trigger.subject_filter.subject_ends_with   | string       | A string to filter events for an event subscription based on a resource path suffix                                     | no       | `null`                                 |
-| storage_trigger.retry_policy                       | object       | Retry policy                                                                                                            | no       | see sub fields                         |
-| storage_trigger.retry_policy.event_time_to_live    | number       | Specifies the time to live (in minutes) for events                                                                      | no       | `360`                                  |
-| storage_trigger.retry_policy.max_delivery_attempts | number       | Specifies the maximum number of delivery retry attempts for events                                                      | no       | `1`                                    |
-| identity                                           | object       | Identity to use                                                                                                         | no       | `null`                                 |
-| identity.name                                      | string       | Name of the identity                                                                                                    | (yes)    |                                        |
-| assign_system_identity                             | bool         | If true, a system identity will be assigned to the function app.                                                        | no       | `false`                                |
-| tags                                               | map(string)  | Map of tags to assign to the function app and related resources                                                         | no       | `{}`                                   |
+| runtime.version                                    | string       | The runtime environment version. Depends on the runtime.                                                                         | no       | `"24"`                                 |
+| runtime.os                                         | string       | The os where the function app runs, valid values are `windows` and `linux`                                                       | no       | `"windows"`                            |
+| environment                                        | map(string)  | Map of environment variables that are accessible from the function code during execution                                         | no       | `{}`                                   |
+| build                                              | object       | Build configuration                                                                                                              | no       | see sub fields                         |
+| build.enabled                                      | bool         | Enable/Disable running build command                                                                                             | no       | `true`                                 |
+| build.command                                      | string       | Build command to use                                                                                                             | no       | `"yarn run build"`                     |
+| build.build_dir                                    | string       | Directory where the compiled lambda files are generated, relative to the lambda source directory                                 | no       | `"dist"`                               |
+| is_bundle                                          | bool         | If true, node_modules and .yarn directories will be excluded from the archive.                                                   | no       | `false`                                |
+| archive                                            | object       | Archive configuration                                                                                                            | no       | see sub fields                         |
+| archive.output_path                                | string       | Directory where the zipped file is generated, relative to the terraform file                                                     | no       | `"dist/{name}/azure-function-app.zip"` |
+| archive.excludes                                   | list(string) | List of strings with files that are excluded from the zip file                                                                   | no       | `[]`                                   |
+| storage_trigger                                    | object       | Trigger the azure function through storage event grid subscription                                                               | no       | `null`                                 |
+| storage_trigger.function_name                      | string       | Name of the function that should be triggered                                                                                    | (yes)    |                                        |
+| storage_trigger.events                             | list(string) | List of event names that should trigger the function                                                                             | (yes)    |                                        |
+| storage_trigger.subject_filter                     | object       | filter events for the event subscription                                                                                         | no       | `null`                                 |
+| storage_trigger.subject_filter.subject_begins_with | string       | A string to filter events for an event subscription based on a resource path prefix                                              | no       | `null`                                 |
+| storage_trigger.subject_filter.subject_ends_with   | string       | A string to filter events for an event subscription based on a resource path suffix                                              | no       | `null`                                 |
+| storage_trigger.retry_policy                       | object       | Retry policy                                                                                                                     | no       | see sub fields                         |
+| storage_trigger.retry_policy.event_time_to_live    | number       | Specifies the time to live (in minutes) for events                                                                               | no       | `360`                                  |
+| storage_trigger.retry_policy.max_delivery_attempts | number       | Specifies the maximum number of delivery retry attempts for events                                                               | no       | `1`                                    |
+| identity                                           | object       | Identity to use                                                                                                                  | no       | `null`                                 |
+| identity.name                                      | string       | Name of the identity                                                                                                             | (yes)    |                                        |
+| assign_system_identity                             | bool         | If true, a system identity will be assigned to the function app.                                                                 | no       | `false`                                |
+| tags                                               | map(string)  | Map of tags to assign to the function app and related resources                                                                  | no       | `{}`                                   |
 
 **Note: Go Runtime Requirements**
 
@@ -1275,33 +1275,33 @@ module "mssql_database" {
 
 ##### Inputs
 
-| Variable                               | Type         | Description                                                                                                                                                                                              | Required | Default                          |
-| -------------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------- |
-| name                                   | string       | Name of the database                                                                                                                                                                                     | yes      |                                  |
-| location                               | string       | The Azure region where the resources should be created                                                                                                                                                   | yes      |                                  |
-| resource_group_name                    | string       | The name of the resource group in which to create the resources                                                                                                                                          | yes      |                                  |
-| server                                 | object       | The database server                                                                                                                                                                                      | yes      |                                  |
-| server.preexisting_name                | string       | Name of an existing database server, if this is `null` a new database server will be created                                                                                                             | no       | `null`                           |
-| server.version                         | string       | Version of the MSSQL database, ignored if `server.preexisting_name` is set                                                                                                                               | no       | `12.0`                           |
-| server.administrator_login             | string       | Name of the administrator login, ignored if `server.preexisting_name` is set                                                                                                                             | no       | `"AdminUser"`                    |
-| server.administrator_login_password    | string       | Password of the administrator login, ignored if `server.preexisting_name` is set, required otherwise                                                                                                     | yes\*    |                                  |
-| server.allow_azure_resources           | bool         | Adds a database server firewall rule to grant database access to azure resources, ignored if `server.preexisting_name` is set                                                                            | no       | `true`                           |
-| server.allow_all                       | bool         | Adds a database server firewall rule to grant database access to everyone, ignored if `server.preexisting_name` is set                                                                                   | no       | `false`                          |
-| server.firewall_rules                  | list(object) | Adds server firewall rules, ignored if `server.preexisting_name` is set                                                                                                                                  | no       | `[]`                             |
-| server.firewall_rules.name             | string       | Name of the firewall rule                                                                                                                                                                                | yes      |                                  |
-| server.firewall_rules.start_ip_address | string       | Start ip address of the firewall rule                                                                                                                                                                    | yes      |                                  |
-| server.firewall_rules.end_ip_address   | string       | End ip address of the firewall rule                                                                                                                                                                      | yes      |                                  |
-| users                                  | list(object) | List of users (with logins) to create in the database                                                                                                                                                    | no       | `[]`                             |
-| users.username                         | string       | Name for the user and login                                                                                                                                                                              | yes      |                                  |
-| users.password                         | string       | Password for the user login                                                                                                                                                                              | yes      |                                  |
-| users.roles                            | list(string) | List of roles to attach to the user                                                                                                                                                                      | yes      |                                  |
-| collation                              | string       | The collation of the database                                                                                                                                                                            | no       | `"SQL_Latin1_General_CP1_CI_AS"` |
-| sku_name                               | string       | The sku for the database. For vCores, this also sets the maximum capacity                                                                                                                                | no       | `"GP_S_Gen5_1"`                  |
-| max_size_gb                            | number       | The maximum size of the database in gigabytes                                                                                                                                                            | no       | `16`                             |
-| min_capacity                           | number       | The minimum vCore of the database. The maximum is set by the sku tier. Only relevant when using a serverless vCore based database. Set this to 0 otherwise.                                              | no       | `0.5`                            |
-| storage_account_type                   | string       | The storage account type used to store backups for this database. Possible values are Geo, Local and Zone                                                                                                | no       | `"Local"`                        |
-| auto_pause_delay_in_minutes            | number       | Time in minutes after which database is automatically paused. A value of -1 means that automatic pause is disabled. Only relevant when using a serverless vCore based database. Set this to 0 otherwise. | no       | `60`                             |
-| tags                                   | map(string)  | Map of tags to assign to the resources                                                                                                                                                                   | no       | `{}`                             |
+| Variable                               | Type         | Description                                                                                                                                                                              | Required | Default                          |
+| -------------------------------------- | ------------ |------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| -------- | -------------------------------- |
+| name                                   | string       | Name of the database                                                                                                                                                                     | yes      |                                  |
+| location                               | string       | The Azure region where the resources should be created                                                                                                                                   | yes      |                                  |
+| resource_group_name                    | string       | The name of the resource group in which to create the resources                                                                                                                          | yes      |                                  |
+| server                                 | object       | The database server                                                                                                                                                                      | yes      |                                  |
+| server.preexisting_name                | string       | Name of an existing database server, if this is `null` a new database server will be created                                                                                             | no       | `null`                           |
+| server.version                         | string       | Version of the MSSQL database, ignored if `server.preexisting_name` is set                                                                                                               | no       | `12.0`                           |
+| server.administrator_login             | string       | Name of the administrator login, ignored if `server.preexisting_name` is set                                                                                                             | no       | `"AdminUser"`                    |
+| server.administrator_login_password    | string       | Password of the administrator login, ignored if `server.preexisting_name` is set, required otherwise                                                                                     | yes\*    |                                  |
+| server.allow_azure_resources           | bool         | Adds a database server firewall rule to grant database access to azure resources, ignored if `server.preexisting_name` is set                                                            | no       | `true`                           |
+| server.allow_all                       | bool         | Adds a database server firewall rule to grant database access to everyone, ignored if `server.preexisting_name` is set                                                                   | no       | `false`                          |
+| server.firewall_rules                  | list(object) | Adds server firewall rules, ignored if `server.preexisting_name` is set                                                                                                                  | no       | `[]`                             |
+| server.firewall_rules.name             | string       | Name of the firewall rule                                                                                                                                                                | yes      |                                  |
+| server.firewall_rules.start_ip_address | string       | Start ip address of the firewall rule                                                                                                                                                    | yes      |                                  |
+| server.firewall_rules.end_ip_address   | string       | End ip address of the firewall rule                                                                                                                                                      | yes      |                                  |
+| users                                  | list(object) | List of users (with logins) to create in the database                                                                                                                                    | no       | `[]`                             |
+| users.username                         | string       | Name for the user and login                                                                                                                                                              | yes      |                                  |
+| users.password                         | string       | Password for the user login                                                                                                                                                              | yes      |                                  |
+| users.roles                            | list(string) | List of roles to attach to the user                                                                                                                                                      | yes      |                                  |
+| collation                              | string       | The collation of the database                                                                                                                                                            | no       | `"SQL_Latin1_General_CP1_CI_AS"` |
+| sku_name                               | string       | The sku for the database. For vCores, this also sets the maximum capacity                                                                                                                | no       | `"GP_S_Gen5_1"`                  |
+| max_size_gb                            | number       | The maximum size of the database in gigabytes                                                                                                                                            | no       | `16`                             |
+| min_capacity                           | number       | The minimum vCore of the database. The maximum is set by the sku tier. Only relevant when using a serverless vCore based database. Set this to 0 otherwise.                              | no       | `0.5`                            |
+| storage_account_type                   | string       | The storage account type used to store backups for this database. Possible values are Geo, Local and Zone                                                                                | no       | `"Local"`                        |
+| auto_pause_delay_in_minutes            | number       | Time in minutes after which database is automatically paused. A value of -1 means that automatic pause is disabled. Only applicable to serverless databases (SKU names containing '_S_') | no       | `60`                             |
+| tags                                   | map(string)  | Map of tags to assign to the resources                                                                                                                                                   | no       | `{}`                             |
 
 ##### Outputs
 

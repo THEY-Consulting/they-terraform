@@ -19,7 +19,7 @@ resource "aws_sqs_queue" "dlq" {
         "Sid": "AllowSQSActions",
         "Effect": "Allow",
         "Action": "SQS:*",
-        "Resource": "arn:aws:sqs:${data.aws_region.current.name}:${data.aws_caller_identity.current.id}:${var.name}"
+        "Resource": "arn:aws:sqs:${data.aws_region.current.id}:${data.aws_caller_identity.current.id}:${var.name}"
       }
     ]
   }
@@ -73,7 +73,7 @@ resource "aws_sns_topic_subscription" "main" {
 
 module "redrive_lambda" {
   count  = local.with_redrive ? 1 : 0
-  source = "github.com/THEY-Consulting/they-terraform//aws/lambda"
+  source = "../lambda"
 
   name        = "redrive-dlq-${local.lambda_reference_name}"
   description = "Lambda to redrive messages from DLQ back to main queue"

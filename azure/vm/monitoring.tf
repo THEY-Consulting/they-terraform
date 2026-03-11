@@ -37,9 +37,8 @@ resource "azurerm_monitor_diagnostic_setting" "vm_diagnostics" {
   target_resource_id         = azurerm_linux_virtual_machine.main[0].id
   log_analytics_workspace_id = azurerm_log_analytics_workspace.analytics_workspace.id
 
-  metric {
+  enabled_metric {
     category = "AllMetrics"
-    enabled  = true
   }
 
   depends_on = [azurerm_linux_virtual_machine.main]

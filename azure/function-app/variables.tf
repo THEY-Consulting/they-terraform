@@ -17,7 +17,7 @@ variable "runtime" {
   })
   default = {
     name    = "node"
-    version = "~20"
+    version = "~22"
     os      = "windows"
   }
 

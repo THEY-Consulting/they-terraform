@@ -12,5 +12,6 @@ output "vpc_arn" {
 }
 
 output "public_outbound_ip" {
-  value = aws_nat_gateway.main.public_ip
+  value       = aws_nat_gateway.main.public_ip
+  description = "Public ip the lambda function is using to make requests."
 }

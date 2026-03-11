@@ -47,7 +47,7 @@ resource "aws_api_gateway_integration" "integration" {
   http_method = aws_api_gateway_method.method[count.index].http_method
 
   type                    = "AWS_PROXY"
-  uri                     = "arn:aws:apigateway:${data.aws_region.current.name}:lambda:path/2015-03-31/functions/${var.endpoints[count.index].function_arn}/invocations"
+  uri                     = "arn:aws:apigateway:${data.aws_region.current.id}:lambda:path/2015-03-31/functions/${var.endpoints[count.index].function_arn}/invocations"
   integration_http_method = "POST"
 }
 

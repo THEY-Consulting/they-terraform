@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.81"
+      version = "~> 4.58"
     }
   }
 
@@ -20,12 +20,13 @@ terraform {
 provider "azurerm" {
   features {}
 
-  skip_provider_registration = true # We don't have enough permissions to register all providers
-  tenant_id                  = var.tenant_id
+  resource_provider_registrations = "none" # In case we don't have enough permissions to register all providers
+
+  subscription_id = var.subscription_id
 }
 
-variable "tenant_id" {
-  description = "Use specific azure tenant ID."
+variable "subscription_id" {
+  description = "The subscription ID to use for the Azure provider"
   type        = string
   default     = null
 }

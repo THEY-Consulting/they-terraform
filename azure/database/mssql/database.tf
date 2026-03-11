@@ -6,7 +6,7 @@ resource "azurerm_mssql_database" "main" {
   max_size_gb                 = var.max_size_gb
   min_capacity                = var.min_capacity
   storage_account_type        = var.storage_account_type
-  auto_pause_delay_in_minutes = var.auto_pause_delay_in_minutes
+  auto_pause_delay_in_minutes = can(regex("_S_", var.sku_name)) ? var.auto_pause_delay_in_minutes : null
 
   tags = var.tags
 }
