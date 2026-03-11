@@ -17,7 +17,7 @@ data "archive_file" "function_zip" {
 }
 
 locals {
-  publish_code_command = "az webapp deployment source config-zip --resource-group ${var.resource_group_name} --name ${local.function_app.name} --src ${data.archive_file.function_zip.output_path}"
+  publish_code_command = "az webapp deploy --resource-group ${var.resource_group_name} --name ${local.function_app.name} --src-path ${data.archive_file.function_zip.output_path} --type zip"
 }
 resource "null_resource" "function_app_publish" {
   triggers = {
