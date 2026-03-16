@@ -17,7 +17,13 @@ data "archive_file" "function_zip" {
 }
 
 locals {
-  publish_code_command = "az webapp deploy --resource-group ${var.resource_group_name} --name ${local.function_app.name} --src-path ${data.archive_file.function_zip.output_path} --type zip"
+  // `functionapp deployment` is deprecated for windows function apps
+  publish_code_command_windows = "az webapp deploy --resource-group ${var.resource_group_name} --name ${local.function_app.name} --src-path ${data.archive_file.function_zip.output_path} --type zip"
+
+  // linux function apps do not support the `az webapp deploy` command
+  publish_code_command_linux = "az functionapp deployment source config-zip --resource-group ${var.resource_group_name} --name ${local.function_app.name} --src ${data.archive_file.function_zip.output_path}"
+
+  publish_code_command = var.runtime.os == "windows" ? local.publish_code_command_windows : local.publish_code_command_linux
 }
 resource "null_resource" "function_app_publish" {
   triggers = {
