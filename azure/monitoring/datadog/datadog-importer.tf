@@ -6,12 +6,6 @@ module "datadog_importer" {
   location            = var.location
   resource_group_name = var.resource_group_name
 
-  runtime = {
-    name    = "node"
-    version = "~20"
-    os      = "windows"
-  }
-
   environment = {
     AzureWebJobsFeatureFlags   = "EnableWorkerIndexing"
     DD_API_KEY                 = var.dd_api_key
