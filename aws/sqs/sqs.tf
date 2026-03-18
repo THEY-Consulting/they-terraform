@@ -77,7 +77,6 @@ module "redrive_lambda" {
 
   name        = "redrive-dlq-${local.lambda_reference_name}"
   description = "Lambda to redrive messages from DLQ back to main queue"
-  runtime     = "nodejs20.x"
   timeout     = 60
 
   source_dir = "${path.module}/redrive-lambda"
