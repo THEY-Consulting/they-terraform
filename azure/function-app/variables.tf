@@ -1,6 +1,14 @@
 locals {
   function_app = var.runtime.os == "windows" ? azurerm_windows_function_app.function_app[0] : azurerm_linux_function_app.function_app[0]
   name         = var.runtime.os == "windows" ? "${var.name}-windows-function-app" : "${var.name}-linux-function-app"
+
+  # Always include Azure Portal in CORS allowed origins
+  cors_allowed_origins = distinct(concat(
+    ["https://portal.azure.com"],
+    var.cors != null ? var.cors.allowed_origins : []
+  ))
+
+  cors_support_credentials = var.cors != null ? var.cors.support_credentials : false
 }
 
 variable "name" {
@@ -155,4 +163,13 @@ variable "tags" {
   description = "Tags for the resources."
   type        = map(string)
   default     = {}
+}
+
+variable "cors" {
+  description = "CORS configuration for the function app. Azure Portal (https://portal.azure.com) is always included in allowed origins. If not specified, defaults to allowing Azure Portal only."
+  type = object({
+    allowed_origins     = list(string)
+    support_credentials = optional(bool, false)
+  })
+  default = null
 }

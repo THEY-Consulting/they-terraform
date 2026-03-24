@@ -1138,6 +1138,11 @@ module "function_app" {
     name = "they-test-identity"
   }
   assign_system_identity = true
+  
+  cors = {
+    allowed_origins     = ['https://portal.azure.com']
+    support_credentials = false
+  }
 
   tags = {
     createdBy   = "Terraform"
@@ -1149,7 +1154,7 @@ module "function_app" {
 ##### Inputs
 
 | Variable                                           | Type         | Description                                                                                                                      | Required | Default                                |
-| -------------------------------------------------- | ------------ |----------------------------------------------------------------------------------------------------------------------------------| -------- |----------------------------------------|
+|----------------------------------------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------|----------|----------------------------------------|
 | name                                               | string       | Name of the function app                                                                                                         | yes      |                                        |
 | source_dir                                         | string       | Directory containing the function code                                                                                           | yes      |                                        |
 | location                                           | string       | The Azure region where the resources should be created                                                                           | yes      |                                        |
@@ -1192,6 +1197,9 @@ module "function_app" {
 | identity                                           | object       | Identity to use                                                                                                                  | no       | `null`                                 |
 | identity.name                                      | string       | Name of the identity                                                                                                             | (yes)    |                                        |
 | assign_system_identity                             | bool         | If true, a system identity will be assigned to the function app.                                                                 | no       | `false`                                |
+| cors                                               | object       | CORS configuration for the function app. Azure Portal (https://portal.azure.com) is always included in allowed origins.          | no       | `null`                                 |
+| cors.allowed_origins                               | list(string) | Allowed origins.                                                                                                                 | (yes)    |                                        |
+| cors.support_credentials                           | bool         | Allows the browser to send credentials (cookies, HTTP authentication, client-side SSL certificates) with cross-origin requests.  | no       | `false`                                 |
 | tags                                               | map(string)  | Map of tags to assign to the function app and related resources                                                                  | no       | `{}`                                   |
 
 **Note: Go Runtime Requirements**
