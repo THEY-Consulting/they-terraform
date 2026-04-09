@@ -78,12 +78,9 @@ resource "azurerm_windows_function_app" "function_app" {
       }
     }
 
-    # required to be able to trigger the function app from the portal
     cors {
-      allowed_origins = [
-        "https://portal.azure.com",
-      ]
-      support_credentials = false
+      allowed_origins     = local.cors_allowed_origins
+      support_credentials = local.cors_support_credentials
     }
 
   }
