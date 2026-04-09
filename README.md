@@ -1140,7 +1140,7 @@ module "function_app" {
   assign_system_identity = true
   
   cors = {
-    allowed_origins     = ['https://portal.azure.com']
+    allowed_origins     = ["https://portal.azure.com"]
     support_credentials = false
   }
 
