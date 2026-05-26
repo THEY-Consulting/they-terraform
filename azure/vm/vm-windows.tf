@@ -25,5 +25,14 @@ resource "azurerm_windows_virtual_machine" "main" {
     version   = var.vm_image.version
   }
 
+  dynamic "plan" {
+    for_each = var.vm_image.plan == null ? [] : [var.vm_image.plan]
+    content {
+      name      = plan.value.name
+      product   = plan.value.product
+      publisher = plan.value.publisher
+    }
+  }
+
   tags = var.tags
 }
