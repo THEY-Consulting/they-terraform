@@ -51,12 +51,17 @@ variable "custom_data" {
 }
 
 variable "vm_image" {
-  description = "The image to use for the VM."
+  description = "The image to use for the VM. Set `plan` for Marketplace images that require purchase-plan information (e.g. FreeBSD)."
   type = object({
     publisher = optional(string, "Canonical")
     offer     = optional(string, "0001-com-ubuntu-server-jammy")
     sku       = optional(string, "22_04-lts-gen2")
     version   = optional(string, "latest")
+    plan = optional(object({
+      name      = string
+      product   = string
+      publisher = string
+    }), null)
   })
   default = {}
 }
