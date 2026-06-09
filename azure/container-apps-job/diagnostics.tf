@@ -22,6 +22,13 @@ resource "azurerm_monitor_diagnostic_setting" "container_app_environment" {
     category = "ContainerAppConsoleLogs"
   }
 
+  dynamic "enabled_log" {
+    for_each = var.diagnostics.enable_system_logs ? [1] : []
+    content {
+      category = "ContainerAppSystemLogs"
+    }
+  }
+
   lifecycle {
     ignore_changes = [
       metric // prevents continuous diffs to the (unused by us) metric block
