@@ -150,3 +150,33 @@ variable "charset" {
   default     = "UTF8"
 }
 
+# ---------------------------------------------------------------------------
+# Backup integrity check
+# ---------------------------------------------------------------------------
+
+variable "enable_backup_integrity_check" {
+  description = "Enable automatic backup integrity checks via Azure Automation (Automation Account + Python runbook + monthly schedule)"
+  type        = bool
+  default     = false
+}
+
+variable "backup_integrity_checks" {
+  description = "SQL sanity checks to run against the restored database. Each check executes a query and optionally asserts at least one row is returned."
+  type = list(object({
+    label       = string
+    query       = string
+    expect_rows = optional(bool, true)
+  }))
+  default = []
+}
+
+variable "backup_integrity_schedule" {
+  description = "Schedule for the backup integrity runbook. Defaults to monthly at UTC midnight."
+  type = object({
+    frequency = optional(string, "Month")
+    interval  = optional(number, 1)
+    timezone  = optional(string, "Etc/UTC")
+  })
+  default = {}
+}
+
