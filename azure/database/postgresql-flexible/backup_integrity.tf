@@ -26,11 +26,32 @@ resource "azurerm_automation_account" "backup_integrity" {
   tags = var.tags
 }
 
-resource "azurerm_role_assignment" "automation_contributor" {
-  count                = var.enable_backup_integrity_check ? 1 : 0
-  scope                = data.azurerm_resource_group.backup_integrity[0].id
-  role_definition_name = "Contributor"
-  principal_id         = azurerm_automation_account.backup_integrity[0].identity[0].principal_id
+# Custom role limited to the PostgreSQL Flexible Server operations the runbook
+# actually needs: create/read/delete the restore server and write its firewall rule.
+# This replaces the overly broad Contributor role.
+resource "azurerm_role_definition" "backup_integrity" {
+  count = var.enable_backup_integrity_check ? 1 : 0
+  name  = "${var.server_name}-backup-integrity"
+  scope = data.azurerm_resource_group.backup_integrity[0].id
+
+  permissions {
+    actions = [
+      "Microsoft.DBforPostgreSQL/flexibleServers/read",
+      "Microsoft.DBforPostgreSQL/flexibleServers/write",
+      "Microsoft.DBforPostgreSQL/flexibleServers/delete",
+      "Microsoft.DBforPostgreSQL/flexibleServers/firewallRules/write",
+    ]
+    not_actions = []
+  }
+
+  assignable_scopes = [data.azurerm_resource_group.backup_integrity[0].id]
+}
+
+resource "azurerm_role_assignment" "backup_integrity" {
+  count              = var.enable_backup_integrity_check ? 1 : 0
+  scope              = data.azurerm_resource_group.backup_integrity[0].id
+  role_definition_id = azurerm_role_definition.backup_integrity[0].role_definition_resource_id
+  principal_id       = azurerm_automation_account.backup_integrity[0].identity[0].principal_id
 }
 
 # Runtime Environment — creates a proper Python 3.10 sandbox.
