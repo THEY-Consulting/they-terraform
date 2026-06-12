@@ -163,7 +163,7 @@ def delete_server(token, subscription_id, resource_group, server_name):
 
 SANITY_CHECKS = [
 %{ for check in sanity_checks ~}
-    ("${check.label}", """${check.query}""", ${check.expect_rows ? "True" : "False"}),
+    (${jsonencode(check.label)}, ${jsonencode(check.query)}, ${check.expect_rows ? "True" : "False"}),
 %{ endfor ~}
 ]
 
