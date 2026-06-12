@@ -29,6 +29,32 @@ module "postgresql_flexible_server" {
     ManagedBy   = "terraform"
   }
 
+  # ---------------------------------------------------------------------------
+  # Optional: automated backup integrity check
+  # Provisions an Azure Automation Account that runs a monthly PITR restore
+  # and executes the queries below against the restored database.
+  # Uncomment and adapt the checks to your schema to enable.
+  # ---------------------------------------------------------------------------
+  # enable_backup_integrity_check = true
+  # database_name                 = "testdb"
+  #
+  # backup_integrity_checks = [
+  #   {
+  #     label = "users"
+  #     query = "SELECT COUNT(*) FROM public.users"
+  #   },
+  #   {
+  #     label       = "schema:public_exists"
+  #     query       = "SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = 'public'"
+  #     expect_rows = true
+  #   },
+  # ]
+  #
+  # # Optional — defaults to monthly / UTC:
+  # backup_integrity_schedule = {
+  #   frequency = "Month"
+  #   interval  = 1
+  # }
 }
 
 # OUTPUTS
