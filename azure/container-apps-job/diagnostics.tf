@@ -23,7 +23,7 @@ resource "azurerm_monitor_diagnostic_setting" "container_app_environment" {
   }
 
   dynamic "enabled_log" {
-    for_each = var.diagnostics.enable_system_logs ? [1] : []
+    for_each = coalesce(var.diagnostics.enable_system_logs, false) ? [1] : []
     content {
       category = "ContainerAppSystemLogs"
     }
