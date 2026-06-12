@@ -112,7 +112,7 @@ resource "azurerm_automation_schedule" "backup_integrity" {
   frequency               = var.backup_integrity_schedule.frequency
   interval                = var.backup_integrity_schedule.interval
   start_time              = formatdate("YYYY-MM-DD'T'00:00:00Z", timeadd(timestamp(), "48h"))
-  timezone                = var.backup_integrity_schedule.timezone
+  timezone                = "Etc/UTC"
 
   lifecycle {
     ignore_changes = [start_time]

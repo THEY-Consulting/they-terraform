@@ -1376,7 +1376,6 @@ To enable automatic backup integrity checks, add:
   backup_integrity_schedule = {
     frequency = "Month"
     interval  = 1
-    timezone  = "Etc/UTC"
   }
 ```
 
@@ -1425,7 +1424,6 @@ To enable automatic backup integrity checks, add:
 | backup_integrity_schedule                   | object       | Schedule for the backup integrity runbook                                               | no       | `{}`                |
 | backup_integrity_schedule.frequency         | string       | Run frequency ("Month", "Week", "Day", …)                                               | no       | `"Month"`           |
 | backup_integrity_schedule.interval          | number       | How many units of frequency between runs                                                | no       | `1`                 |
-| backup_integrity_schedule.timezone          | string       | IANA timezone for the schedule                                                          | no       | `"Etc/UTC"`         |
 
 ##### Outputs
 

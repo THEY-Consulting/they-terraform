@@ -54,7 +54,6 @@ module "postgresql_flexible_server" {
   # backup_integrity_schedule = {
   #   frequency = "Month"
   #   interval  = 1
-  #   timezone  = "Etc/UTC"
   # }
 }
 
