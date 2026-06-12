@@ -181,7 +181,18 @@ def run_sanity_checks(host: str, db_name: str, db_user: str, db_password: str):
     try:
         for label, query, expect_rows in SANITY_CHECKS:
             cur.execute(query)
-            count = cur.fetchone()[0]
+            row = cur.fetchone()
+            if row is None:
+                raise RuntimeError(
+                    f"Check '{label}': query returned no rows — "
+                    "queries must return exactly one row (e.g. SELECT COUNT(*) ...)."
+                )
+            if len(row) != 1:
+                raise RuntimeError(
+                    f"Check '{label}': query returned {len(row)} columns, expected 1 — "
+                    "queries must return a single scalar (e.g. SELECT COUNT(*) ...)."
+                )
+            count = row[0]
             ok = count > 0 if expect_rows else True
             status = "✓" if ok else "✗"
             print(f"  {status} {label}: {count} rows")
