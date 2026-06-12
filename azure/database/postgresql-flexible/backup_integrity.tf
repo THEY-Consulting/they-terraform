@@ -12,7 +12,9 @@ data "azurerm_resource_group" "backup_integrity" {
 
 resource "azurerm_automation_account" "backup_integrity" {
   count               = var.enable_backup_integrity_check ? 1 : 0
-  name                = "${var.server_name}-automation"
+  # Azure Automation Account names: 6–50 chars. PostgreSQL server names allow up to 63 chars,
+  # so truncate to 39 chars before appending "-automation" (11 chars) → max 50 chars total.
+  name                = "${substr(var.server_name, 0, 39)}-automation"
   location            = var.location
   resource_group_name = var.resource_group_name
   sku_name            = "Basic"
