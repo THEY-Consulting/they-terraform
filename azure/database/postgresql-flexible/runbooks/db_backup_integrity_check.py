@@ -95,6 +95,10 @@ def trigger_pitr(token, subscription_id, resource_group, source_server, restore_
             "createMode": "PointInTimeRestore",
             "sourceServerResourceId": source_id,
             "pointInTimeUTC": restore_point_utc,
+            # Explicitly enable public network access so the Automation sandbox
+            # (which runs outside any VNet) can reach the restore server even
+            # when the source server has public access disabled.
+            "network": {"publicNetworkAccess": "Enabled"},
         },
     }
     print(f"  Restore point: {restore_point_utc}")
