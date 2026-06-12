@@ -202,7 +202,11 @@ SUBSCRIPTION_ID     = "${subscription_id}"
 LOCATION            = "${location}"
 DATABASE_NAME       = "${database_name}"
 DB_USER             = "${db_user}"
-DB_PASSWORD         = "${db_password}"
+
+# Password is stored as an encrypted Automation Account variable and fetched
+# at runtime so it never appears in the runbook source or Azure portal code view.
+import automationassets
+DB_PASSWORD = automationassets.get_automation_variable("${db_password_var}")
 
 
 # ---------------------------------------------------------------------------

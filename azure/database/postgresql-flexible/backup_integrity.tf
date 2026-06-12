@@ -64,12 +64,23 @@ resource "azurerm_automation_runbook" "backup_integrity" {
     subscription_id     = data.azurerm_client_config.current.subscription_id
     location            = var.location
     database_name       = coalesce(var.database_name, "postgres")
-    db_password         = var.admin_password
+    db_password_var     = azurerm_automation_variable_string.db_password[0].name
     db_user             = var.admin_username
     sanity_checks       = var.backup_integrity_checks
   })
 
   tags = var.tags
+}
+
+# Store the DB password as an encrypted Automation variable so it is never
+# baked into the runbook source or visible in the Azure portal's code view.
+resource "azurerm_automation_variable_string" "db_password" {
+  count                   = var.enable_backup_integrity_check ? 1 : 0
+  name                    = "BackupIntegrityDbPassword"
+  resource_group_name     = var.resource_group_name
+  automation_account_name = azurerm_automation_account.backup_integrity[0].name
+  value                   = var.admin_password
+  encrypted               = true
 }
 
 resource "azurerm_automation_schedule" "backup_integrity" {
