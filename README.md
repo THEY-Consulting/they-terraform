@@ -1,6 +1,7 @@
 # They Terraform
 
-Collection of modules to provide an easy way to create and deploy common infrastructure components.
+Collection of modules to provide an easy way to create and deploy common
+infrastructure components.
 
 ##### Table of Contents
 
@@ -45,7 +46,8 @@ Collection of modules to provide an easy way to create and deploy common infrast
 
 - [Terraform](https://www.terraform.io/downloads.html) >= 1.6.4
 
-Depending on the modules that you want to use, you need to have installed and configured the following command line tools:
+Depending on the modules that you want to use, you need to have installed and
+configured the following command line tools:
 
 - [aws cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 - [az cli](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
@@ -68,7 +70,8 @@ and run `terraform init`.
 
 For more examples see the [examples](./examples) directory.
 
-If you want to use a specific version of the module, you can specify the version, commit or branch name (urlencoded) in the source url:
+If you want to use a specific version of the module, you can specify the
+version, commit or branch name (urlencoded) in the source url:
 
 ```hcl
 module "lambda_with_build" {
@@ -80,7 +83,9 @@ module "lambda_with_build" {
 }
 ```
 
-See [the official terraform documentation](https://developer.hashicorp.com/terraform/language/modules/sources#selecting-a-revision) for more details on using a specific version.
+See
+[the official terraform documentation](https://developer.hashicorp.com/terraform/language/modules/sources#selecting-a-revision)
+for more details on using a specific version.
 
 Specific providers can be set for modules by using the `providers` argument:
 
@@ -103,7 +108,8 @@ module "lambda_with_specific_provider" {
 
 ### AWS
 
-The location of all resources is always determined by the `region` of your aws `provider`.
+The location of all resources is always determined by the `region` of your aws
+`provider`.
 
 #### RDS postgres database
 
@@ -423,7 +429,6 @@ module "sqs" {
     CreatedBy = "terraform"
   }
 }
-
 ```
 
 ##### Inputs
@@ -734,7 +739,6 @@ module "auto-scaling-group" {
     prefix = "asg-logs"
   }
 }
-
 ```
 
 ##### Inputs
@@ -1024,10 +1028,11 @@ module "setup_tfstate" {
 
 #### Outbound proxy VPC
 
-Whenever you need to talk to APIs which use IP based whitelisting, this is
-the module to create the required setup with. It uses an eip/elastic ip (will be created if none is given)
-and it spits out a vpc_config which can be attached to a lambda function. The
-lambda function will then execute requests via the ip of the given eip.
+Whenever you need to talk to APIs which use IP based whitelisting, this is the
+module to create the required setup with. It uses an eip/elastic ip (will be
+created if none is given) and it spits out a vpc_config which can be attached to
+a lambda function. The lambda function will then execute requests via the ip of
+the given eip.
 
 ```hcl
 module "outbound_proxy_vpc" {
@@ -1206,17 +1211,25 @@ module "function_app" {
 
 When using `runtime.name = "go"`, the following requirements apply:
 
-- **Operating System**: Must use `runtime.os = "linux"` (Windows is not supported by Azure for custom handlers)
-- **Build Configuration**: Must set `build.enabled = false` (Go binaries must be pre-compiled before deployment)
-- **Runtime Version**: The `runtime.version` field is informational only. The actual Go version is determined by the compiled binary, not by Azure
-- **Pre-compiled Binary**: You must compile the Go binary before running Terraform:
+- **Operating System**: Must use `runtime.os = "linux"` (Windows is not
+  supported by Azure for custom handlers)
+- **Build Configuration**: Must set `build.enabled = false` (Go binaries must be
+  pre-compiled before deployment)
+- **Runtime Version**: The `runtime.version` field is informational only. The
+  actual Go version is determined by the compiled binary, not by Azure
+- **Pre-compiled Binary**: You must compile the Go binary before running
+  Terraform:
   ```bash
   CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o handler handler.go
   ```
-- **Custom Handler Configuration**: Your `source_dir` must include a `host.json` file with custom handler configuration
-- **Architecture**: Azure App Service only supports x86-64 (AMD64) architecture. Always compile with `GOARCH=amd64`.
+- **Custom Handler Configuration**: Your `source_dir` must include a `host.json`
+  file with custom handler configuration
+- **Architecture**: Azure App Service only supports x86-64 (AMD64) architecture.
+  Always compile with `GOARCH=amd64`.
 
-You may also use `runtime.name = "custom"` to use a custom runtime. In this case, you must also set `build.enabled = false` and provide a pre-compiled binary in the `source_dir`. Same architecture requirements apply.
+You may also use `runtime.name = "custom"` to use a custom runtime. In this
+case, you must also set `build.enabled = false` and provide a pre-compiled
+binary in the `source_dir`. Same architecture requirements apply.
 
 ##### Outputs
 
@@ -1823,6 +1836,7 @@ module "container-apps-job" {
     eventhub                          = "logs"
     namespace                         = "they-logs"
     namespace_authorization_rule_name = "SendLogs"
+    enable_system_logs                = true  # Enable for timeout monitoring
   }
 }
 ```
@@ -1902,6 +1916,7 @@ module "container-apps-job" {
 | diagnostics.namespace                                           | string       | Namespace of the event hub                                                                                                                                   | (yes)    |             |
 | diagnostics.namespace_authorization_rule_name                   | string       | Name of the authorization rule                                                                                                                               | (yes)    |             |
 | diagnostics.namespace_resource_group_name                       | string       | Resource group name of the namespace if different from the container resource group                                                                          | no       |             |
+| diagnostics.enable_system_logs                                  | bool         | Enable ContainerAppSystemLogs for timeout/job lifecycle monitoring (includes DeadlineExceeded, job completion events). Set to `false` to reduce log volume   | no       | `false`     |
 | tags                                                            | map(string)  | Tags for the resources                                                                                                                                       | no       | `{}`        |
 
 ##### Outputs
@@ -2353,13 +2368,13 @@ module "container_registry" {
 
 ### Environment Variables
 
-- Configure your environment variables (create and put them in `.envrc` in the project's root dir):
+- Configure your environment variables (create and put them in `.envrc` in the
+  project's root dir):
 
 ```bash
 export AWS_PROFILE=nameOfProfile
 export AZURE_TENANT_ID=tenantId #<see https://portal.azure.com/#settings/directory for the correct Directory ID>
 export TF_VAR_tenant_id=$AZURE_TENANT_ID
-
 ```
 
 - Remember to add the aws profile info to `~/.aws/config`
@@ -2377,10 +2392,10 @@ cd examples/azure/.packages
 yarn install
 ```
 
-If you want to import and test changes you made without merging them first into main,
-you can use the git commit hash as the version in the source URL
-when importing the module within other projects.
-Don't forget to remove the hash when you are done ;)
+If you want to import and test changes you made without merging them first into
+main, you can use the git commit hash as the version in the source URL when
+importing the module within other projects. Don't forget to remove the hash when
+you are done ;)
 
 ```hcl
 module "module_with_unmerged_changes" {
@@ -2390,8 +2405,8 @@ module "module_with_unmerged_changes" {
 
 ### Deployment
 
-Currently, we only use a single workspace within each cloud provider.
-To deploy each example execute:
+Currently, we only use a single workspace within each cloud provider. To deploy
+each example execute:
 
 ```bash
 cd examples/aws/<example>
@@ -2401,18 +2416,24 @@ cd examples/azure/<example>
 terraform apply
 ```
 
-The resources used to manage the state of the resources deployed within the `examples` folder can be found at `examples/.setup-tfstate`.
-If you want to set up your own Terraform state management system, remove any `.terraform.lock.hcl` files within the `examples` folder, and deploy the resources at `examples/.setup-tfstate/` in your own AWS account.
+The resources used to manage the state of the resources deployed within the
+`examples` folder can be found at `examples/.setup-tfstate`. If you want to set
+up your own Terraform state management system, remove any `.terraform.lock.hcl`
+files within the `examples` folder, and deploy the resources at
+`examples/.setup-tfstate/` in your own AWS account.
 
 #### Clean-up
 
-When you are done testing, please destroy the resources with `terraform destroy`.
+When you are done testing, please destroy the resources with
+`terraform destroy`.
 
 `examples/aws/setup-tfstate` is a bit more complicated to clean up.
-`terraform destroy` can not remove the S3 bucket (due to `prevent_destroy = true`).
+`terraform destroy` can not remove the S3 bucket (due to
+`prevent_destroy = true`).
 
-Therefore, you need to delete the bucket manually in the AWS console.
-After that you can remove the remaining resources with `terraform destroy`.
-Keep in mind that after destroying a bucket it can take up to 24 hours until the name is available again.
+Therefore, you need to delete the bucket manually in the AWS console. After that
+you can remove the remaining resources with `terraform destroy`. Keep in mind
+that after destroying a bucket it can take up to 24 hours until the name is
+available again.
 
 `

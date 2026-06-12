@@ -107,6 +107,7 @@ variable "diagnostics" {
     namespace                         = string
     namespace_authorization_rule_name = string
     namespace_resource_group_name     = optional(string)
+    enable_system_logs                = optional(bool, false) # Enable ContainerAppSystemLogs for timeout/job monitoring
   })
   default = null
 }
