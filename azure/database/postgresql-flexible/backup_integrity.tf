@@ -90,7 +90,7 @@ resource "azurerm_automation_schedule" "backup_integrity" {
   automation_account_name = azurerm_automation_account.backup_integrity[0].name
   frequency               = var.backup_integrity_schedule.frequency
   interval                = var.backup_integrity_schedule.interval
-  start_time              = timeadd(timestamp(), "24h")
+  start_time              = formatdate("YYYY-MM-DD'T'00:00:00Z", timeadd(timestamp(), "48h"))
   timezone                = var.backup_integrity_schedule.timezone
 
   lifecycle {
