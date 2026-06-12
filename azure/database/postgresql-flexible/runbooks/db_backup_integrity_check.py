@@ -16,7 +16,7 @@ import sys
 # This avoids manually tracking transitive deps (scramp, asn1crypto, dateutil, etc.)
 # as pre-loaded wheel resources in Terraform.
 subprocess.check_call(
-    [sys.executable, "-m", "pip", "install", "--quiet", "pg8000"],
+    [sys.executable, "-m", "pip", "install", "--quiet", "pg8000==1.31.5"],
     stdout=subprocess.DEVNULL,
 )
 
