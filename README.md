@@ -1354,6 +1354,32 @@ module "postgresql_flexible_server" {
 }
 ```
 
+To enable automatic backup integrity checks, add:
+
+```hcl
+  enable_backup_integrity_check = true
+  database_name                 = "mydb"
+
+  backup_integrity_checks = [
+    {
+      label = "users"
+      query = "SELECT COUNT(*) FROM public.users"
+    },
+    {
+      label       = "schema:audit_exists"
+      query       = "SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = 'audit'"
+      expect_rows = true
+    },
+  ]
+
+  # Optional — defaults shown:
+  backup_integrity_schedule = {
+    frequency = "Month"
+    interval  = 1
+    timezone  = "Etc/UTC"
+  }
+```
+
 ##### Inputs
 
 | Variable                                    | Type         | Description                                                                             | Required | Default             |
@@ -1391,6 +1417,15 @@ module "postgresql_flexible_server" {
 | collation                                   | string       | The collation of the database                                                           | no       | `"en_US.utf8"`      |
 | charset                                     | string       | The charset of the database                                                             | no       | `"UTF8"`            |
 | tags                                        | map(string)  | Map of tags to assign to the resources                                                  | no       | `{}`                |
+| enable_backup_integrity_check               | bool         | Provision an Automation Account that runs a monthly PITR restore and sanity checks      | no       | `false`             |
+| backup_integrity_checks                     | list(object) | SQL queries to run against the restored database during integrity verification          | no       | `[]`                |
+| backup_integrity_checks.label               | string       | Human-readable name shown in runbook output                                             | yes      |                     |
+| backup_integrity_checks.query               | string       | SQL query to execute (must return a single COUNT row)                                   | yes      |                     |
+| backup_integrity_checks.expect_rows         | bool         | Fail the check if the COUNT is zero                                                     | no       | `true`              |
+| backup_integrity_schedule                   | object       | Schedule for the backup integrity runbook                                               | no       | `{}`                |
+| backup_integrity_schedule.frequency         | string       | Run frequency ("Month", "Week", "Day", …)                                               | no       | `"Month"`           |
+| backup_integrity_schedule.interval          | number       | How many units of frequency between runs                                                | no       | `1`                 |
+| backup_integrity_schedule.timezone          | string       | IANA timezone for the schedule                                                          | no       | `"Etc/UTC"`         |
 
 ##### Outputs
 
