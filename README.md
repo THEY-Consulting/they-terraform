@@ -1374,8 +1374,9 @@ To enable automatic backup integrity checks, add:
 
   # Optional — defaults shown:
   backup_integrity_schedule = {
-    frequency = "Month"
-    interval  = 1
+    frequency   = "Month"
+    interval    = 1
+    start_time  = "2026-07-14T00:00:00Z"
   }
 ```
 
@@ -1424,6 +1425,7 @@ To enable automatic backup integrity checks, add:
 | backup_integrity_schedule                   | object       | Schedule for the backup integrity runbook                                               | no       | `{}`                |
 | backup_integrity_schedule.frequency         | string       | Run frequency ("Month", "Week", "Day", …)                                               | no       | `"Month"`           |
 | backup_integrity_schedule.interval          | number       | How many units of frequency between runs                                                | no       | `1`                 |
+| backup_integrity_schedule.start_time        | string       | When to start running the automation runbook for the first time                        | no       | `1`                 |
 
 ##### Outputs
 

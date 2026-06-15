@@ -173,8 +173,9 @@ variable "backup_integrity_checks" {
 variable "backup_integrity_schedule" {
   description = "Schedule for the backup integrity runbook. Runs at UTC midnight on the configured frequency."
   type = object({
-    frequency = optional(string, "Month")
-    interval  = optional(number, 1)
+    frequency  = optional(string, "Month")
+    interval   = optional(number, 1)
+    start_time = optional(string)
   })
   default = {}
 }
