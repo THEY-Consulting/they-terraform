@@ -38,7 +38,7 @@ resource "null_resource" "remove_archive_policy" {
   # In order to destroy a topic, archive policy needs to be disabled first.
   # Currently not supported https://github.com/hashicorp/terraform-provider-aws/issues/38885
   provisioner "local-exec" {
-    command = "aws sns set-topic-attributes --topic-arn \"${self.triggers.topic_arn}\" --attribute-name ArchivePolicy --attribute-value \"{}\" --region ${self.triggers.region_name}"
+    command = "aws sns set-topic-attributes --topic-arn \"${self.triggers.topic_arn}\" --attribute-name ArchivePolicy --attribute-value \"{}\" --region ${lookup(self.triggers, "region_name", element(split(":", self.triggers.topic_arn), 3))}"
     when    = destroy
   }
 
