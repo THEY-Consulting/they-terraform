@@ -3,15 +3,50 @@
 # All resources are count-gated on var.enable_backup_integrity_check.
 # ---------------------------------------------------------------------------
 
-locals {
-  backup_integrity_schedule_start_time = var.backup_integrity_schedule.start_time
-}
-
 data "azurerm_client_config" "current" {}
 
 data "azurerm_resource_group" "backup_integrity" {
   count = var.enable_backup_integrity_check ? 1 : 0
   name  = var.resource_group_name
+}
+
+locals {
+  backup_integrity_schedule_now        = timestamp()
+  backup_integrity_schedule_year       = tonumber(substr(local.backup_integrity_schedule_now, 0, 4))
+  backup_integrity_schedule_month      = tonumber(substr(local.backup_integrity_schedule_now, 5, 2))
+  backup_integrity_schedule_day        = tonumber(substr(local.backup_integrity_schedule_now, 8, 2))
+  backup_integrity_schedule_next_month = local.backup_integrity_schedule_day >= var.backup_integrity_schedule.day_of_month
+
+  backup_integrity_schedule_month_raw = local.backup_integrity_schedule_month + (
+    local.backup_integrity_schedule_next_month ? 1 : 0
+  )
+  backup_integrity_schedule_bootstrap_year = local.backup_integrity_schedule_year + (
+    local.backup_integrity_schedule_month_raw > 12 ? 1 : 0
+  )
+  backup_integrity_schedule_bootstrap_month = local.backup_integrity_schedule_month_raw > 12 ? 1 : local.backup_integrity_schedule_month_raw
+
+  backup_integrity_schedule_computed_start_time = format(
+    "%04d-%02d-%02dT00:00:00Z",
+    local.backup_integrity_schedule_bootstrap_year,
+    local.backup_integrity_schedule_bootstrap_month,
+    var.backup_integrity_schedule.day_of_month,
+  )
+}
+
+resource "terraform_data" "backup_integrity_schedule_bootstrap" {
+  count = var.enable_backup_integrity_check ? 1 : 0
+
+  input = local.backup_integrity_schedule_computed_start_time
+
+  triggers_replace = {
+    frequency    = var.backup_integrity_schedule.frequency
+    interval     = tostring(var.backup_integrity_schedule.interval)
+    day_of_month = tostring(var.backup_integrity_schedule.day_of_month)
+  }
+
+  lifecycle {
+    ignore_changes = [input]
+  }
 }
 
 resource "azurerm_automation_account" "backup_integrity" {
@@ -108,17 +143,6 @@ resource "azurerm_automation_variable_string" "db_password" {
   encrypted               = true
 }
 
-resource "terraform_data" "backup_integrity_schedule_start_time" {
-  count = var.enable_backup_integrity_check && local.backup_integrity_schedule_start_time == null ? 1 : 0
-
-  # Freeze the bootstrap fallback so timestamp() does not produce perpetual diffs.
-  input = formatdate("YYYY-MM-DD'T'00:00:00Z", timeadd(timestamp(), "48h"))
-
-  lifecycle {
-    ignore_changes = [input]
-  }
-}
-
 resource "azurerm_automation_schedule" "backup_integrity" {
   count                   = var.enable_backup_integrity_check ? 1 : 0
   name                    = "${var.server_name}-backup-integrity"
@@ -126,7 +150,8 @@ resource "azurerm_automation_schedule" "backup_integrity" {
   automation_account_name = azurerm_automation_account.backup_integrity[0].name
   frequency               = var.backup_integrity_schedule.frequency
   interval                = var.backup_integrity_schedule.interval
-  start_time              = local.backup_integrity_schedule_start_time != null ? local.backup_integrity_schedule_start_time : terraform_data.backup_integrity_schedule_start_time[0].output
+  month_days              = var.backup_integrity_schedule.frequency == "Month" ? [var.backup_integrity_schedule.day_of_month] : null
+  start_time              = terraform_data.backup_integrity_schedule_bootstrap[0].output
   timezone                = "Etc/UTC"
 }
 

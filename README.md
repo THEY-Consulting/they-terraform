@@ -1372,14 +1372,32 @@ To enable automatic backup integrity checks, add:
     },
   ]
 
-  # Optional — explicit start_time stays managed by Terraform.
-  # If omitted, the module bootstraps a one-time fallback at the first
-  # UTC midnight at least 48 hours after the first apply and then freezes it.
+  # Optional — defaults shown:
   backup_integrity_schedule = {
-    frequency   = "Month"
-    interval    = 1
-    start_time  = "2026-07-14T00:00:00Z"
+    frequency    = "Month"
+    interval     = 1
+    day_of_month = 14
   }
+```
+
+`day_of_month` is the monthly anchor. The module computes the next future UTC-midnight bootstrap date automatically: it uses the configured day in the current month if that midnight is still ahead, otherwise it rolls to the next month. Consumers should not provide an absolute timestamp to encode the recurring day.
+
+If you mirror this schedule in downstream Datadog monitor RRULEs, keep the same day number there until that monitor logic is centralized. For example, a consumer such as `cp-api` should move from:
+
+```hcl
+backup_integrity_schedule = {
+  frequency = "Month"
+  interval  = 1
+  # implicit bootstrap date based on the next future 7th at 00:00:00Z
+}
+```
+
+to:
+
+```hcl
+backup_integrity_schedule = {
+  day_of_month = 7
+}
 ```
 
 ##### Inputs
@@ -1427,9 +1445,7 @@ To enable automatic backup integrity checks, add:
 | backup_integrity_schedule                   | object       | Schedule for the backup integrity runbook                                               | no       | `{}`                                                                                                         |
 | backup_integrity_schedule.frequency         | string       | Run frequency ("Month", "Week", "Day", …)                                               | no       | `"Month"`                                                                                                    |
 | backup_integrity_schedule.interval          | number       | How many units of frequency between runs                                                | no       | `1`                                                                                                          |
-| backup_integrity_schedule.start_time        | string       | Managed schedule start time; if omitted, the module bootstraps and freezes a fallback at the first UTC midnight at least 48 hours after the first apply | no       | `null`                                                                                                        |
-
-Current behavior with `azurerm` `v4.61.0`: changing `azurerm_automation_schedule.start_time` is handled as an in-place update by the provider, not a forced replacement.
+| backup_integrity_schedule.day_of_month      | number       | Monthly anchor day for the recurring UTC-midnight schedule; valid range is `1..28`     | no       | `3`                                                                                                          |
 
 ##### Outputs
 

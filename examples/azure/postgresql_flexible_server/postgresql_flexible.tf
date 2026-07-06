@@ -56,7 +56,7 @@ module "postgresql_flexible_server" {
   # backup_integrity_schedule = {
   #   frequency   = "Month"
   #   interval    = 1
-  #   start_time  = "2026-07-14T00:00:00Z" # <--- adapt to the first date you want to run the automation on
+  #   day_of_month = 14
   # }
 }
 
