@@ -1373,8 +1373,8 @@ To enable automatic backup integrity checks, add:
   ]
 
   # Optional — explicit start_time stays managed by Terraform.
-  # If omitted, the module bootstraps a one-time fallback at midnight UTC
-  # 48 hours after the first apply and then freezes that value.
+  # If omitted, the module bootstraps a one-time fallback at the first
+  # UTC midnight at least 48 hours after the first apply and then freezes it.
   backup_integrity_schedule = {
     frequency   = "Month"
     interval    = 1
@@ -1427,7 +1427,7 @@ To enable automatic backup integrity checks, add:
 | backup_integrity_schedule                   | object       | Schedule for the backup integrity runbook                                               | no       | `{}`                                                                                                         |
 | backup_integrity_schedule.frequency         | string       | Run frequency ("Month", "Week", "Day", …)                                               | no       | `"Month"`                                                                                                    |
 | backup_integrity_schedule.interval          | number       | How many units of frequency between runs                                                | no       | `1`                                                                                                          |
-| backup_integrity_schedule.start_time        | string       | Managed schedule start time; if omitted, the module bootstraps and freezes a fallback at midnight UTC 48 hours after the first apply | no       | `null`                                                                                                        |
+| backup_integrity_schedule.start_time        | string       | Managed schedule start time; if omitted, the module bootstraps and freezes a fallback at the first UTC midnight at least 48 hours after the first apply | no       | `null`                                                                                                        |
 
 Current behavior with `azurerm` `v4.61.0`: changing `azurerm_automation_schedule.start_time` is handled as an in-place update by the provider, not a forced replacement.
 

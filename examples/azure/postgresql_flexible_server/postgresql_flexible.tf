@@ -51,8 +51,8 @@ module "postgresql_flexible_server" {
   # ]
   #
   # # Optional — explicit start_time stays managed by Terraform.
-  # # If omitted, the module bootstraps a one-time fallback at midnight UTC
-  # # 48 hours after the first apply and then freezes that value.
+  # # If omitted, the module bootstraps a one-time fallback at the first
+  # # UTC midnight at least 48 hours after the first apply and then freezes it.
   # backup_integrity_schedule = {
   #   frequency   = "Month"
   #   interval    = 1
@@ -68,6 +68,5 @@ output "server_fqdn" {
 output "db_connection_string" {
   value = module.postgresql_flexible_server.db_connection_string
 }
-
 
 
