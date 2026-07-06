@@ -1372,14 +1372,35 @@ To enable automatic backup integrity checks, add:
     },
   ]
 
-  # Optional — explicit start_time stays managed by Terraform.
-  # If omitted, the module bootstraps a one-time fallback at the first
-  # UTC midnight at least 48 hours after the first apply and then freezes it.
+  # Optional — example values shown:
   backup_integrity_schedule = {
-    frequency   = "Month"
-    interval    = 1
-    start_time  = "2026-07-14T00:00:00Z"
+    frequency    = "Month"
+    interval     = 1
+    day_of_month = 14
+    # day_of_week = 1 # Monday, used when frequency = "Week"
   }
+```
+
+`day_of_month` is the monthly anchor when `frequency = "Month"`. `day_of_week` is the weekly anchor when `frequency = "Week"`, using ISO numbering `1 = Monday` through `7 = Sunday`. The module computes the bootstrap date automatically and always keeps it at UTC midnight. Monthly schedules use the configured day in the current month if that midnight is still safely ahead, otherwise they roll to the next month. Weekly schedules use the next configured weekday at UTC midnight. Daily schedules start at the next safe UTC midnight. The bootstrap logic includes a safety buffer so Azure Automation's requirement that `start_time` be at least 5 minutes in the future is still satisfied for applies close to UTC midnight. Consumers should not provide an absolute timestamp to encode the recurring day.
+
+This module intentionally supports `frequency = "Month"`, `"Week"`, and `"Day"` only, even though the underlying provider supports additional schedule types.
+
+If you mirror this schedule in downstream Datadog monitor RRULEs, keep the same day number there until that monitor logic is centralized. For example, a consumer such as `cp-api` should move from:
+
+```hcl
+backup_integrity_schedule = {
+  frequency = "Month"
+  interval  = 1
+  day_of_month = 7
+}
+```
+
+to:
+
+```hcl
+backup_integrity_schedule = {
+  day_of_month = 7
+}
 ```
 
 ##### Inputs
@@ -1425,11 +1446,10 @@ To enable automatic backup integrity checks, add:
 | backup_integrity_checks.query               | string       | SQL query to execute (must return a single COUNT row)                                   | yes      |                                                                                                              |
 | backup_integrity_checks.expect_rows         | bool         | Fail the check if the COUNT is zero                                                     | no       | `true`                                                                                                       |
 | backup_integrity_schedule                   | object       | Schedule for the backup integrity runbook                                               | no       | `{}`                                                                                                         |
-| backup_integrity_schedule.frequency         | string       | Run frequency ("Month", "Week", "Day", …)                                               | no       | `"Month"`                                                                                                    |
+| backup_integrity_schedule.frequency         | string       | Run frequency. This module supports `Month`, `Week`, and `Day`                          | no       | `"Month"`                                                                                                    |
 | backup_integrity_schedule.interval          | number       | How many units of frequency between runs                                                | no       | `1`                                                                                                          |
-| backup_integrity_schedule.start_time        | string       | Managed schedule start time; if omitted, the module bootstraps and freezes a fallback at the first UTC midnight at least 48 hours after the first apply | no       | `null`                                                                                                        |
-
-Current behavior with `azurerm` `v4.61.0`: changing `azurerm_automation_schedule.start_time` is handled as an in-place update by the provider, not a forced replacement.
+| backup_integrity_schedule.day_of_month      | number       | Monthly anchor day for the recurring UTC-midnight schedule when `frequency = "Month"`; valid range is `1..28` | no       | `3`                                                                                                          |
+| backup_integrity_schedule.day_of_week       | number       | Weekly anchor day for the recurring UTC-midnight schedule when `frequency = "Week"`; `1 = Monday` through `7 = Sunday` | no       | `1`                                                                                                          |
 
 ##### Outputs
 
