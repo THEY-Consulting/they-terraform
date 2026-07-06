@@ -20,6 +20,38 @@ locals {
     "YYYY-MM-DD'T'00:00:00Z",
     timeadd("${local.backup_integrity_schedule_reference_date}T00:00:00Z", "24h"),
   )
+  backup_integrity_schedule_weekday_numbers = {
+    Mon = 1
+    Tue = 2
+    Wed = 3
+    Thu = 4
+    Fri = 5
+    Sat = 6
+    Sun = 7
+  }
+  backup_integrity_schedule_weekday_names = {
+    1 = "Monday"
+    2 = "Tuesday"
+    3 = "Wednesday"
+    4 = "Thursday"
+    5 = "Friday"
+    6 = "Saturday"
+    7 = "Sunday"
+  }
+  backup_integrity_schedule_reference_weekday     = local.backup_integrity_schedule_weekday_numbers[formatdate("EEE", local.backup_integrity_schedule_reference_time)]
+  backup_integrity_schedule_weekly_day_offset_raw = var.backup_integrity_schedule.day_of_week - local.backup_integrity_schedule_reference_weekday
+  backup_integrity_schedule_weekly_day_offset = (
+    local.backup_integrity_schedule_weekly_day_offset_raw > 0 ?
+    local.backup_integrity_schedule_weekly_day_offset_raw :
+    local.backup_integrity_schedule_weekly_day_offset_raw + 7
+  )
+  backup_integrity_schedule_next_weekly_midnight = formatdate(
+    "YYYY-MM-DD'T'00:00:00Z",
+    timeadd(
+      "${local.backup_integrity_schedule_reference_date}T00:00:00Z",
+      format("%dh", local.backup_integrity_schedule_weekly_day_offset * 24),
+    ),
+  )
   backup_integrity_schedule_year       = tonumber(substr(local.backup_integrity_schedule_reference_time, 0, 4))
   backup_integrity_schedule_month      = tonumber(substr(local.backup_integrity_schedule_reference_time, 5, 2))
   backup_integrity_schedule_day        = tonumber(substr(local.backup_integrity_schedule_reference_time, 8, 2))
@@ -33,12 +65,16 @@ locals {
   )
   backup_integrity_schedule_bootstrap_month = local.backup_integrity_schedule_month_raw > 12 ? 1 : local.backup_integrity_schedule_month_raw
 
-  backup_integrity_schedule_computed_start_time = var.backup_integrity_schedule.frequency == "Month" ? format(
-    "%04d-%02d-%02dT00:00:00Z",
-    local.backup_integrity_schedule_bootstrap_year,
-    local.backup_integrity_schedule_bootstrap_month,
-    var.backup_integrity_schedule.day_of_month,
-  ) : local.backup_integrity_schedule_next_midnight
+  backup_integrity_schedule_computed_start_time = (
+    var.backup_integrity_schedule.frequency == "Month" ? format(
+      "%04d-%02d-%02dT00:00:00Z",
+      local.backup_integrity_schedule_bootstrap_year,
+      local.backup_integrity_schedule_bootstrap_month,
+      var.backup_integrity_schedule.day_of_month,
+    ) :
+    var.backup_integrity_schedule.frequency == "Week" ? local.backup_integrity_schedule_next_weekly_midnight :
+    local.backup_integrity_schedule_next_midnight
+  )
 }
 
 resource "terraform_data" "backup_integrity_schedule_bootstrap" {
@@ -49,7 +85,8 @@ resource "terraform_data" "backup_integrity_schedule_bootstrap" {
   triggers_replace = {
     frequency    = var.backup_integrity_schedule.frequency
     interval     = tostring(var.backup_integrity_schedule.interval)
-    day_of_month = tostring(var.backup_integrity_schedule.day_of_month)
+    day_of_month = var.backup_integrity_schedule.frequency == "Month" ? tostring(var.backup_integrity_schedule.day_of_month) : ""
+    day_of_week  = var.backup_integrity_schedule.frequency == "Week" ? tostring(var.backup_integrity_schedule.day_of_week) : ""
   }
 
   lifecycle {
@@ -159,6 +196,7 @@ resource "azurerm_automation_schedule" "backup_integrity" {
   frequency               = var.backup_integrity_schedule.frequency
   interval                = var.backup_integrity_schedule.interval
   month_days              = var.backup_integrity_schedule.frequency == "Month" ? [var.backup_integrity_schedule.day_of_month] : null
+  week_days               = var.backup_integrity_schedule.frequency == "Week" ? [local.backup_integrity_schedule_weekday_names[var.backup_integrity_schedule.day_of_week]] : null
   start_time              = terraform_data.backup_integrity_schedule_bootstrap[0].output
   timezone                = "Etc/UTC"
 }

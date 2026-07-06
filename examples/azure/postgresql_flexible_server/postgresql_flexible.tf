@@ -56,6 +56,7 @@ module "postgresql_flexible_server" {
   #   frequency   = "Month"
   #   interval    = 1
   #   day_of_month = 14
+  #   # day_of_week = 1 # Monday, used when frequency = "Week"
   # }
 }
 
@@ -67,4 +68,3 @@ output "server_fqdn" {
 output "db_connection_string" {
   value = module.postgresql_flexible_server.db_connection_string
 }
-

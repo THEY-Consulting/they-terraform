@@ -171,18 +171,24 @@ variable "backup_integrity_checks" {
 }
 
 variable "backup_integrity_schedule" {
-  description = "Schedule for the backup integrity runbook. Supported frequencies are Month, Week, and Day; day_of_month defines the recurring monthly UTC-midnight anchor when frequency is Month."
+  description = "Schedule for the backup integrity runbook. Supported frequencies are Month, Week, and Day; day_of_month defines the recurring monthly UTC-midnight anchor when frequency is Month, and day_of_week defines the recurring weekly UTC-midnight anchor when frequency is Week."
   nullable    = false
   type = object({
     frequency    = optional(string, "Month")
     interval     = optional(number, 1)
     day_of_month = optional(number, 3)
+    day_of_week  = optional(number, 1)
   })
   default = {}
 
   validation {
     condition     = var.backup_integrity_schedule.day_of_month >= 1 && var.backup_integrity_schedule.day_of_month <= 28
     error_message = "backup_integrity_schedule.day_of_month must be between 1 and 28."
+  }
+
+  validation {
+    condition     = var.backup_integrity_schedule.day_of_week >= 1 && var.backup_integrity_schedule.day_of_week <= 7
+    error_message = "backup_integrity_schedule.day_of_week must be between 1 (Monday) and 7 (Sunday)."
   }
 
   validation {

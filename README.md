@@ -1372,15 +1372,16 @@ To enable automatic backup integrity checks, add:
     },
   ]
 
-  # Optional — defaults shown:
+  # Optional — example values shown:
   backup_integrity_schedule = {
     frequency    = "Month"
     interval     = 1
     day_of_month = 14
+    # day_of_week = 1 # Monday, used when frequency = "Week"
   }
 ```
 
-`day_of_month` is the monthly anchor when `frequency = "Month"`. The module computes the bootstrap date automatically and always keeps it at UTC midnight. Monthly schedules use the configured day in the current month if that midnight is still safely ahead, otherwise they roll to the next month. Non-monthly schedules start at the next safe UTC midnight instead of reusing `day_of_month`. The bootstrap logic includes a safety buffer so Azure Automation's requirement that `start_time` be at least 5 minutes in the future is still satisfied for applies close to UTC midnight. Consumers should not provide an absolute timestamp to encode the recurring day.
+`day_of_month` is the monthly anchor when `frequency = "Month"`. `day_of_week` is the weekly anchor when `frequency = "Week"`, using ISO numbering `1 = Monday` through `7 = Sunday`. The module computes the bootstrap date automatically and always keeps it at UTC midnight. Monthly schedules use the configured day in the current month if that midnight is still safely ahead, otherwise they roll to the next month. Weekly schedules use the next configured weekday at UTC midnight. Daily schedules start at the next safe UTC midnight. The bootstrap logic includes a safety buffer so Azure Automation's requirement that `start_time` be at least 5 minutes in the future is still satisfied for applies close to UTC midnight. Consumers should not provide an absolute timestamp to encode the recurring day.
 
 This module intentionally supports `frequency = "Month"`, `"Week"`, and `"Day"` only, even though the underlying provider supports additional schedule types.
 
@@ -1448,6 +1449,7 @@ backup_integrity_schedule = {
 | backup_integrity_schedule.frequency         | string       | Run frequency. This module supports `Month`, `Week`, and `Day`                          | no       | `"Month"`                                                                                                    |
 | backup_integrity_schedule.interval          | number       | How many units of frequency between runs                                                | no       | `1`                                                                                                          |
 | backup_integrity_schedule.day_of_month      | number       | Monthly anchor day for the recurring UTC-midnight schedule when `frequency = "Month"`; valid range is `1..28` | no       | `3`                                                                                                          |
+| backup_integrity_schedule.day_of_week       | number       | Weekly anchor day for the recurring UTC-midnight schedule when `frequency = "Week"`; `1 = Monday` through `7 = Sunday` | no       | `1`                                                                                                          |
 
 ##### Outputs
 
