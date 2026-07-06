@@ -11,10 +11,18 @@ data "azurerm_resource_group" "backup_integrity" {
 }
 
 locals {
-  backup_integrity_schedule_now        = timestamp()
-  backup_integrity_schedule_year       = tonumber(substr(local.backup_integrity_schedule_now, 0, 4))
-  backup_integrity_schedule_month      = tonumber(substr(local.backup_integrity_schedule_now, 5, 2))
-  backup_integrity_schedule_day        = tonumber(substr(local.backup_integrity_schedule_now, 8, 2))
+  # Azure Automation requires start_time to be at least 5 minutes in the future.
+  # Buffer by 10 minutes so an apply close to UTC midnight rolls to the next valid
+  # schedule anchor instead of producing an immediately-invalid bootstrap time.
+  backup_integrity_schedule_reference_time = timeadd(timestamp(), "10m")
+  backup_integrity_schedule_reference_date = substr(local.backup_integrity_schedule_reference_time, 0, 10)
+  backup_integrity_schedule_next_midnight = formatdate(
+    "YYYY-MM-DD'T'00:00:00Z",
+    timeadd("${local.backup_integrity_schedule_reference_date}T00:00:00Z", "24h"),
+  )
+  backup_integrity_schedule_year       = tonumber(substr(local.backup_integrity_schedule_reference_time, 0, 4))
+  backup_integrity_schedule_month      = tonumber(substr(local.backup_integrity_schedule_reference_time, 5, 2))
+  backup_integrity_schedule_day        = tonumber(substr(local.backup_integrity_schedule_reference_time, 8, 2))
   backup_integrity_schedule_next_month = local.backup_integrity_schedule_day >= var.backup_integrity_schedule.day_of_month
 
   backup_integrity_schedule_month_raw = local.backup_integrity_schedule_month + (
@@ -25,12 +33,12 @@ locals {
   )
   backup_integrity_schedule_bootstrap_month = local.backup_integrity_schedule_month_raw > 12 ? 1 : local.backup_integrity_schedule_month_raw
 
-  backup_integrity_schedule_computed_start_time = format(
+  backup_integrity_schedule_computed_start_time = var.backup_integrity_schedule.frequency == "Month" ? format(
     "%04d-%02d-%02dT00:00:00Z",
     local.backup_integrity_schedule_bootstrap_year,
     local.backup_integrity_schedule_bootstrap_month,
     var.backup_integrity_schedule.day_of_month,
-  )
+  ) : local.backup_integrity_schedule_next_midnight
 }
 
 resource "terraform_data" "backup_integrity_schedule_bootstrap" {

@@ -1380,7 +1380,7 @@ To enable automatic backup integrity checks, add:
   }
 ```
 
-`day_of_month` is the monthly anchor. The module computes the next future UTC-midnight bootstrap date automatically: it uses the configured day in the current month if that midnight is still ahead, otherwise it rolls to the next month. Consumers should not provide an absolute timestamp to encode the recurring day.
+`day_of_month` is the monthly anchor when `frequency = "Month"`. The module computes the bootstrap date automatically and always keeps it at UTC midnight. Monthly schedules use the configured day in the current month if that midnight is still safely ahead, otherwise they roll to the next month. Non-monthly schedules start at the next safe UTC midnight instead of reusing `day_of_month`. The bootstrap logic includes a safety buffer so Azure Automation's requirement that `start_time` be at least 5 minutes in the future is still satisfied for applies close to UTC midnight. Consumers should not provide an absolute timestamp to encode the recurring day.
 
 If you mirror this schedule in downstream Datadog monitor RRULEs, keep the same day number there until that monitor logic is centralized. For example, a consumer such as `cp-api` should move from:
 
@@ -1445,7 +1445,7 @@ backup_integrity_schedule = {
 | backup_integrity_schedule                   | object       | Schedule for the backup integrity runbook                                               | no       | `{}`                                                                                                         |
 | backup_integrity_schedule.frequency         | string       | Run frequency ("Month", "Week", "Day", …)                                               | no       | `"Month"`                                                                                                    |
 | backup_integrity_schedule.interval          | number       | How many units of frequency between runs                                                | no       | `1`                                                                                                          |
-| backup_integrity_schedule.day_of_month      | number       | Monthly anchor day for the recurring UTC-midnight schedule; valid range is `1..28`     | no       | `3`                                                                                                          |
+| backup_integrity_schedule.day_of_month      | number       | Monthly anchor day for the recurring UTC-midnight schedule when `frequency = "Month"`; valid range is `1..28` | no       | `3`                                                                                                          |
 
 ##### Outputs
 
