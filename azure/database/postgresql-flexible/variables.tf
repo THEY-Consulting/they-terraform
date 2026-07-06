@@ -171,7 +171,8 @@ variable "backup_integrity_checks" {
 }
 
 variable "backup_integrity_schedule" {
-  description = "Schedule for the backup integrity runbook. day_of_month defines the recurring monthly UTC-midnight anchor when frequency is Month."
+  description = "Schedule for the backup integrity runbook. Supported frequencies are Month, Week, and Day; day_of_month defines the recurring monthly UTC-midnight anchor when frequency is Month."
+  nullable    = false
   type = object({
     frequency    = optional(string, "Month")
     interval     = optional(number, 1)
