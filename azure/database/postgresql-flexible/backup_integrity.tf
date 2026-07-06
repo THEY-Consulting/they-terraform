@@ -3,6 +3,10 @@
 # All resources are count-gated on var.enable_backup_integrity_check.
 # ---------------------------------------------------------------------------
 
+locals {
+  backup_integrity_schedule_start_time = var.backup_integrity_schedule.start_time
+}
+
 data "azurerm_client_config" "current" {}
 
 data "azurerm_resource_group" "backup_integrity" {
@@ -104,6 +108,17 @@ resource "azurerm_automation_variable_string" "db_password" {
   encrypted               = true
 }
 
+resource "terraform_data" "backup_integrity_schedule_start_time" {
+  count = var.enable_backup_integrity_check && local.backup_integrity_schedule_start_time == null ? 1 : 0
+
+  # Freeze the bootstrap fallback so timestamp() does not produce perpetual diffs.
+  input = formatdate("YYYY-MM-DD'T'00:00:00Z", timeadd(timestamp(), "48h"))
+
+  lifecycle {
+    ignore_changes = [input]
+  }
+}
+
 resource "azurerm_automation_schedule" "backup_integrity" {
   count                   = var.enable_backup_integrity_check ? 1 : 0
   name                    = "${var.server_name}-backup-integrity"
@@ -111,12 +126,8 @@ resource "azurerm_automation_schedule" "backup_integrity" {
   automation_account_name = azurerm_automation_account.backup_integrity[0].name
   frequency               = var.backup_integrity_schedule.frequency
   interval                = var.backup_integrity_schedule.interval
-  start_time              = coalesce(var.backup_integrity_schedule.start_time, formatdate("YYYY-MM-DD'T'00:00:00Z", timeadd(timestamp(), "48h")))
+  start_time              = local.backup_integrity_schedule_start_time != null ? local.backup_integrity_schedule_start_time : terraform_data.backup_integrity_schedule_start_time[0].output
   timezone                = "Etc/UTC"
-
-  lifecycle {
-    ignore_changes = [start_time]
-  }
 }
 
 resource "azurerm_automation_job_schedule" "backup_integrity" {
