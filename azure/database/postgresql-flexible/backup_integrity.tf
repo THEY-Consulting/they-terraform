@@ -138,15 +138,15 @@ resource "azurerm_role_assignment" "backup_integrity" {
   principal_id       = azurerm_automation_account.backup_integrity[0].identity[0].principal_id
 }
 
-# Runtime Environment — creates a proper Python 3.10 sandbox.
+# Runtime Environment — creates a proper Python 3.13 sandbox.
 # Packages are attached to the runtime environment, not the automation account directly.
 # This is the correct modern approach; azurerm_automation_python3_package targets the legacy Python 3.8 runtime.
-resource "azurerm_automation_runtime_environment" "python310" {
+resource "azurerm_automation_runtime_environment" "python313" {
   count                 = var.enable_backup_integrity_check ? 1 : 0
-  name                  = "python-3-10-backup-integrity"
+  name                  = "python-3-13-backup-integrity"
   automation_account_id = azurerm_automation_account.backup_integrity[0].id
   runtime_language      = "Python"
-  runtime_version       = "3.10"
+  runtime_version       = "3.13"
   location              = var.location
   # Runtime Environment API enforces a max of 3 tags; omit here since the
   # automation account and runbook resources already carry the full tag set.
@@ -159,7 +159,7 @@ resource "azurerm_automation_runbook" "backup_integrity" {
   resource_group_name      = var.resource_group_name
   automation_account_name  = azurerm_automation_account.backup_integrity[0].name
   runbook_type             = "Python"
-  runtime_environment_name = azurerm_automation_runtime_environment.python310[0].name
+  runtime_environment_name = azurerm_automation_runtime_environment.python313[0].name
   log_progress             = true
   log_verbose              = false
 
