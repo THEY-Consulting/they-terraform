@@ -91,12 +91,28 @@ def checks(host, cfg):
         raise RuntimeError(f"Sanity checks failed: {', '.join(failures)}")
 
 
+def scheduled_for_today():
+    """Apply the interval from a stable UTC anchor; cron supplies base cadence."""
+    today = datetime.datetime.now(datetime.UTC).date()
+    anchor = datetime.date.fromisoformat(os.environ["SCHEDULE_ANCHOR_DATE"])
+    interval = int(os.environ["SCHEDULE_INTERVAL"])
+    frequency = os.environ["SCHEDULE_FREQUENCY"]
+    if today < anchor:
+        return False
+    if frequency == "Day":
+        return (today - anchor).days % interval == 0
+    if frequency == "Week":
+        return ((today - anchor).days // 7) % interval == 0
+    if frequency == "Month":
+        elapsed_months = (today.year - anchor.year) * 12 + today.month - anchor.month
+        return elapsed_months % interval == 0
+    raise RuntimeError(f"Unsupported schedule frequency: {frequency}")
+
+
 def main():
     cfg = {key: os.environ[key] for key in ("SOURCE_SERVER_NAME", "RESOURCE_GROUP_NAME", "SUBSCRIPTION_ID", "LOCATION", "DATABASE_NAME", "DB_USER", "DB_PASSWORD", "SANITY_CHECKS_JSON")}
-    # Five-field cron has no every-N-weeks expression. Run the job each selected
-    # weekday and make non-matching weeks successful no-ops in UTC.
-    if os.environ["SCHEDULE_FREQUENCY"] == "Week" and datetime.datetime.now(datetime.UTC).isocalendar().week % int(os.environ["SCHEDULE_INTERVAL"]) != 0:
-        print("Backup integrity check skipped for this weekly interval")
+    if not scheduled_for_today():
+        print("Backup integrity check skipped for this schedule interval")
         return
     stamp = datetime.datetime.now(datetime.UTC).strftime("%Y%m%d%H%M")
     restored = f"{cfg['SOURCE_SERVER_NAME'][:42]}-bkp-{stamp}"

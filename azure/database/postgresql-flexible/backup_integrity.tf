@@ -10,9 +10,29 @@ locals {
   backup_integrity_name           = substr("${var.server_name}-backup-integrity", 0, 32)
   backup_integrity_key_vault_name = lower("${substr(replace(var.server_name, "-", ""), 0, 15)}bkp${substr(md5("${data.azurerm_client_config.current.subscription_id}/${var.server_name}"), 0, 6)}")
   backup_integrity_weekdays       = { 1 = "MON", 2 = "TUE", 3 = "WED", 4 = "THU", 5 = "FRI", 6 = "SAT", 7 = "SUN" }
-  # Container Apps cron uses five UTC fields. Weekly cron cannot express an
-  # every-N-weeks cadence; interval > 1 is handled by the container itself.
-  backup_integrity_cron = var.backup_integrity_schedule.frequency == "Month" ? "0 0 ${var.backup_integrity_schedule.day_of_month} */${var.backup_integrity_schedule.interval} *" : var.backup_integrity_schedule.frequency == "Week" ? "0 0 * * ${local.backup_integrity_weekdays[var.backup_integrity_schedule.day_of_week]}" : "0 0 */${var.backup_integrity_schedule.interval} * *"
+  # Container Apps cron uses five UTC fields. Cron cannot express elapsed
+  # day/week/month intervals consistently, so it provides the base cadence and
+  # the container applies the interval against the stable Terraform anchor.
+  backup_integrity_cron = var.backup_integrity_schedule.frequency == "Month" ? "0 0 ${var.backup_integrity_schedule.day_of_month} * *" : var.backup_integrity_schedule.frequency == "Week" ? "0 0 * * ${local.backup_integrity_weekdays[var.backup_integrity_schedule.day_of_week]}" : "0 0 * * *"
+}
+
+# Retain the schedule anchor across applies. This resource deliberately keeps
+# its first value, including when migrating an existing Automation schedule.
+resource "terraform_data" "backup_integrity_schedule_bootstrap" {
+  count = var.enable_backup_integrity_check ? 1 : 0
+
+  input = formatdate("YYYY-MM-DD'T'00:00:00Z", timeadd(timestamp(), "24h"))
+
+  triggers_replace = {
+    frequency    = var.backup_integrity_schedule.frequency
+    interval     = tostring(var.backup_integrity_schedule.interval)
+    day_of_month = var.backup_integrity_schedule.frequency == "Month" ? tostring(var.backup_integrity_schedule.day_of_month) : ""
+    day_of_week  = var.backup_integrity_schedule.frequency == "Week" ? tostring(var.backup_integrity_schedule.day_of_week) : ""
+  }
+
+  lifecycle {
+    ignore_changes = [input]
+  }
 }
 
 resource "azurerm_log_analytics_workspace" "backup_integrity" {
@@ -48,6 +68,15 @@ resource "azurerm_key_vault" "backup_integrity" {
   tags                       = var.tags
 }
 
+# The Terraform caller writes the secret once. This requires the deployment
+# principal to have permission to create role assignments at Key Vault scope.
+resource "azurerm_role_assignment" "backup_integrity_key_vault_deployer" {
+  count                = var.enable_backup_integrity_check ? 1 : 0
+  scope                = azurerm_key_vault.backup_integrity[0].id
+  role_definition_name = "Key Vault Secrets Officer"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
 # This has no additional state exposure: admin_password is already stored for
 # the PostgreSQL server, as it was for the former encrypted Automation variable.
 resource "azurerm_key_vault_secret" "backup_integrity_db_password" {
@@ -55,6 +84,8 @@ resource "azurerm_key_vault_secret" "backup_integrity_db_password" {
   name         = "backup-integrity-db-password"
   value        = var.admin_password
   key_vault_id = azurerm_key_vault.backup_integrity[0].id
+
+  depends_on = [azurerm_role_assignment.backup_integrity_key_vault_deployer]
 }
 
 resource "azurerm_role_definition" "backup_integrity" {
@@ -135,6 +166,10 @@ resource "azurerm_container_app_job" "backup_integrity" {
       env {
         name  = "SCHEDULE_INTERVAL"
         value = tostring(var.backup_integrity_schedule.interval)
+      }
+      env {
+        name  = "SCHEDULE_ANCHOR_DATE"
+        value = substr(terraform_data.backup_integrity_schedule_bootstrap[0].output, 0, 10)
       }
       env {
         name        = "DB_PASSWORD"

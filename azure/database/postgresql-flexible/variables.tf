@@ -197,8 +197,8 @@ variable "backup_integrity_schedule" {
   }
 
   validation {
-    condition     = var.backup_integrity_schedule.interval >= 1
-    error_message = "backup_integrity_schedule.interval must be at least 1."
+    condition     = var.backup_integrity_schedule.interval >= 1 && var.backup_integrity_schedule.interval == floor(var.backup_integrity_schedule.interval)
+    error_message = "backup_integrity_schedule.interval must be a whole number of at least 1."
   }
 }
 
