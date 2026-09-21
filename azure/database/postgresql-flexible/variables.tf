@@ -155,7 +155,7 @@ variable "charset" {
 # ---------------------------------------------------------------------------
 
 variable "enable_backup_integrity_check" {
-  description = "Enable automatic backup integrity checks via Azure Automation (Automation Account + Python runbook + monthly schedule)"
+  description = "Enable automatic backup integrity checks via a scheduled Azure Container Apps Job."
   type        = bool
   default     = false
 }
@@ -171,7 +171,7 @@ variable "backup_integrity_checks" {
 }
 
 variable "backup_integrity_schedule" {
-  description = "Schedule for the backup integrity runbook. Supported frequencies are Month, Week, and Day; day_of_month defines the recurring monthly UTC-midnight anchor when frequency is Month, and day_of_week defines the recurring weekly UTC-midnight anchor when frequency is Week."
+  description = "UTC schedule for the backup integrity job. Supported frequencies are Month, Week, and Day; day_of_month defines the monthly UTC-midnight anchor and day_of_week the weekly one (Monday = 1)."
   nullable    = false
   type = object({
     frequency    = optional(string, "Month")
@@ -195,4 +195,44 @@ variable "backup_integrity_schedule" {
     condition     = contains(["Month", "Week", "Day"], var.backup_integrity_schedule.frequency)
     error_message = "backup_integrity_schedule.frequency must be one of Month, Week, or Day."
   }
+
+  validation {
+    condition     = var.backup_integrity_schedule.interval >= 1
+    error_message = "backup_integrity_schedule.interval must be at least 1."
+  }
+}
+
+variable "backup_integrity_container_image" {
+  description = "Version-pinned OCI image for the backup-integrity job. Update only through the documented image release process."
+  type        = string
+  default     = "ghcr.io/they-consulting/they-terraform-postgresql-backup-integrity:postgresql-backup-integrity-v1.0.0"
+
+  validation {
+    condition     = !can(regex(":latest$", var.backup_integrity_container_image))
+    error_message = "backup_integrity_container_image must be version-pinned; the latest tag is not allowed."
+  }
+}
+
+variable "backup_integrity_replica_timeout_seconds" {
+  description = "Maximum job execution time, including restore and cleanup."
+  type        = number
+  default     = 5400
+}
+
+variable "backup_integrity_replica_retry_limit" {
+  description = "Number of retries after a failed backup-integrity execution."
+  type        = number
+  default     = 1
+}
+
+variable "backup_integrity_log_retention_days" {
+  description = "Retention period for the job Log Analytics workspace."
+  type        = number
+  default     = 30
+}
+
+variable "backup_integrity_alert_action_group_ids" {
+  description = "Existing Azure Monitor action group IDs to notify when an integrity check fails."
+  type        = list(string)
+  default     = []
 }

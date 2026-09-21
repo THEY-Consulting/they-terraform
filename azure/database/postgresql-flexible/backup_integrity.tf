@@ -1,8 +1,4 @@
-# ---------------------------------------------------------------------------
-# Backup integrity check resources
-# All resources are count-gated on var.enable_backup_integrity_check.
-# ---------------------------------------------------------------------------
-
+# Scheduled Container Apps Job for PostgreSQL backup-integrity validation.
 data "azurerm_client_config" "current" {}
 
 data "azurerm_resource_group" "backup_integrity" {
@@ -11,113 +7,60 @@ data "azurerm_resource_group" "backup_integrity" {
 }
 
 locals {
-  # Azure Automation requires start_time to be at least 5 minutes in the future.
-  # Buffer by 10 minutes so an apply close to UTC midnight rolls to the next valid
-  # schedule anchor instead of producing an immediately-invalid bootstrap time.
-  backup_integrity_schedule_reference_time = timeadd(timestamp(), "10m")
-  backup_integrity_schedule_reference_date = substr(local.backup_integrity_schedule_reference_time, 0, 10)
-  backup_integrity_schedule_next_midnight = formatdate(
-    "YYYY-MM-DD'T'00:00:00Z",
-    timeadd("${local.backup_integrity_schedule_reference_date}T00:00:00Z", "24h"),
-  )
-  backup_integrity_schedule_weekday_numbers = {
-    Mon = 1
-    Tue = 2
-    Wed = 3
-    Thu = 4
-    Fri = 5
-    Sat = 6
-    Sun = 7
-  }
-  backup_integrity_schedule_weekday_names = {
-    1 = "Monday"
-    2 = "Tuesday"
-    3 = "Wednesday"
-    4 = "Thursday"
-    5 = "Friday"
-    6 = "Saturday"
-    7 = "Sunday"
-  }
-  backup_integrity_schedule_reference_weekday     = local.backup_integrity_schedule_weekday_numbers[formatdate("EEE", local.backup_integrity_schedule_reference_time)]
-  backup_integrity_schedule_weekly_day_offset_raw = var.backup_integrity_schedule.day_of_week - local.backup_integrity_schedule_reference_weekday
-  backup_integrity_schedule_weekly_day_offset = (
-    local.backup_integrity_schedule_weekly_day_offset_raw > 0 ?
-    local.backup_integrity_schedule_weekly_day_offset_raw :
-    local.backup_integrity_schedule_weekly_day_offset_raw + 7
-  )
-  backup_integrity_schedule_next_weekly_midnight = formatdate(
-    "YYYY-MM-DD'T'00:00:00Z",
-    timeadd(
-      "${local.backup_integrity_schedule_reference_date}T00:00:00Z",
-      format("%dh", local.backup_integrity_schedule_weekly_day_offset * 24),
-    ),
-  )
-  backup_integrity_schedule_year       = tonumber(substr(local.backup_integrity_schedule_reference_time, 0, 4))
-  backup_integrity_schedule_month      = tonumber(substr(local.backup_integrity_schedule_reference_time, 5, 2))
-  backup_integrity_schedule_day        = tonumber(substr(local.backup_integrity_schedule_reference_time, 8, 2))
-  backup_integrity_schedule_next_month = local.backup_integrity_schedule_day >= var.backup_integrity_schedule.day_of_month
-
-  backup_integrity_schedule_month_raw = local.backup_integrity_schedule_month + (
-    local.backup_integrity_schedule_next_month ? 1 : 0
-  )
-  backup_integrity_schedule_bootstrap_year = local.backup_integrity_schedule_year + (
-    local.backup_integrity_schedule_month_raw > 12 ? 1 : 0
-  )
-  backup_integrity_schedule_bootstrap_month = local.backup_integrity_schedule_month_raw > 12 ? 1 : local.backup_integrity_schedule_month_raw
-
-  backup_integrity_schedule_computed_start_time = (
-    var.backup_integrity_schedule.frequency == "Month" ? format(
-      "%04d-%02d-%02dT00:00:00Z",
-      local.backup_integrity_schedule_bootstrap_year,
-      local.backup_integrity_schedule_bootstrap_month,
-      var.backup_integrity_schedule.day_of_month,
-    ) :
-    var.backup_integrity_schedule.frequency == "Week" ? local.backup_integrity_schedule_next_weekly_midnight :
-    local.backup_integrity_schedule_next_midnight
-  )
+  backup_integrity_name           = substr("${var.server_name}-backup-integrity", 0, 32)
+  backup_integrity_key_vault_name = lower("${substr(replace(var.server_name, "-", ""), 0, 15)}bkp${substr(md5("${data.azurerm_client_config.current.subscription_id}/${var.server_name}"), 0, 6)}")
+  backup_integrity_weekdays       = { 1 = "MON", 2 = "TUE", 3 = "WED", 4 = "THU", 5 = "FRI", 6 = "SAT", 7 = "SUN" }
+  # Container Apps cron uses five UTC fields. Weekly cron cannot express an
+  # every-N-weeks cadence; interval > 1 is handled by the container itself.
+  backup_integrity_cron = var.backup_integrity_schedule.frequency == "Month" ? "0 0 ${var.backup_integrity_schedule.day_of_month} */${var.backup_integrity_schedule.interval} *" : var.backup_integrity_schedule.frequency == "Week" ? "0 0 * * ${local.backup_integrity_weekdays[var.backup_integrity_schedule.day_of_week]}" : "0 0 */${var.backup_integrity_schedule.interval} * *"
 }
 
-resource "terraform_data" "backup_integrity_schedule_bootstrap" {
-  count = var.enable_backup_integrity_check ? 1 : 0
-
-  input = local.backup_integrity_schedule_computed_start_time
-
-  triggers_replace = {
-    frequency    = var.backup_integrity_schedule.frequency
-    interval     = tostring(var.backup_integrity_schedule.interval)
-    day_of_month = var.backup_integrity_schedule.frequency == "Month" ? tostring(var.backup_integrity_schedule.day_of_month) : ""
-    day_of_week  = var.backup_integrity_schedule.frequency == "Week" ? tostring(var.backup_integrity_schedule.day_of_week) : ""
-  }
-
-  lifecycle {
-    ignore_changes = [input]
-  }
-}
-
-resource "azurerm_automation_account" "backup_integrity" {
-  count = var.enable_backup_integrity_check ? 1 : 0
-  # Azure Automation Account names: 6–50 chars. PostgreSQL server names allow up to 63 chars,
-  # so truncate to 39 chars before appending "-automation" (11 chars) → max 50 chars total.
-  name                = "${substr(var.server_name, 0, 39)}-automation"
+resource "azurerm_log_analytics_workspace" "backup_integrity" {
+  count               = var.enable_backup_integrity_check ? 1 : 0
+  name                = "${local.backup_integrity_name}-logs"
   location            = var.location
   resource_group_name = var.resource_group_name
-  sku_name            = "Basic"
-
-  identity {
-    type = "SystemAssigned"
-  }
-
-  tags = var.tags
+  sku                 = "PerGB2018"
+  retention_in_days   = var.backup_integrity_log_retention_days
+  tags                = var.tags
 }
 
-# Custom role limited to the PostgreSQL Flexible Server operations the runbook
-# actually needs: create/read/delete the restore server and write its firewall rule.
-# This replaces the overly broad Contributor role.
+resource "azurerm_container_app_environment" "backup_integrity" {
+  count                      = var.enable_backup_integrity_check ? 1 : 0
+  name                       = "${local.backup_integrity_name}-env"
+  location                   = var.location
+  resource_group_name        = var.resource_group_name
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.backup_integrity[0].id
+  logs_destination           = "log-analytics"
+  tags                       = var.tags
+}
+
+resource "azurerm_key_vault" "backup_integrity" {
+  count                      = var.enable_backup_integrity_check ? 1 : 0
+  name                       = local.backup_integrity_key_vault_name
+  location                   = var.location
+  resource_group_name        = var.resource_group_name
+  tenant_id                  = data.azurerm_client_config.current.tenant_id
+  sku_name                   = "standard"
+  enable_rbac_authorization  = true
+  soft_delete_retention_days = 7
+  purge_protection_enabled   = false
+  tags                       = var.tags
+}
+
+# This has no additional state exposure: admin_password is already stored for
+# the PostgreSQL server, as it was for the former encrypted Automation variable.
+resource "azurerm_key_vault_secret" "backup_integrity_db_password" {
+  count        = var.enable_backup_integrity_check ? 1 : 0
+  name         = "backup-integrity-db-password"
+  value        = var.admin_password
+  key_vault_id = azurerm_key_vault.backup_integrity[0].id
+}
+
 resource "azurerm_role_definition" "backup_integrity" {
   count = var.enable_backup_integrity_check ? 1 : 0
   name  = "${var.server_name}-backup-integrity"
   scope = data.azurerm_resource_group.backup_integrity[0].id
-
   permissions {
     actions = [
       "Microsoft.DBforPostgreSQL/flexibleServers/read",
@@ -127,84 +70,115 @@ resource "azurerm_role_definition" "backup_integrity" {
     ]
     not_actions = []
   }
-
   assignable_scopes = [data.azurerm_resource_group.backup_integrity[0].id]
+}
+
+resource "azurerm_container_app_job" "backup_integrity" {
+  count                        = var.enable_backup_integrity_check ? 1 : 0
+  name                         = local.backup_integrity_name
+  location                     = var.location
+  resource_group_name          = var.resource_group_name
+  container_app_environment_id = azurerm_container_app_environment.backup_integrity[0].id
+  replica_timeout_in_seconds   = var.backup_integrity_replica_timeout_seconds
+  replica_retry_limit          = var.backup_integrity_replica_retry_limit
+  tags                         = var.tags
+
+  identity { type = "SystemAssigned" }
+  schedule_trigger_config {
+    cron_expression          = local.backup_integrity_cron
+    parallelism              = 1
+    replica_completion_count = 1
+  }
+  secret {
+    name                = "db-password"
+    key_vault_secret_id = azurerm_key_vault_secret.backup_integrity_db_password[0].versionless_id
+    identity            = "system"
+  }
+  template {
+    container {
+      name   = "backup-integrity"
+      image  = var.backup_integrity_container_image
+      cpu    = 0.5
+      memory = "1Gi"
+      env {
+        name  = "SOURCE_SERVER_NAME"
+        value = var.server_name
+      }
+      env {
+        name  = "RESOURCE_GROUP_NAME"
+        value = var.resource_group_name
+      }
+      env {
+        name  = "SUBSCRIPTION_ID"
+        value = data.azurerm_client_config.current.subscription_id
+      }
+      env {
+        name  = "LOCATION"
+        value = var.location
+      }
+      env {
+        name  = "DATABASE_NAME"
+        value = coalesce(var.database_name, "postgres")
+      }
+      env {
+        name  = "DB_USER"
+        value = var.admin_username
+      }
+      env {
+        name  = "SANITY_CHECKS_JSON"
+        value = jsonencode(var.backup_integrity_checks)
+      }
+      env {
+        name  = "SCHEDULE_FREQUENCY"
+        value = var.backup_integrity_schedule.frequency
+      }
+      env {
+        name  = "SCHEDULE_INTERVAL"
+        value = tostring(var.backup_integrity_schedule.interval)
+      }
+      env {
+        name        = "DB_PASSWORD"
+        secret_name = "db-password"
+      }
+    }
+  }
 }
 
 resource "azurerm_role_assignment" "backup_integrity" {
   count              = var.enable_backup_integrity_check ? 1 : 0
   scope              = data.azurerm_resource_group.backup_integrity[0].id
   role_definition_id = azurerm_role_definition.backup_integrity[0].role_definition_resource_id
-  principal_id       = azurerm_automation_account.backup_integrity[0].identity[0].principal_id
+  principal_id       = azurerm_container_app_job.backup_integrity[0].identity[0].principal_id
 }
 
-# Runtime Environment — creates a proper Python 3.10 sandbox.
-# Packages are attached to the runtime environment, not the automation account directly.
-# This is the correct modern approach; azurerm_automation_python3_package targets the legacy Python 3.8 runtime.
-resource "azurerm_automation_runtime_environment" "python310" {
-  count                 = var.enable_backup_integrity_check ? 1 : 0
-  name                  = "python-3-10-backup-integrity"
-  automation_account_id = azurerm_automation_account.backup_integrity[0].id
-  runtime_language      = "Python"
-  runtime_version       = "3.10"
-  location              = var.location
-  # Runtime Environment API enforces a max of 3 tags; omit here since the
-  # automation account and runbook resources already carry the full tag set.
+resource "azurerm_role_assignment" "backup_integrity_key_vault" {
+  count                = var.enable_backup_integrity_check ? 1 : 0
+  scope                = azurerm_key_vault.backup_integrity[0].id
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = azurerm_container_app_job.backup_integrity[0].identity[0].principal_id
 }
 
-resource "azurerm_automation_runbook" "backup_integrity" {
-  count                    = var.enable_backup_integrity_check ? 1 : 0
-  name                     = "Test-BackupIntegrity"
-  location                 = var.location
-  resource_group_name      = var.resource_group_name
-  automation_account_name  = azurerm_automation_account.backup_integrity[0].name
-  runbook_type             = "Python"
-  runtime_environment_name = azurerm_automation_runtime_environment.python310[0].name
-  log_progress             = true
-  log_verbose              = false
-
-  content = templatefile("${path.module}/runbooks/db_backup_integrity_check.py", {
-    source_server_name  = var.server_name
-    resource_group_name = var.resource_group_name
-    subscription_id     = data.azurerm_client_config.current.subscription_id
-    location            = var.location
-    database_name       = coalesce(var.database_name, "postgres")
-    db_password_var     = azurerm_automation_variable_string.db_password[0].name
-    db_user             = var.admin_username
-    sanity_checks       = var.backup_integrity_checks
-  })
-
-  tags = var.tags
-}
-
-# Store the DB password as an encrypted Automation variable so it is never
-# baked into the runbook source or visible in the Azure portal's code view.
-resource "azurerm_automation_variable_string" "db_password" {
-  count                   = var.enable_backup_integrity_check ? 1 : 0
-  name                    = "BackupIntegrityDbPassword"
-  resource_group_name     = var.resource_group_name
-  automation_account_name = azurerm_automation_account.backup_integrity[0].name
-  value                   = var.admin_password
-  encrypted               = true
-}
-
-resource "azurerm_automation_schedule" "backup_integrity" {
-  count                   = var.enable_backup_integrity_check ? 1 : 0
-  name                    = "${var.server_name}-backup-integrity"
-  resource_group_name     = var.resource_group_name
-  automation_account_name = azurerm_automation_account.backup_integrity[0].name
-  frequency               = var.backup_integrity_schedule.frequency
-  interval                = var.backup_integrity_schedule.interval
-  month_days              = var.backup_integrity_schedule.frequency == "Month" ? [var.backup_integrity_schedule.day_of_month] : null
-  week_days               = var.backup_integrity_schedule.frequency == "Week" ? [local.backup_integrity_schedule_weekday_names[var.backup_integrity_schedule.day_of_week]] : null
-  start_time              = terraform_data.backup_integrity_schedule_bootstrap[0].output
-  timezone                = "Etc/UTC"
-}
-
-resource "azurerm_automation_job_schedule" "backup_integrity" {
-  count                   = var.enable_backup_integrity_check ? 1 : 0
-  automation_account_name = azurerm_automation_account.backup_integrity[0].name
-  resource_group_name     = var.resource_group_name
-  runbook_name            = azurerm_automation_runbook.backup_integrity[0].name
-  schedule_name           = azurerm_automation_schedule.backup_integrity[0].name
+resource "azurerm_monitor_scheduled_query_rules_alert_v2" "backup_integrity_failed" {
+  count                = var.enable_backup_integrity_check ? 1 : 0
+  name                 = "${local.backup_integrity_name}-failed"
+  resource_group_name  = var.resource_group_name
+  location             = var.location
+  scopes               = [azurerm_log_analytics_workspace.backup_integrity[0].id]
+  description          = "PostgreSQL backup integrity check failed."
+  severity             = 2
+  enabled              = true
+  evaluation_frequency = "PT5M"
+  window_duration      = "PT15M"
+  criteria {
+    query                   = "ContainerAppConsoleLogs_CL | where Log_s contains 'Backup integrity check FAILED' | where Log_s contains '${var.server_name}'"
+    time_aggregation_method = "Count"
+    threshold               = 0
+    operator                = "GreaterThan"
+  }
+  dynamic "action" {
+    for_each = length(var.backup_integrity_alert_action_group_ids) == 0 ? [] : [1]
+    content {
+      action_groups = var.backup_integrity_alert_action_group_ids
+    }
+  }
 }

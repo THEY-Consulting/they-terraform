@@ -31,7 +31,7 @@ module "postgresql_flexible_server" {
 
   # ---------------------------------------------------------------------------
   # Optional: automated backup integrity check
-  # Provisions an Azure Automation Account that runs a monthly PITR restore
+  # Provisions a scheduled Azure Container Apps Job that runs a monthly PITR restore
   # and executes the queries below against the restored database.
   # Uncomment and adapt the checks to your schema to enable.
   # ---------------------------------------------------------------------------

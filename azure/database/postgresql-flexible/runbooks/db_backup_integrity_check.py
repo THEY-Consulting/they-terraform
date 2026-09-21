@@ -1,292 +1,125 @@
-"""
-Azure Automation Runbook: DB Backup Integrity Check
-
-Validates PostgreSQL backup integrity by:
-  1. Triggering a point-in-time restore to a temporary server
-  2. Running configurable sanity checks against the restored database
-  3. Deleting the temporary server (always, even on failure)
-
-Configuration is baked in by Terraform templatefile() at plan time.
-"""
-
-import subprocess
-import sys
-
-# Install pg8000 at runtime so pip resolves the full dependency tree automatically.
-# This avoids manually tracking transitive deps (scramp, asn1crypto, dateutil, etc.)
-# as pre-loaded wheel resources in Terraform.
-subprocess.check_call(
-    [sys.executable, "-m", "pip", "install", "--quiet", "pg8000==1.31.5"],
-    stdout=subprocess.DEVNULL,
-)
-
+"""Container Apps Job entry point for PostgreSQL backup-integrity checks."""
 import datetime
 import json
 import os
+import sys
 import time
 import urllib.error
 import urllib.request
 
-POSTGRES_API_VERSION = "2022-12-01"
-POSTGRES_PROVIDER = "Microsoft.DBforPostgreSQL/flexibleServers"
+import pg8000.dbapi
+
+API_VERSION = "2022-12-01"
+PROVIDER = "Microsoft.DBforPostgreSQL/flexibleServers"
 
 
-# ---------------------------------------------------------------------------
-# Azure Managed Identity helpers
-# ---------------------------------------------------------------------------
-
-def get_access_token(resource: str = "https://management.azure.com/") -> str:
-    """Obtain a bearer token via the Automation Account Managed Identity endpoint."""
-    endpoint = os.environ.get("IDENTITY_ENDPOINT")
-    header = os.environ.get("IDENTITY_HEADER")
+def token():
+    endpoint, header = os.environ.get("IDENTITY_ENDPOINT"), os.environ.get("IDENTITY_HEADER")
     if not endpoint or not header:
-        raise RuntimeError(
-            "IDENTITY_ENDPOINT / IDENTITY_HEADER not set. "
-            "Ensure System Assigned Managed Identity is enabled on the Automation Account."
-        )
-    url = f"{endpoint}?api-version=2019-08-01&resource={resource}"
-    req = urllib.request.Request(url, headers={"X-IDENTITY-HEADER": header})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return json.loads(resp.read())["access_token"]
+        raise RuntimeError("Container Apps managed identity endpoint is unavailable")
+    request = urllib.request.Request(f"{endpoint}?api-version=2019-08-01&resource=https://management.azure.com/", headers={"X-IDENTITY-HEADER": header})
+    with urllib.request.urlopen(request, timeout=30) as response:
+        return json.loads(response.read())["access_token"]
 
 
-def azure_request(method: str, url: str, token: str, body: dict = None) -> dict:
-    """Make a single Azure REST API call and return the parsed JSON response."""
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json",
-    }
-    data = json.dumps(body).encode() if body else None
-    req = urllib.request.Request(url, data=data, headers=headers, method=method)
+def url(cfg, name):
+    return f"https://management.azure.com/subscriptions/{cfg['SUBSCRIPTION_ID']}/resourceGroups/{cfg['RESOURCE_GROUP_NAME']}/providers/{PROVIDER}/{name}?api-version={API_VERSION}"
+
+
+def request(method, endpoint, access_token, body=None):
+    payload = json.dumps(body).encode() if body is not None else None
+    req = urllib.request.Request(endpoint, data=payload, method=method, headers={"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"})
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            raw = resp.read()
+        with urllib.request.urlopen(req, timeout=30) as response:
+            raw = response.read()
             return json.loads(raw) if raw else {}
     except urllib.error.HTTPError as exc:
-        raise RuntimeError(f"Azure API {method} {url} → {exc.code}: {exc.read().decode()}") from exc
+        raise RuntimeError(f"Azure API {method} failed with {exc.code}: {exc.read().decode()}") from exc
 
 
-# ---------------------------------------------------------------------------
-# PostgreSQL Flexible Server helpers
-# ---------------------------------------------------------------------------
-
-def server_url(subscription_id: str, resource_group: str, server_name: str) -> str:
-    base = "https://management.azure.com"
-    return (
-        f"{base}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
-        f"/providers/{POSTGRES_PROVIDER}/{server_name}"
-        f"?api-version={POSTGRES_API_VERSION}"
-    )
+def restore(access_token, cfg, name, restore_point):
+    source = f"/subscriptions/{cfg['SUBSCRIPTION_ID']}/resourceGroups/{cfg['RESOURCE_GROUP_NAME']}/providers/{PROVIDER}/{cfg['SOURCE_SERVER_NAME']}"
+    request("PUT", url(cfg, name), access_token, {"location": cfg["LOCATION"], "properties": {"createMode": "PointInTimeRestore", "sourceServerResourceId": source, "pointInTimeUTC": restore_point, "network": {"publicNetworkAccess": "Enabled"}}})
 
 
-def trigger_pitr(token, subscription_id, resource_group, source_server, restore_server, location, restore_point_utc):
-    """Start a point-in-time restore. Returns immediately (async operation).
-
-    Public network access is explicitly enabled on the restore server so the
-    Automation sandbox (which runs outside any VNet) can connect to it.
-    """
-    source_id = (
-        f"/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
-        f"/providers/{POSTGRES_PROVIDER}/{source_server}"
-    )
-    body = {
-        "location": location,
-        "properties": {
-            "createMode": "PointInTimeRestore",
-            "sourceServerResourceId": source_id,
-            "pointInTimeUTC": restore_point_utc,
-            # Explicitly enable public network access so the Automation sandbox
-            # (which runs outside any VNet) can reach the restore server even
-            # when the source server has public access disabled.
-            "network": {"publicNetworkAccess": "Enabled"},
-        },
-    }
-    print(f"  Restore point: {restore_point_utc}")
-    azure_request("PUT", server_url(subscription_id, resource_group, restore_server), token, body)
-
-
-def add_firewall_rule(token, subscription_id, resource_group, server_name, rule_name, start_ip, end_ip):
-    """Add a firewall rule to the server. Using 0.0.0.0-0.0.0.0 allows all Azure services."""
-    base = "https://management.azure.com"
-    url = (
-        f"{base}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
-        f"/providers/{POSTGRES_PROVIDER}/{server_name}/firewallRules/{rule_name}"
-        f"?api-version={POSTGRES_API_VERSION}"
-    )
-    body = {"properties": {"startIpAddress": start_ip, "endIpAddress": end_ip}}
-    azure_request("PUT", url, token, body)
-
-
-def wait_for_ready(token, subscription_id, resource_group, server_name, timeout_minutes=60):
-    """Poll until server state == 'Ready'. Returns the server JSON.
-
-    404 responses are treated as transient (server not yet visible in ARM
-    during the first minutes of provisioning) and retried until the deadline.
-    """
-    deadline = time.time() + timeout_minutes * 60
+def wait_ready(access_token, cfg, name):
+    deadline = time.time() + 3600
     while time.time() < deadline:
         try:
-            server = azure_request(
-                "GET",
-                server_url(subscription_id, resource_group, server_name),
-                token,
-            )
+            server = request("GET", url(cfg, name), access_token)
+            state = server.get("properties", {}).get("state", "Unknown")
+            print(f"Restore server state: {state}")
+            if state == "Ready":
+                return server
         except RuntimeError as exc:
-            if "→ 404:" in str(exc):
-                print("  Server not yet visible in ARM, retrying...")
-                time.sleep(30)
-                continue
-            raise
-        state = server.get("properties", {}).get("state", "Unknown")
-        print(f"  Server state: {state}")
-        if state == "Ready":
-            return server
+            if "404" not in str(exc):
+                raise
         time.sleep(30)
-    raise TimeoutError(f"Server '{server_name}' did not become Ready within {timeout_minutes} min")
+    raise TimeoutError("Restored server did not become ready within 60 minutes")
 
 
-def delete_server(token, subscription_id, resource_group, server_name):
-    """Issue DELETE on the server; ignore 404 (already gone)."""
-    url = server_url(subscription_id, resource_group, server_name)
-    headers = {"Authorization": f"Bearer {token}", "Content-Length": "0"}
-    req = urllib.request.Request(url, headers=headers, method="DELETE")
+def firewall(access_token, cfg, name):
+    request("PUT", url(cfg, name).replace(f"/{name}?", f"/{name}/firewallRules/AllowAzureServices?"), access_token, {"properties": {"startIpAddress": "0.0.0.0", "endIpAddress": "0.0.0.0"}})
+
+
+def delete(access_token, cfg, name):
     try:
-        urllib.request.urlopen(req, timeout=30)
-    except urllib.error.HTTPError as exc:
-        if exc.code != 404:
+        request("DELETE", url(cfg, name), access_token)
+    except RuntimeError as exc:
+        if "404" not in str(exc):
             raise
 
 
-# ---------------------------------------------------------------------------
-# Sanity checks — rendered by Terraform templatefile() at plan time
-# ---------------------------------------------------------------------------
-
-SANITY_CHECKS = [
-%{ for check in sanity_checks ~}
-    (${jsonencode(check.label)}, ${jsonencode(check.query)}, ${check.expect_rows ? "True" : "False"}),
-%{ endfor ~}
-]
-
-
-def run_sanity_checks(host: str, db_name: str, db_user: str, db_password: str):
-    import pg8000.dbapi  # noqa: PLC0415 — pure Python driver; installed as Automation package
-
-    conn = pg8000.dbapi.connect(
-        host=host, port=5432, database=db_name,
-        user=db_user, password=db_password,
-        ssl_context=True,  # use SSL, required by Azure PostgreSQL Flexible Server
-    )
-    cur = conn.cursor()
+def checks(host, cfg):
+    connection = pg8000.dbapi.connect(host=host, port=5432, database=cfg["DATABASE_NAME"], user=cfg["DB_USER"], password=cfg["DB_PASSWORD"], ssl_context=True)
     failures = []
     try:
-        for label, query, expect_rows in SANITY_CHECKS:
-            cur.execute(query)
-            row = cur.fetchone()
-            if row is None:
-                raise RuntimeError(
-                    f"Check '{label}': query returned no rows — "
-                    "queries must return exactly one row (e.g. SELECT COUNT(*) ...)."
-                )
-            if len(row) != 1:
-                raise RuntimeError(
-                    f"Check '{label}': query returned {len(row)} columns, expected 1 — "
-                    "queries must return a single scalar (e.g. SELECT COUNT(*) ...)."
-                )
-            count = row[0]
-            ok = count > 0 if expect_rows else True
-            status = "✓" if ok else "✗"
-            print(f"  {status} {label}: {count} rows")
-            if not ok:
-                failures.append(f"{label} is empty")
+        cursor = connection.cursor()
+        for check in json.loads(cfg["SANITY_CHECKS_JSON"]):
+            cursor.execute(check["query"])
+            row = cursor.fetchone()
+            if row is None or len(row) != 1:
+                raise RuntimeError(f"Check '{check['label']}' must return one scalar value")
+            passed = not check.get("expect_rows", True) or row[0] > 0
+            print(f"{'PASS' if passed else 'FAIL'} {check['label']}: {row[0]}")
+            if not passed:
+                failures.append(check["label"])
+        cursor.close()
     finally:
-        cur.close()
-        conn.close()
-
+        connection.close()
     if failures:
         raise RuntimeError(f"Sanity checks failed: {', '.join(failures)}")
-    print("All sanity checks passed.")
 
-
-# ---------------------------------------------------------------------------
-# Configuration — values baked in by Terraform templatefile() at plan time
-# ---------------------------------------------------------------------------
-
-SOURCE_SERVER_NAME  = "${source_server_name}"
-RESOURCE_GROUP_NAME = "${resource_group_name}"
-SUBSCRIPTION_ID     = "${subscription_id}"
-LOCATION            = "${location}"
-DATABASE_NAME       = "${database_name}"
-DB_USER             = "${db_user}"
-
-# Password is stored as an encrypted Automation Account variable and fetched
-# at runtime so it never appears in the runbook source or Azure portal code view.
-import automationassets
-DB_PASSWORD = automationassets.get_automation_variable("${db_password_var}")
-
-
-# ---------------------------------------------------------------------------
-# Entry point
-# ---------------------------------------------------------------------------
 
 def main():
-    timestamp = datetime.datetime.utcnow().strftime("%Y%m%d%H%M")
-    # Max server name length is 63; keep prefix to 42 chars to accommodate suffix
-    restore_server = f"{SOURCE_SERVER_NAME[:42]}-bkp-{timestamp}"
-    restore_point = (
-        datetime.datetime.utcnow() - datetime.timedelta(minutes=10)
-    ).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-    print(f"=== DB Backup Integrity Check ===")
-    print(f"Source server : {SOURCE_SERVER_NAME}")
-    print(f"Restore server: {restore_server}")
-
-    token = get_access_token()
-    restore_created = False
-
+    cfg = {key: os.environ[key] for key in ("SOURCE_SERVER_NAME", "RESOURCE_GROUP_NAME", "SUBSCRIPTION_ID", "LOCATION", "DATABASE_NAME", "DB_USER", "DB_PASSWORD", "SANITY_CHECKS_JSON")}
+    # Five-field cron has no every-N-weeks expression. Run the job each selected
+    # weekday and make non-matching weeks successful no-ops in UTC.
+    if os.environ["SCHEDULE_FREQUENCY"] == "Week" and datetime.datetime.now(datetime.UTC).isocalendar().week % int(os.environ["SCHEDULE_INTERVAL"]) != 0:
+        print("Backup integrity check skipped for this weekly interval")
+        return
+    stamp = datetime.datetime.now(datetime.UTC).strftime("%Y%m%d%H%M")
+    restored = f"{cfg['SOURCE_SERVER_NAME'][:42]}-bkp-{stamp}"
+    print(f"Backup integrity check started for {cfg['SOURCE_SERVER_NAME']}; restore server: {restored}")
+    created = False
     try:
-        print("\n[1/3] Triggering point-in-time restore...")
-        trigger_pitr(
-            token,
-            SUBSCRIPTION_ID,
-            RESOURCE_GROUP_NAME,
-            SOURCE_SERVER_NAME,
-            restore_server,
-            LOCATION,
-            restore_point,
-        )
-        restore_created = True
-
-        print("\n[2/3] Waiting for restored server to become ready...")
-        server = wait_for_ready(
-            token, SUBSCRIPTION_ID, RESOURCE_GROUP_NAME, restore_server
-        )
-        fqdn = server["properties"]["fullyQualifiedDomainName"]
-        print(f"  Server ready: {fqdn}")
-
-        print("  Adding firewall rule for Azure services...")
-        add_firewall_rule(
-            token, SUBSCRIPTION_ID, RESOURCE_GROUP_NAME, restore_server,
-            "AllowAzureServices", "0.0.0.0", "0.0.0.0",
-        )
-
-        print("\n[3/3] Running sanity checks...")
-        run_sanity_checks(fqdn, DATABASE_NAME, DB_USER, DB_PASSWORD)
-
-        print("\n✓ Backup integrity check PASSED")
-
+        access_token = token()
+        restore(access_token, cfg, restored, (datetime.datetime.now(datetime.UTC) - datetime.timedelta(minutes=10)).strftime("%Y-%m-%dT%H:%M:%SZ"))
+        created = True
+        server = wait_ready(access_token, cfg, restored)
+        firewall(access_token, cfg, restored)
+        checks(server["properties"]["fullyQualifiedDomainName"], cfg)
+        print("Backup integrity check PASSED")
     except Exception as exc:
-        print(f"\n✗ Backup integrity check FAILED: {exc}", file=sys.stderr)
+        print(f"Backup integrity check FAILED for {cfg['SOURCE_SERVER_NAME']}: {exc}", file=sys.stderr)
         raise
-
     finally:
-        if restore_created:
-            print(f"\n[cleanup] Deleting restore server '{restore_server}'...")
+        if created:
             try:
-                token = get_access_token()  # refresh — restore can take ~45 min
-                delete_server(token, SUBSCRIPTION_ID, RESOURCE_GROUP_NAME, restore_server)
-                print("  Restore server deleted.")
+                delete(token(), cfg, restored)
+                print("Restore server deleted")
             except Exception as exc:
-                print(f"  WARNING: Failed to delete restore server: {exc}", file=sys.stderr)
+                print(f"WARNING: restore-server cleanup failed: {exc}", file=sys.stderr)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,49 @@
+name: Publish PostgreSQL backup-integrity image
+
+on:
+  push:
+    tags:
+      - "postgresql-backup-integrity-v*"
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+
+jobs:
+  build-scan-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build release image
+        uses: docker/build-push-action@v6
+        with:
+          context: azure/database/postgresql-flexible/runbooks
+          file: azure/database/postgresql-flexible/runbooks/backup-integrity/Dockerfile
+          load: true
+          push: false
+          tags: ghcr.io/they-consulting/they-terraform-postgresql-backup-integrity:${{ github.ref_name }}
+      - uses: anchore/sbom-action@v0
+        with:
+          image: ghcr.io/they-consulting/they-terraform-postgresql-backup-integrity:${{ github.ref_name }}
+          upload-artifact: true
+      - name: Scan image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ghcr.io/they-consulting/they-terraform-postgresql-backup-integrity:${{ github.ref_name }}
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+      - name: Publish scanned image
+        run: docker push ghcr.io/they-consulting/they-terraform-postgresql-backup-integrity:${{ github.ref_name }}
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
