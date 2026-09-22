@@ -114,7 +114,8 @@ def scheduled_for_today():
 
 def main():
     cfg = {key: os.environ[key] for key in ("SOURCE_SERVER_NAME", "RESOURCE_GROUP_NAME", "SUBSCRIPTION_ID", "LOCATION", "DATABASE_NAME", "DB_USER", "DB_PASSWORD", "SANITY_CHECKS_JSON")}
-    if not scheduled_for_today():
+    force_run = os.environ.get("BACKUP_INTEGRITY_FORCE_RUN", "false").lower() == "true"
+    if not force_run and not scheduled_for_today():
         print("Backup integrity check skipped for this schedule interval")
         return
     stamp = datetime.datetime.now(datetime.UTC).strftime("%Y%m%d%H%M")

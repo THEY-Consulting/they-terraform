@@ -23,6 +23,8 @@ When checks are enabled, the consumer passes the image reference and its ACR ID/
 
 The module performs a direct cutover: applying it removes the Automation resources and creates the job. Manually start one execution immediately after deployment, then confirm `Backup integrity check PASSED` in Log Analytics and that the temporary server was deleted.
 
+To deliberately exercise a manual execution outside its configured schedule interval, set `backup_integrity_force_run = true`, apply, and start the job. Reset it to `false` after the test so normal interval behavior remains in effect.
+
 ## Datadog tracking
 
 If the environment already exports Azure Container Apps logs to Datadog, create a log monitor matching `Backup integrity check FAILED` for failure and a freshness monitor matching `Backup integrity check PASSED` for the selected schedule. The log lines include the source server name and never include the database password. The module also creates an Azure Monitor failed-check alert by default; existing action groups can be attached with `backup_integrity_alert_action_group_ids`.

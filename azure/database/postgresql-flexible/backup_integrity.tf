@@ -236,6 +236,10 @@ resource "azurerm_container_app_job" "backup_integrity" {
         value = substr(terraform_data.backup_integrity_schedule_bootstrap[0].output, 0, 10)
       }
       env {
+        name  = "BACKUP_INTEGRITY_FORCE_RUN"
+        value = tostring(var.backup_integrity_force_run)
+      }
+      env {
         name        = "DB_PASSWORD"
         secret_name = "db-password"
       }
