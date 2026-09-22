@@ -8,12 +8,13 @@ module "postgresql_flexible_server" {
   # source = "github.com/THEY-Consulting/they-terraform//azure/database/postgresql-flexible"
   source = "../../../azure/database/postgresql-flexible"
 
-  server_name         = local.project_name
-  resource_group_name = "they-dev"
-  location            = local.location
-  admin_username      = "superAdmin"
-  admin_password      = sensitive("P@ssw0rd123!")
-  allow_all           = true
+  server_name           = local.project_name
+  backup_integrity_name = substr("${local.project_name}-backup", 0, 32)
+  resource_group_name   = "they-dev"
+  location              = local.location
+  admin_username        = "superAdmin"
+  admin_password        = sensitive("P@ssw0rd123!")
+  allow_all             = true
   #database_name       = "testdb" #If you want to create a database, uncomment this line.
 
   storage_mb        = 32768

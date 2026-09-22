@@ -160,6 +160,11 @@ variable "enable_backup_integrity_check" {
   default     = false
 }
 
+variable "backup_integrity_name" {
+  description = "Name of the backup-integrity Container Apps Job. It is also used as the prefix for related environment, identity, Log Analytics, and alert resources."
+  type        = string
+}
+
 variable "backup_integrity_checks" {
   description = "SQL sanity checks to run against the restored database. Each check executes a query and optionally asserts at least one row is returned."
   type = list(object({
