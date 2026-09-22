@@ -10,6 +10,42 @@ locals {
   backup_integrity_name           = substr("${var.server_name}-backup-integrity", 0, 32)
   backup_integrity_key_vault_name = lower("${substr(replace(var.server_name, "-", ""), 0, 15)}bkp${substr(md5("${data.azurerm_client_config.current.subscription_id}/${var.server_name}"), 0, 6)}")
   backup_integrity_weekdays       = { 1 = "MON", 2 = "TUE", 3 = "WED", 4 = "THU", 5 = "FRI", 6 = "SAT", 7 = "SUN" }
+  backup_integrity_reference_time = timeadd(timestamp(), "10m")
+  backup_integrity_reference_date = substr(local.backup_integrity_reference_time, 0, 10)
+  backup_integrity_weekday_numbers = {
+    Mon = 1
+    Tue = 2
+    Wed = 3
+    Thu = 4
+    Fri = 5
+    Sat = 6
+    Sun = 7
+  }
+  backup_integrity_reference_weekday = local.backup_integrity_weekday_numbers[formatdate("EEE", local.backup_integrity_reference_time)]
+  backup_integrity_week_offset_raw   = var.backup_integrity_schedule.day_of_week - local.backup_integrity_reference_weekday
+  backup_integrity_week_offset       = local.backup_integrity_week_offset_raw > 0 ? local.backup_integrity_week_offset_raw : local.backup_integrity_week_offset_raw + 7
+  backup_integrity_next_weekly = formatdate(
+    "YYYY-MM-DD'T'00:00:00Z",
+    timeadd("${local.backup_integrity_reference_date}T00:00:00Z", format("%dh", local.backup_integrity_week_offset * 24)),
+  )
+  backup_integrity_year       = tonumber(substr(local.backup_integrity_reference_time, 0, 4))
+  backup_integrity_month      = tonumber(substr(local.backup_integrity_reference_time, 5, 2))
+  backup_integrity_day        = tonumber(substr(local.backup_integrity_reference_time, 8, 2))
+  backup_integrity_next_month = local.backup_integrity_day >= var.backup_integrity_schedule.day_of_month
+  backup_integrity_month_raw  = local.backup_integrity_month + (local.backup_integrity_next_month ? 1 : 0)
+  backup_integrity_anchor_year = local.backup_integrity_year + (
+    local.backup_integrity_month_raw > 12 ? 1 : 0
+  )
+  backup_integrity_anchor_month = local.backup_integrity_month_raw > 12 ? 1 : local.backup_integrity_month_raw
+  backup_integrity_schedule_anchor = var.backup_integrity_schedule.frequency == "Month" ? format(
+    "%04d-%02d-%02dT00:00:00Z",
+    local.backup_integrity_anchor_year,
+    local.backup_integrity_anchor_month,
+    var.backup_integrity_schedule.day_of_month,
+    ) : var.backup_integrity_schedule.frequency == "Week" ? local.backup_integrity_next_weekly : formatdate(
+    "YYYY-MM-DD'T'00:00:00Z",
+    timeadd("${local.backup_integrity_reference_date}T00:00:00Z", "24h"),
+  )
   # Container Apps cron uses five UTC fields. Cron cannot express elapsed
   # day/week/month intervals consistently, so it provides the base cadence and
   # the container applies the interval against the stable Terraform anchor.
@@ -21,7 +57,7 @@ locals {
 resource "terraform_data" "backup_integrity_schedule_bootstrap" {
   count = var.enable_backup_integrity_check ? 1 : 0
 
-  input = formatdate("YYYY-MM-DD'T'00:00:00Z", timeadd(timestamp(), "24h"))
+  input = local.backup_integrity_schedule_anchor
 
   triggers_replace = {
     frequency    = var.backup_integrity_schedule.frequency
@@ -133,10 +169,8 @@ resource "azurerm_container_app_job" "backup_integrity" {
   tags                         = var.tags
 
   identity {
-    type = "SystemAssigned, UserAssigned"
-    identity_ids = [
-      azurerm_user_assigned_identity.backup_integrity_acr_pull[0].id,
-    ]
+    type         = var.backup_integrity_container_registry != null ? "SystemAssigned, UserAssigned" : "SystemAssigned"
+    identity_ids = var.backup_integrity_container_registry != null ? [azurerm_user_assigned_identity.backup_integrity_acr_pull[0].id] : null
   }
   schedule_trigger_config {
     cron_expression          = local.backup_integrity_cron
@@ -148,14 +182,17 @@ resource "azurerm_container_app_job" "backup_integrity" {
     key_vault_secret_id = azurerm_key_vault_secret.backup_integrity_db_password[0].versionless_id
     identity            = "system"
   }
-  registry {
-    server   = var.backup_integrity_container_registry.login_server
-    identity = azurerm_user_assigned_identity.backup_integrity_acr_pull[0].id
+  dynamic "registry" {
+    for_each = var.backup_integrity_container_registry != null ? [var.backup_integrity_container_registry] : []
+    content {
+      server   = registry.value.login_server
+      identity = azurerm_user_assigned_identity.backup_integrity_acr_pull[0].id
+    }
   }
   template {
     container {
       name   = "backup-integrity"
-      image  = var.backup_integrity_container_image
+      image  = coalesce(var.backup_integrity_container_image, "invalid.invalid/backup-integrity:missing")
       cpu    = 0.5
       memory = "1Gi"
       env {
