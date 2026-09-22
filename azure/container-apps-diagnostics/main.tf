@@ -26,4 +26,9 @@ resource "azurerm_monitor_diagnostic_setting" "container_app_environment" {
     }
   }
 
+  lifecycle {
+    # Azure can return an unused metric block that was not configured.
+    ignore_changes = [metric]
+  }
+
 }
