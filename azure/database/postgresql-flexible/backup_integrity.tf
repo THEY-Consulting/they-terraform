@@ -104,6 +104,24 @@ resource "azurerm_role_definition" "backup_integrity" {
   assignable_scopes = [data.azurerm_resource_group.backup_integrity[0].id]
 }
 
+# A system-assigned identity does not exist until the job is created. A separate
+# identity lets AcrPull be assigned before the job's first image pull, while the
+# job's system-assigned identity remains responsible for PostgreSQL and Key Vault.
+resource "azurerm_user_assigned_identity" "backup_integrity_acr_pull" {
+  count               = var.enable_backup_integrity_check && var.backup_integrity_container_registry != null ? 1 : 0
+  name                = "${local.backup_integrity_name}-acr-pull"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  tags                = var.tags
+}
+
+resource "azurerm_role_assignment" "backup_integrity_acr_pull" {
+  count                = var.enable_backup_integrity_check && var.backup_integrity_container_registry != null ? 1 : 0
+  scope                = var.backup_integrity_container_registry.id
+  role_definition_name = "AcrPull"
+  principal_id         = azurerm_user_assigned_identity.backup_integrity_acr_pull[0].principal_id
+}
+
 resource "azurerm_container_app_job" "backup_integrity" {
   count                        = var.enable_backup_integrity_check ? 1 : 0
   name                         = local.backup_integrity_name
@@ -114,7 +132,12 @@ resource "azurerm_container_app_job" "backup_integrity" {
   replica_retry_limit          = var.backup_integrity_replica_retry_limit
   tags                         = var.tags
 
-  identity { type = "SystemAssigned" }
+  identity {
+    type = "SystemAssigned, UserAssigned"
+    identity_ids = [
+      azurerm_user_assigned_identity.backup_integrity_acr_pull[0].id,
+    ]
+  }
   schedule_trigger_config {
     cron_expression          = local.backup_integrity_cron
     parallelism              = 1
@@ -124,6 +147,10 @@ resource "azurerm_container_app_job" "backup_integrity" {
     name                = "db-password"
     key_vault_secret_id = azurerm_key_vault_secret.backup_integrity_db_password[0].versionless_id
     identity            = "system"
+  }
+  registry {
+    server   = var.backup_integrity_container_registry.login_server
+    identity = azurerm_user_assigned_identity.backup_integrity_acr_pull[0].id
   }
   template {
     container {
@@ -177,6 +204,15 @@ resource "azurerm_container_app_job" "backup_integrity" {
       }
     }
   }
+
+  lifecycle {
+    precondition {
+      condition     = var.backup_integrity_container_image != null && var.backup_integrity_container_registry != null
+      error_message = "Set backup_integrity_container_image and backup_integrity_container_registry when enable_backup_integrity_check is true."
+    }
+  }
+
+  depends_on = [azurerm_role_assignment.backup_integrity_acr_pull]
 }
 
 resource "azurerm_role_assignment" "backup_integrity" {

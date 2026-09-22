@@ -203,14 +203,25 @@ variable "backup_integrity_schedule" {
 }
 
 variable "backup_integrity_container_image" {
-  description = "Version-pinned OCI image for the backup-integrity job. Update only through the documented image release process."
+  description = "Immutable OCI image reference supplied by the consumer deployment pipeline when backup integrity checks are enabled."
   type        = string
-  default     = "ghcr.io/they-consulting/they-terraform-postgresql-backup-integrity:postgresql-backup-integrity-v1.0.0"
+  default     = null
+  nullable    = true
 
   validation {
-    condition     = !can(regex(":latest$", var.backup_integrity_container_image))
+    condition     = var.backup_integrity_container_image == null || !can(regex(":latest$", var.backup_integrity_container_image))
     error_message = "backup_integrity_container_image must be version-pinned; the latest tag is not allowed."
   }
+}
+
+variable "backup_integrity_container_registry" {
+  description = "Private Azure Container Registry used for the backup-integrity image. The module grants its pull-only identity AcrPull on this registry."
+  type = object({
+    id           = string
+    login_server = string
+  })
+  default  = null
+  nullable = true
 }
 
 variable "backup_integrity_replica_timeout_seconds" {

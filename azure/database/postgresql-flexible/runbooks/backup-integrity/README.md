@@ -1,9 +1,9 @@
 # Backup-integrity image
 
-Build from the `runbooks` directory:
+Consumer deployment pipelines build and publish this image to their own private Azure Container Registry. Build from the `runbooks` directory:
 
 ```sh
-docker build -f backup-integrity/Dockerfile -t ghcr.io/they-consulting/they-terraform-postgresql-backup-integrity:postgresql-backup-integrity-v1.0.0 .
+docker build -f backup-integrity/Dockerfile -t <registry>/postgresql-backup-integrity:<version> .
 ```
 
 ## Local integration test
@@ -17,11 +17,9 @@ docker compose -f docker-compose.local-test.yml down --volumes
 
 This runs the image against an ephemeral PostgreSQL 16 container, verifies a passing scalar check, and verifies that an empty-result check fails. TLS is disabled only for this local test; the production job defaults to TLS.
 
-Publish immutable `postgresql-backup-integrity-v<semver>` tags only; Terraform rejects `:latest`. The GitHub Actions workflow builds, vulnerability-scans, generates an SBOM, and publishes the image. Review Python base-image and dependency advisories monthly and immediately for critical findings.
+Publish an immutable version tag or digest; Terraform rejects `:latest`. The consumer pipeline must build, vulnerability-scan, generate an SBOM, and push the image before applying Terraform. Review Python base-image and dependency advisories monthly and immediately for critical findings.
 
-Before the first release, an organization owner must allow public package creation if it is restricted. After the initial publish, make the GHCR package public once in its Package settings. The image links itself to this public repository for access management, but GitHub does not automatically inherit repository visibility. Public visibility allows Container Apps to pull without registry credentials.
-
-The image is an independent release artifact: consumer deployments do not build it. When the Python runtime, dependencies, or generic checker code changes, publish a new image release first, then change `backup_integrity_container_image`'s module default to the new immutable tag (preferably its digest) and merge that Terraform change. Consumers that track module `main` then receive the new image through their normal Terraform deployment. Never use a mutable `main` image tag.
+When checks are enabled, the consumer passes the image reference and its ACR ID/login server to the module. The module creates a dedicated user-assigned identity with only `AcrPull` for image retrieval. The job's system-assigned identity retains the PostgreSQL and Key Vault permissions; no registry credentials are stored in Terraform, Key Vault, or the job.
 
 The module performs a direct cutover: applying it removes the Automation resources and creates the job. Manually start one execution immediately after deployment, then confirm `Backup integrity check PASSED` in Log Analytics and that the temporary server was deleted.
 
