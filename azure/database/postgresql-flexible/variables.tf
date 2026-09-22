@@ -247,3 +247,16 @@ variable "backup_integrity_alert_action_group_ids" {
   type        = list(string)
   default     = []
 }
+
+variable "backup_integrity_diagnostics" {
+  description = "Optional Event Hub diagnostics destination for backup-integrity Container Apps logs. When set, console and system logs are forwarded to this Event Hub and the backup-integrity Log Analytics workspace."
+  type = object({
+    eventhub                          = string
+    namespace                         = string
+    namespace_authorization_rule_name = string
+    namespace_resource_group_name     = optional(string)
+    enable_system_logs                = optional(bool, true)
+  })
+  default  = null
+  nullable = true
+}

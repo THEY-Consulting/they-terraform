@@ -86,8 +86,8 @@ resource "azurerm_container_app_environment" "backup_integrity" {
   name                       = "${local.backup_integrity_name}-env"
   location                   = var.location
   resource_group_name        = var.resource_group_name
-  log_analytics_workspace_id = azurerm_log_analytics_workspace.backup_integrity[0].id
-  logs_destination           = "log-analytics"
+  log_analytics_workspace_id = var.backup_integrity_diagnostics == null ? azurerm_log_analytics_workspace.backup_integrity[0].id : null
+  logs_destination           = var.backup_integrity_diagnostics != null ? "azure-monitor" : "log-analytics"
   tags                       = var.tags
 }
 

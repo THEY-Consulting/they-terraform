@@ -58,6 +58,15 @@ module "postgresql_flexible_server" {
   #   day_of_month = 14
   #   # day_of_week = 1 # Monday, used when frequency = "Week"
   # }
+  #
+  # Optional — forward job console and system logs to the existing
+  # environment-specific Event Hub (for example, the Datadog importer).
+  # backup_integrity_diagnostics = {
+  #   eventhub                          = "logs"
+  #   namespace                         = "existing-eventhub-namespace"
+  #   namespace_authorization_rule_name = "SendLogs"
+  #   namespace_resource_group_name     = "they-dev"
+  # }
 }
 
 # OUTPUTS
