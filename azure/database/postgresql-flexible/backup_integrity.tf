@@ -98,7 +98,7 @@ resource "azurerm_key_vault" "backup_integrity" {
   resource_group_name        = var.resource_group_name
   tenant_id                  = data.azurerm_client_config.current.tenant_id
   sku_name                   = "standard"
-  enable_rbac_authorization  = true
+  rbac_authorization_enabled = true
   soft_delete_retention_days = 7
   purge_protection_enabled   = false
   tags                       = var.tags
@@ -180,7 +180,7 @@ resource "azurerm_container_app_job" "backup_integrity" {
   secret {
     name                = "db-password"
     key_vault_secret_id = azurerm_key_vault_secret.backup_integrity_db_password[0].versionless_id
-    identity            = "system"
+    identity            = "System"
   }
   dynamic "registry" {
     for_each = var.backup_integrity_container_registry != null ? [var.backup_integrity_container_registry] : []
@@ -278,7 +278,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "backup_integrity_fail
   evaluation_frequency = "PT5M"
   window_duration      = "PT15M"
   criteria {
-    query                   = "ContainerAppConsoleLogs_CL | where Log_s contains 'Backup integrity check FAILED' | where Log_s contains '${var.server_name}'"
+    query                   = "ContainerAppConsoleLogs | where JobName == '${local.backup_integrity_name}' | where Log contains 'Backup integrity check FAILED'"
     time_aggregation_method = "Count"
     threshold               = 0
     operator                = "GreaterThan"
