@@ -17,7 +17,7 @@ docker compose -f docker-compose.local-test.yml down --volumes
 
 This runs the image against an ephemeral PostgreSQL 16 container, verifies a passing scalar check, and verifies that an empty-result check fails. TLS is disabled only for this local test; the production job defaults to TLS.
 
-Publish an immutable version tag or digest; Terraform rejects `:latest`. The consumer pipeline must build, vulnerability-scan, generate an SBOM, and push the image before applying Terraform. Review Python base-image and dependency advisories monthly and immediately for critical findings.
+Publish an immutable version tag or digest; Terraform rejects `:latest`. The consumer pipeline must build, vulnerability-scan, generate an SBOM, and push the image before applying Terraform. The Dockerfile follows the maintained `python:3.13-alpine` stream and applies available Alpine security updates at build time. Rebuild at least monthly and immediately for critical Python/Alpine advisories; the Trivy High/Critical scan must pass without suppressions or severity downgrades before publishing.
 
 When checks are enabled, the consumer passes the image reference and its ACR ID/login server to the module. The module creates a dedicated user-assigned identity with only `AcrPull` for image retrieval. The job's system-assigned identity retains the PostgreSQL and Key Vault permissions; no registry credentials are stored in Terraform, Key Vault, or the job.
 
