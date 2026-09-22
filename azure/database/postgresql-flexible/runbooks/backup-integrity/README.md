@@ -6,6 +6,17 @@ Build from the `runbooks` directory:
 docker build -f backup-integrity/Dockerfile -t ghcr.io/they-consulting/they-terraform-postgresql-backup-integrity:postgresql-backup-integrity-v1.0.0 .
 ```
 
+## Local integration test
+
+From the `runbooks/backup-integrity` directory, run:
+
+```sh
+docker compose -f docker-compose.local-test.yml up --build --abort-on-container-exit --exit-code-from checks
+docker compose -f docker-compose.local-test.yml down --volumes
+```
+
+This runs the image against an ephemeral PostgreSQL 16 container, verifies a passing scalar check, and verifies that an empty-result check fails. TLS is disabled only for this local test; the production job defaults to TLS.
+
 Publish immutable `postgresql-backup-integrity-v<semver>` tags only; Terraform rejects `:latest`. The GitHub Actions workflow builds, vulnerability-scans, generates an SBOM, and publishes the image. Review Python base-image and dependency advisories monthly and immediately for critical findings.
 
 Before the first release, an organization owner must allow public package creation if it is restricted. After the initial publish, make the GHCR package public once in its Package settings. The image links itself to this public repository for access management, but GitHub does not automatically inherit repository visibility. Public visibility allows Container Apps to pull without registry credentials.

@@ -71,7 +71,10 @@ def delete(access_token, cfg, name):
 
 
 def checks(host, cfg):
-    connection = pg8000.dbapi.connect(host=host, port=5432, database=cfg["DATABASE_NAME"], user=cfg["DB_USER"], password=cfg["DB_PASSWORD"], ssl_context=True)
+    # Azure PostgreSQL requires TLS. DB_SSL=false is limited to the local Docker
+    # integration test, whose ephemeral PostgreSQL container has no TLS setup.
+    ssl_context = False if os.environ.get("DB_SSL", "true").lower() == "false" else True
+    connection = pg8000.dbapi.connect(host=host, port=5432, database=cfg["DATABASE_NAME"], user=cfg["DB_USER"], password=cfg["DB_PASSWORD"], ssl_context=ssl_context)
     failures = []
     try:
         cursor = connection.cursor()
