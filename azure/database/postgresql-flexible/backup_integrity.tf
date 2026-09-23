@@ -233,7 +233,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "backup_integrity_fail
   evaluation_frequency = "PT5M"
   window_duration      = "PT15M"
   criteria {
-    query                   = "ContainerAppConsoleLogs | where JobName == '${local.backup_integrity_resource_name}' | where Log contains 'Backup integrity check FAILED'"
+    query                   = "ContainerAppConsoleLogs | where ContainerJobName == '${local.backup_integrity_resource_name}' | where Log contains 'Backup integrity check FAILED'"
     time_aggregation_method = "Count"
     threshold               = 0
     operator                = "GreaterThan"
