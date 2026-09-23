@@ -134,7 +134,11 @@ resource "terraform_data" "backup_integrity_configuration" {
 
   lifecycle {
     precondition {
-      condition     = var.backup_integrity_name != null && trimspace(var.backup_integrity_name) != "" && var.backup_integrity_container_image != null && var.backup_integrity_container_registry != null
+      condition = (
+        try(trimspace(var.backup_integrity_name), "") != "" &&
+        var.backup_integrity_container_image != null &&
+        var.backup_integrity_container_registry != null
+      )
       error_message = "Set backup_integrity_name, backup_integrity_container_image, and backup_integrity_container_registry when enable_backup_integrity_check is true."
     }
   }
