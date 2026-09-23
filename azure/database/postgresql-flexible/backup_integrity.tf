@@ -73,26 +73,6 @@ resource "terraform_data" "backup_integrity_schedule_bootstrap" {
   }
 }
 
-resource "azurerm_log_analytics_workspace" "backup_integrity" {
-  count               = var.enable_backup_integrity_check ? 1 : 0
-  name                = "${local.backup_integrity_resource_name}-logs"
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  sku                 = "PerGB2018"
-  retention_in_days   = var.backup_integrity_log_retention_days
-  tags                = var.tags
-}
-
-resource "azurerm_container_app_environment" "backup_integrity" {
-  count                      = var.enable_backup_integrity_check ? 1 : 0
-  name                       = "${local.backup_integrity_resource_name}-env"
-  location                   = var.location
-  resource_group_name        = var.resource_group_name
-  log_analytics_workspace_id = var.backup_integrity_diagnostics == null ? azurerm_log_analytics_workspace.backup_integrity[0].id : null
-  logs_destination           = var.backup_integrity_diagnostics != null ? "azure-monitor" : "log-analytics"
-  tags                       = var.tags
-}
-
 resource "azurerm_key_vault" "backup_integrity" {
   count                      = var.enable_backup_integrity_check ? 1 : 0
   name                       = local.backup_integrity_key_vault_name
@@ -142,112 +122,10 @@ resource "azurerm_role_definition" "backup_integrity" {
   assignable_scopes = [data.azurerm_resource_group.backup_integrity[0].id]
 }
 
-# A system-assigned identity does not exist until the job is created. A separate
-# identity lets AcrPull be assigned before the job's first image pull, while the
-# job's system-assigned identity remains responsible for PostgreSQL and Key Vault.
-resource "azurerm_user_assigned_identity" "backup_integrity_acr_pull" {
-  count               = var.enable_backup_integrity_check && var.backup_integrity_container_registry != null ? 1 : 0
-  name                = "${local.backup_integrity_resource_name}-acr-pull"
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  tags                = var.tags
-}
+resource "terraform_data" "backup_integrity_configuration" {
+  count = var.enable_backup_integrity_check ? 1 : 0
 
-resource "azurerm_role_assignment" "backup_integrity_acr_pull" {
-  count                = var.enable_backup_integrity_check && var.backup_integrity_container_registry != null ? 1 : 0
-  scope                = var.backup_integrity_container_registry.id
-  role_definition_name = "AcrPull"
-  principal_id         = azurerm_user_assigned_identity.backup_integrity_acr_pull[0].principal_id
-}
-
-resource "azurerm_container_app_job" "backup_integrity" {
-  count                        = var.enable_backup_integrity_check ? 1 : 0
-  name                         = local.backup_integrity_resource_name
-  location                     = var.location
-  resource_group_name          = var.resource_group_name
-  container_app_environment_id = azurerm_container_app_environment.backup_integrity[0].id
-  replica_timeout_in_seconds   = var.backup_integrity_replica_timeout_seconds
-  replica_retry_limit          = var.backup_integrity_replica_retry_limit
-  trigger_type                 = "Schedule"
-  tags                         = var.tags
-
-  identity {
-    type         = var.backup_integrity_container_registry != null ? "SystemAssigned, UserAssigned" : "SystemAssigned"
-    identity_ids = var.backup_integrity_container_registry != null ? [azurerm_user_assigned_identity.backup_integrity_acr_pull[0].id] : null
-  }
-  schedule_trigger_config {
-    cron_expression          = local.backup_integrity_cron
-    parallelism              = 1
-    replica_completion_count = 1
-  }
-  secret {
-    name                = "db-password"
-    key_vault_secret_id = azurerm_key_vault_secret.backup_integrity_db_password[0].versionless_id
-    identity            = "System"
-  }
-  dynamic "registry" {
-    for_each = var.backup_integrity_container_registry != null ? [var.backup_integrity_container_registry] : []
-    content {
-      server   = registry.value.login_server
-      identity = azurerm_user_assigned_identity.backup_integrity_acr_pull[0].id
-    }
-  }
-  template {
-    container {
-      name   = "backup-integrity"
-      image  = coalesce(var.backup_integrity_container_image, "invalid.invalid/backup-integrity:missing")
-      cpu    = 0.5
-      memory = "1Gi"
-      env {
-        name  = "SOURCE_SERVER_NAME"
-        value = var.server_name
-      }
-      env {
-        name  = "RESOURCE_GROUP_NAME"
-        value = var.resource_group_name
-      }
-      env {
-        name  = "SUBSCRIPTION_ID"
-        value = data.azurerm_client_config.current.subscription_id
-      }
-      env {
-        name  = "LOCATION"
-        value = var.location
-      }
-      env {
-        name  = "DATABASE_NAME"
-        value = coalesce(var.database_name, "postgres")
-      }
-      env {
-        name  = "DB_USER"
-        value = var.admin_username
-      }
-      env {
-        name  = "SANITY_CHECKS_JSON"
-        value = jsonencode(var.backup_integrity_checks)
-      }
-      env {
-        name  = "SCHEDULE_FREQUENCY"
-        value = var.backup_integrity_schedule.frequency
-      }
-      env {
-        name  = "SCHEDULE_INTERVAL"
-        value = tostring(var.backup_integrity_schedule.interval)
-      }
-      env {
-        name  = "SCHEDULE_ANCHOR_DATE"
-        value = substr(terraform_data.backup_integrity_schedule_bootstrap[0].output, 0, 10)
-      }
-      env {
-        name  = "BACKUP_INTEGRITY_FORCE_RUN"
-        value = tostring(var.backup_integrity_force_run)
-      }
-      env {
-        name        = "DB_PASSWORD"
-        secret_name = "db-password"
-      }
-    }
-  }
+  input = local.backup_integrity_resource_name
 
   lifecycle {
     precondition {
@@ -255,22 +133,93 @@ resource "azurerm_container_app_job" "backup_integrity" {
       error_message = "Set backup_integrity_name, backup_integrity_container_image, and backup_integrity_container_registry when enable_backup_integrity_check is true."
     }
   }
+}
 
-  depends_on = [azurerm_role_assignment.backup_integrity_acr_pull]
+# The shared module owns the Container Apps infrastructure. Backup-specific
+# restore access, schedule anchoring, Key Vault secret, and alerting stay here.
+module "backup_integrity_job" {
+  count  = var.enable_backup_integrity_check ? 1 : 0
+  source = "../../container-apps-job"
+
+  name                                  = local.backup_integrity_resource_name
+  location                              = var.location
+  resource_group_name                   = var.resource_group_name
+  container_app_environment_name        = "${local.backup_integrity_resource_name}-env"
+  enable_log_analytics                  = true
+  enable_log_analytics_with_diagnostics = true
+  log_analytics_workspace_name          = "${local.backup_integrity_resource_name}-logs"
+  log_retention                         = var.backup_integrity_log_retention_days
+  tags                                  = var.tags
+  acr_integration = var.backup_integrity_container_registry == null ? null : {
+    registry_id   = var.backup_integrity_container_registry.id
+    login_server  = var.backup_integrity_container_registry.login_server
+    identity_name = "${local.backup_integrity_resource_name}-acr-pull"
+  }
+  diagnostics = var.backup_integrity_diagnostics == null ? null : {
+    eventhub                          = var.backup_integrity_diagnostics.eventhub
+    namespace                         = var.backup_integrity_diagnostics.namespace
+    namespace_authorization_rule_name = var.backup_integrity_diagnostics.namespace_authorization_rule_name
+    namespace_resource_group_name     = var.backup_integrity_diagnostics.namespace_resource_group_name
+    enable_system_logs                = coalesce(var.backup_integrity_diagnostics.enable_system_logs, true)
+  }
+  secrets = [{
+    name                = "db-password"
+    key_vault_secret_id = azurerm_key_vault_secret.backup_integrity_db_password[0].versionless_id
+    identity            = "System"
+  }]
+  jobs = {
+    backup-integrity = {
+      name                = local.backup_integrity_resource_name
+      replica_timeout     = var.backup_integrity_replica_timeout_seconds
+      replica_retry_limit = var.backup_integrity_replica_retry_limit
+      inject_app_name     = false
+      trigger_type        = "Schedule"
+      schedule_trigger_config = {
+        cron_expression = local.backup_integrity_cron
+      }
+      identity = {
+        type = "SystemAssigned, UserAssigned"
+      }
+      template = {
+        containers = [{
+          name   = "backup-integrity"
+          image  = coalesce(var.backup_integrity_container_image, "invalid.invalid/backup-integrity:missing")
+          cpu    = "0.5"
+          memory = "1Gi"
+          env = [
+            { name = "SOURCE_SERVER_NAME", value = var.server_name },
+            { name = "RESOURCE_GROUP_NAME", value = var.resource_group_name },
+            { name = "SUBSCRIPTION_ID", value = data.azurerm_client_config.current.subscription_id },
+            { name = "LOCATION", value = var.location },
+            { name = "DATABASE_NAME", value = coalesce(var.database_name, "postgres") },
+            { name = "DB_USER", value = var.admin_username },
+            { name = "SANITY_CHECKS_JSON", value = jsonencode(var.backup_integrity_checks) },
+            { name = "SCHEDULE_FREQUENCY", value = var.backup_integrity_schedule.frequency },
+            { name = "SCHEDULE_INTERVAL", value = tostring(var.backup_integrity_schedule.interval) },
+            { name = "SCHEDULE_ANCHOR_DATE", value = substr(terraform_data.backup_integrity_schedule_bootstrap[0].output, 0, 10) },
+            { name = "BACKUP_INTEGRITY_FORCE_RUN", value = tostring(var.backup_integrity_force_run) },
+            { name = "DB_PASSWORD", secret_name = "db-password" },
+          ]
+        }]
+      }
+    }
+  }
+
+  depends_on = [terraform_data.backup_integrity_configuration]
 }
 
 resource "azurerm_role_assignment" "backup_integrity" {
   count              = var.enable_backup_integrity_check ? 1 : 0
   scope              = data.azurerm_resource_group.backup_integrity[0].id
   role_definition_id = azurerm_role_definition.backup_integrity[0].role_definition_resource_id
-  principal_id       = azurerm_container_app_job.backup_integrity[0].identity[0].principal_id
+  principal_id       = module.backup_integrity_job[0].jobs["backup-integrity"].principal_id
 }
 
 resource "azurerm_role_assignment" "backup_integrity_key_vault" {
   count                = var.enable_backup_integrity_check ? 1 : 0
   scope                = azurerm_key_vault.backup_integrity[0].id
   role_definition_name = "Key Vault Secrets User"
-  principal_id         = azurerm_container_app_job.backup_integrity[0].identity[0].principal_id
+  principal_id         = module.backup_integrity_job[0].jobs["backup-integrity"].principal_id
 }
 
 resource "azurerm_monitor_scheduled_query_rules_alert_v2" "backup_integrity_failed" {
@@ -278,7 +227,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "backup_integrity_fail
   name                 = "${local.backup_integrity_resource_name}-failed"
   resource_group_name  = var.resource_group_name
   location             = var.location
-  scopes               = [azurerm_log_analytics_workspace.backup_integrity[0].id]
+  scopes               = [module.backup_integrity_job[0].log_analytics_workspace_id]
   description          = "PostgreSQL backup integrity check failed."
   severity             = 2
   enabled              = true
@@ -296,4 +245,36 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "backup_integrity_fail
       action_groups = var.backup_integrity_alert_action_group_ids
     }
   }
+}
+
+# Preserve deployed backup-integrity infrastructure while moving it behind the
+# reusable Container Apps Job module.
+moved {
+  from = azurerm_log_analytics_workspace.backup_integrity[0]
+  to   = module.backup_integrity_job[0].azurerm_log_analytics_workspace.log_analytics_workspace[0]
+}
+
+moved {
+  from = azurerm_container_app_environment.backup_integrity[0]
+  to   = module.backup_integrity_job[0].azurerm_container_app_environment.app_environment[0]
+}
+
+moved {
+  from = azurerm_user_assigned_identity.backup_integrity_acr_pull[0]
+  to   = module.backup_integrity_job[0].azurerm_user_assigned_identity.shared_identity[0]
+}
+
+moved {
+  from = azurerm_role_assignment.backup_integrity_acr_pull[0]
+  to   = module.backup_integrity_job[0].azurerm_role_assignment.acr_pull[0]
+}
+
+moved {
+  from = azurerm_container_app_job.backup_integrity[0]
+  to   = module.backup_integrity_job[0].azurerm_container_app_job.container_app_job["backup-integrity"]
+}
+
+moved {
+  from = module.backup_integrity_diagnostics[0].azurerm_monitor_diagnostic_setting.container_app_environment
+  to   = module.backup_integrity_job[0].module.diagnostics[0].azurerm_monitor_diagnostic_setting.container_app_environment
 }

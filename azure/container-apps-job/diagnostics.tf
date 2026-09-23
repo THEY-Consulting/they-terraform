@@ -13,6 +13,7 @@ module "diagnostics" {
   # Preserve the existing module contract: this fallback belongs to the job
   # caller, not necessarily to an externally supplied managed environment.
   namespace_resource_group_name = coalesce(var.diagnostics.namespace_resource_group_name, local.resource_group_name)
+  log_analytics_workspace_id    = local.create_log_analytics_workspace ? azurerm_log_analytics_workspace.log_analytics_workspace[0].id : null
   enable_system_logs            = coalesce(var.diagnostics.enable_system_logs, false)
 }
 

@@ -1,10 +1,10 @@
 resource "azurerm_container_app_environment" "app_environment" {
   count = var.container_app_environment_id == null ? 1 : 0
 
-  name                       = var.name
+  name                       = coalesce(var.container_app_environment_name, var.name)
   location                   = local.resource_group_location
   resource_group_name        = local.resource_group_name
-  log_analytics_workspace_id = var.enable_log_analytics && var.diagnostics == null ? azurerm_log_analytics_workspace.log_analytics_workspace[0].id : null
+  log_analytics_workspace_id = local.attach_log_analytics_workspace ? azurerm_log_analytics_workspace.log_analytics_workspace[0].id : null
   infrastructure_subnet_id   = var.subnet_id
   logs_destination           = var.diagnostics != null ? "azure-monitor" : (var.enable_log_analytics ? "log-analytics" : "none")
 

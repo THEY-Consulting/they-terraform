@@ -38,6 +38,12 @@ module "postgresql_flexible_server" {
   # ---------------------------------------------------------------------------
   # enable_backup_integrity_check = true
   # database_name                 = "testdb"
+  # backup_integrity_name         = "example-backup-integrity"
+  # backup_integrity_container_image = "example.azurecr.io/postgresql-backup-integrity:2026.09.23"
+  # backup_integrity_container_registry = {
+  #   id           = "/subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.ContainerRegistry/registries/example"
+  #   login_server = "example.azurecr.io"
+  # }
   #
   # backup_integrity_checks = [
   #   {

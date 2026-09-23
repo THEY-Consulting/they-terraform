@@ -10,6 +10,7 @@ resource "azurerm_container_app_job" "container_app_job" {
   location                     = local.resource_group_location
   replica_timeout_in_seconds   = each.value.replica_timeout
   replica_retry_limit          = each.value.replica_retry_limit
+  trigger_type                 = each.value.trigger_type
   workload_profile_name        = each.value.workload_profile_name
   tags                         = merge(var.tags, each.value.tags)
 
@@ -83,8 +84,10 @@ resource "azurerm_container_app_job" "container_app_job" {
     )
 
     content {
-      type         = identity.value.type
-      identity_ids = identity.value.identity_ids
+      type = identity.value.type
+      identity_ids = identity.value.identity_ids != null ? identity.value.identity_ids : (
+        var.acr_integration != null && strcontains(identity.value.type, "UserAssigned") ? [azurerm_user_assigned_identity.shared_identity[0].id] : null
+      )
     }
   }
 
@@ -138,13 +141,13 @@ resource "azurerm_container_app_job" "container_app_job" {
         dynamic "env" {
           for_each = concat(
             # Auto-inject job name as an environment variable
-            [
+            each.value.inject_app_name ? [
               {
                 name        = "APP_NAME"
                 value       = container.value.name
                 secret_name = null
               }
-            ],
+            ] : [],
             # User-defined environment variables
             container.value.env == null ? [] : container.value.env,
             # Auto-inject Azure authentication environment variables when using user-assigned identity

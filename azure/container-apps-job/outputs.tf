@@ -6,6 +6,7 @@ output "jobs" {
       name                         = job.name
       resource_group_name          = job.resource_group_name
       container_app_environment_id = job.container_app_environment_id
+      principal_id                 = try(job.identity[0].principal_id, null)
     }
   }
 }
@@ -27,7 +28,7 @@ output "resource_group_name" {
 
 output "log_analytics_workspace_id" {
   description = "ID of the Log Analytics workspace (if created)"
-  value       = var.enable_log_analytics && var.diagnostics == null ? azurerm_log_analytics_workspace.log_analytics_workspace[0].id : null
+  value       = local.create_log_analytics_workspace ? azurerm_log_analytics_workspace.log_analytics_workspace[0].id : null
 }
 
 output "shared_identity" {

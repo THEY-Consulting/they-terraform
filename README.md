@@ -1359,6 +1359,13 @@ To enable automatic backup integrity checks, add:
 ```hcl
   enable_backup_integrity_check = true
   database_name                 = "mydb"
+  backup_integrity_name         = "mydb-backup-integrity"
+  # Built and pushed by the consumer deployment pipeline.
+  backup_integrity_container_image = "example.azurecr.io/postgresql-backup-integrity:2026.09.23"
+  backup_integrity_container_registry = {
+    id           = "/subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.ContainerRegistry/registries/example"
+    login_server = "example.azurecr.io"
+  }
 
   backup_integrity_checks = [
     {
@@ -1381,7 +1388,7 @@ To enable automatic backup integrity checks, add:
   }
 ```
 
-`day_of_month` is the monthly anchor when `frequency = "Month"`. `day_of_week` is the weekly anchor when `frequency = "Week"`, using ISO numbering `1 = Monday` through `7 = Sunday`. The module computes the bootstrap date automatically and always keeps it at UTC midnight. Monthly schedules use the configured day in the current month if that midnight is still safely ahead, otherwise they roll to the next month. Weekly schedules use the next configured weekday at UTC midnight. Daily schedules start at the next safe UTC midnight. The bootstrap logic includes a safety buffer so Azure Automation's requirement that `start_time` be at least 5 minutes in the future is still satisfied for applies close to UTC midnight. Consumers should not provide an absolute timestamp to encode the recurring day.
+`day_of_month` is the monthly anchor when `frequency = "Month"`. `day_of_week` is the weekly anchor when `frequency = "Week"`, using ISO numbering `1 = Monday` through `7 = Sunday`. The module computes and retains a UTC-midnight anchor. Container Apps cron provides the base cadence; the job applies the configured interval against that retained anchor, including across month boundaries. Consumers should not provide an absolute timestamp to encode the recurring day.
 
 This module intentionally supports `frequency = "Month"`, `"Week"`, and `"Day"` only, even though the underlying provider supports additional schedule types.
 
@@ -1440,12 +1447,15 @@ backup_integrity_schedule = {
 | collation                                   | string       | The collation of the database                                                           | no       | `"en_US.utf8"`                                                                                               |
 | charset                                     | string       | The charset of the database                                                             | no       | `"UTF8"`                                                                                                     |
 | tags                                        | map(string)  | Map of tags to assign to the resources                                                  | no       | `{}`                                                                                                         |
-| enable_backup_integrity_check               | bool         | Provision an Automation Account that runs a monthly PITR restore and sanity checks      | no       | `false`                                                                                                      |
+| enable_backup_integrity_check               | bool         | Provision a scheduled Container Apps Job that runs a PITR restore and sanity checks      | no       | `false`                                                                                                      |
+| backup_integrity_name                       | string       | Name/prefix for the backup-integrity job infrastructure; required when enabled           | no       | `null`                                                                                                       |
+| backup_integrity_container_image            | string       | Version-pinned private-registry image reference; required when enabled                   | no       | `null`                                                                                                       |
+| backup_integrity_container_registry         | object       | Private ACR ID and login server; required when enabled                                   | no       | `null`                                                                                                       |
 | backup_integrity_checks                     | list(object) | SQL queries to run against the restored database during integrity verification          | no       | `[]`                                                                                                         |
 | backup_integrity_checks.label               | string       | Human-readable name shown in runbook output                                             | yes      |                                                                                                              |
 | backup_integrity_checks.query               | string       | SQL query to execute (must return a single COUNT row)                                   | yes      |                                                                                                              |
 | backup_integrity_checks.expect_rows         | bool         | Fail the check if the COUNT is zero                                                     | no       | `true`                                                                                                       |
-| backup_integrity_schedule                   | object       | Schedule for the backup integrity runbook                                               | no       | `{}`                                                                                                         |
+| backup_integrity_schedule                   | object       | UTC schedule for the backup integrity Container Apps Job                                | no       | `{}`                                                                                                         |
 | backup_integrity_schedule.frequency         | string       | Run frequency. This module supports `Month`, `Week`, and `Day`                          | no       | `"Month"`                                                                                                    |
 | backup_integrity_schedule.interval          | number       | How many units of frequency between runs                                                | no       | `1`                                                                                                          |
 | backup_integrity_schedule.day_of_month      | number       | Monthly anchor day for the recurring UTC-midnight schedule when `frequency = "Month"`; valid range is `1..28` | no       | `3`                                                                                                          |
