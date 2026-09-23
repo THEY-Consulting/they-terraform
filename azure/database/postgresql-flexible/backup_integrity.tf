@@ -173,7 +173,6 @@ module "backup_integrity_job" {
       replica_timeout     = var.backup_integrity_replica_timeout_seconds
       replica_retry_limit = var.backup_integrity_replica_retry_limit
       inject_app_name     = false
-      trigger_type        = "Schedule"
       schedule_trigger_config = {
         cron_expression = local.backup_integrity_cron
       }

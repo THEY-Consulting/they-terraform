@@ -138,7 +138,6 @@ variable "jobs" {
     workload_profile_name = optional(string)
     enable_job_trigger    = optional(bool, false)
     inject_app_name       = optional(bool, true)
-    trigger_type          = optional(string)
 
     # Job configuration
     replica_timeout     = optional(number, 1800) # 30 minutes default

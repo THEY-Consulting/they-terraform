@@ -10,7 +10,6 @@ resource "azurerm_container_app_job" "container_app_job" {
   location                     = local.resource_group_location
   replica_timeout_in_seconds   = each.value.replica_timeout
   replica_retry_limit          = each.value.replica_retry_limit
-  trigger_type                 = each.value.trigger_type
   workload_profile_name        = each.value.workload_profile_name
   tags                         = merge(var.tags, each.value.tags)
 
