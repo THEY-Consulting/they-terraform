@@ -5,11 +5,10 @@ LABEL org.opencontainers.image.source="https://github.com/THEY-Consulting/they-t
 LABEL org.opencontainers.image.description="PostgreSQL backup-integrity checker"
 WORKDIR /app
 RUN apk upgrade --no-cache
-COPY backup-integrity/requirements.txt .
-# pip and setuptools are build-only; remove their vendored vulnerable code from
-# the runtime image after installing the pure-Python dependency.
-RUN pip install --no-cache-dir --upgrade pip setuptools \
-    && pip install --no-cache-dir -r requirements.txt \
+# Install only pre-built wheels from a fully resolved, hash-locked dependency
+# set. This prevents source build hooks from running during the image build.
+COPY backup-integrity/requirements.lock .
+RUN pip install --no-cache-dir --only-binary :all: --require-hashes -r requirements.lock \
     && pip uninstall --yes pip setuptools
 COPY db_backup_integrity_check.py .
 RUN adduser -D -u 10001 appuser

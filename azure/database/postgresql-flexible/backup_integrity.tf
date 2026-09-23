@@ -82,8 +82,13 @@ resource "azurerm_key_vault" "backup_integrity" {
   sku_name                   = "standard"
   rbac_authorization_enabled = true
   soft_delete_retention_days = 7
-  purge_protection_enabled   = false
-  tags                       = var.tags
+  # This dedicated, disposable vault contains only the PostgreSQL administrator
+  # password, which Terraform already manages. Soft delete preserves recovery
+  # for seven days; leaving purge protection off permits privileged operators to
+  # cleanly rebuild this short-lived job infrastructure when necessary. It must
+  # never be used for encryption keys or independently authoritative secrets.
+  purge_protection_enabled = false
+  tags                     = var.tags
 }
 
 # The Terraform caller writes the secret once. This requires the deployment
