@@ -19,3 +19,17 @@ output "admin_username" {
   value       = azurerm_postgresql_flexible_server.main.administrator_login
 }
 
+output "backup_integrity_job_id" {
+  description = "ID of the scheduled backup-integrity Container Apps Job, or null when disabled."
+  value       = var.enable_backup_integrity_check ? module.backup_integrity_job[0].jobs["backup-integrity"].id : null
+}
+
+output "backup_integrity_log_analytics_workspace_id" {
+  description = "Log Analytics workspace containing backup-integrity job logs, or null when disabled."
+  value       = var.enable_backup_integrity_check ? module.backup_integrity_job[0].log_analytics_workspace_id : null
+}
+
+output "backup_integrity_failed_alert_id" {
+  description = "Azure Monitor alert rule for failed backup-integrity checks, or null when disabled."
+  value       = var.enable_backup_integrity_check ? azurerm_monitor_scheduled_query_rules_alert_v2.backup_integrity_failed[0].id : null
+}

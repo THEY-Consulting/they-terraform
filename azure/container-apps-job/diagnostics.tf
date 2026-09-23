@@ -2,36 +2,25 @@ locals {
   container_app_environment_id = var.container_app_environment_id != null ? var.container_app_environment_id : azurerm_container_app_environment.app_environment[0].id
 }
 
-data "azurerm_eventhub_namespace_authorization_rule" "main" {
-  count = var.diagnostics == null ? 0 : 1
+module "diagnostics" {
+  count  = var.diagnostics == null ? 0 : 1
+  source = "../container-apps-diagnostics"
 
-  name                = var.diagnostics.namespace_authorization_rule_name
-  resource_group_name = var.diagnostics.namespace_resource_group_name != null ? var.diagnostics.namespace_resource_group_name : local.resource_group_name
-  namespace_name      = var.diagnostics.namespace
+  container_app_environment_id      = local.container_app_environment_id
+  eventhub                          = var.diagnostics.eventhub
+  namespace                         = var.diagnostics.namespace
+  namespace_authorization_rule_name = var.diagnostics.namespace_authorization_rule_name
+  # Preserve the existing module contract: this fallback belongs to the job
+  # caller, not necessarily to an externally supplied managed environment.
+  namespace_resource_group_name = coalesce(var.diagnostics.namespace_resource_group_name, local.resource_group_name)
+  log_analytics_workspace_id    = local.create_log_analytics_workspace ? azurerm_log_analytics_workspace.log_analytics_workspace[0].id : null
+  enable_system_logs            = coalesce(var.diagnostics.enable_system_logs, false)
 }
 
-resource "azurerm_monitor_diagnostic_setting" "container_app_environment" {
-  count = var.diagnostics == null ? 0 : 1
-
-  name                           = "container-app-environment-logs-to-event-hub"
-  target_resource_id             = local.container_app_environment_id
-  eventhub_authorization_rule_id = data.azurerm_eventhub_namespace_authorization_rule.main[0].id
-  eventhub_name                  = var.diagnostics.eventhub
-
-  enabled_log {
-    category = "ContainerAppConsoleLogs"
-  }
-
-  dynamic "enabled_log" {
-    for_each = coalesce(var.diagnostics.enable_system_logs, false) ? [1] : []
-    content {
-      category = "ContainerAppSystemLogs"
-    }
-  }
-
-  lifecycle {
-    ignore_changes = [
-      metric // prevents continuous diffs to the (unused by us) metric block
-    ]
-  }
+# Preserve the existing diagnostic setting during the extraction to the shared
+# module. Without this, Terraform would destroy and recreate the same Azure
+# diagnostic-setting name and briefly interrupt log forwarding.
+moved {
+  from = azurerm_monitor_diagnostic_setting.container_app_environment[0]
+  to   = module.diagnostics[0].azurerm_monitor_diagnostic_setting.container_app_environment
 }

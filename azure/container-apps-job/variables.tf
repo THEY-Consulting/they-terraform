@@ -20,6 +20,12 @@ variable "container_app_environment_id" {
   default     = null
 }
 
+variable "container_app_environment_name" {
+  description = "Name for a newly created Container Apps environment. Defaults to name."
+  type        = string
+  default     = null
+}
+
 variable "subnet_id" {
   description = "The ID of the subnet to deploy the Container Apps Environment into. Required when using a custom VNet."
   type        = string
@@ -30,6 +36,18 @@ variable "enable_log_analytics" {
   description = "If true, a log analytics workspace will be created."
   type        = bool
   default     = false
+}
+
+variable "enable_log_analytics_with_diagnostics" {
+  description = "Create a Log Analytics workspace and forward diagnostics to it when diagnostics are also configured. Defaults to false to preserve existing diagnostics behavior."
+  type        = bool
+  default     = false
+}
+
+variable "log_analytics_workspace_name" {
+  description = "Name for a newly created Log Analytics workspace. Defaults to <name>-log-analytics."
+  type        = string
+  default     = null
 }
 
 variable "log_retention" {
@@ -67,8 +85,9 @@ variable "tags" {
 variable "acr_integration" {
   description = "Azure Container Registry integration configuration using managed identity"
   type = object({
-    registry_id  = string # ACR resource ID for role assignment
-    login_server = string # ACR login server URL
+    registry_id   = string           # ACR resource ID for role assignment
+    login_server  = string           # ACR login server URL
+    identity_name = optional(string) # Optional name for the pull-only user-assigned identity
   })
   default = null
 }
@@ -118,6 +137,7 @@ variable "jobs" {
     tags                  = optional(map(string))
     workload_profile_name = optional(string)
     enable_job_trigger    = optional(bool, false)
+    inject_app_name       = optional(bool, true)
 
     # Job configuration
     replica_timeout     = optional(number, 1800) # 30 minutes default

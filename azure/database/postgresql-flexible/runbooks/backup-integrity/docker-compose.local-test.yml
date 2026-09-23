@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:16.10-alpine
+    environment:
+      POSTGRES_PASSWORD: local-test-password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  checks:
+    build:
+      context: ..
+      dockerfile: backup-integrity/Dockerfile
+    entrypoint: ["python", "/test/test_local_checks.py"]
+    environment:
+      DB_SSL: "false"
+      PYTHONPATH: /app
+    volumes:
+      - ./test_local_checks.py:/test/test_local_checks.py:ro
+    depends_on:
+      postgres:
+        condition: service_healthy

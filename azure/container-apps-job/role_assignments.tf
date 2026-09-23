@@ -6,7 +6,7 @@
 resource "azurerm_user_assigned_identity" "shared_identity" {
   count = var.acr_integration != null || length(var.role_assignments) > 0 ? 1 : 0
 
-  name                = "${var.name}-shared-identity"
+  name                = coalesce(try(var.acr_integration.identity_name, null), "${var.name}-shared-identity")
   location            = local.resource_group_location
   resource_group_name = local.resource_group_name
   tags                = var.tags
