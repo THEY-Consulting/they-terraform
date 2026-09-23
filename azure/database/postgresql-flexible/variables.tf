@@ -161,8 +161,10 @@ variable "enable_backup_integrity_check" {
 }
 
 variable "backup_integrity_name" {
-  description = "Name of the backup-integrity Container Apps Job. It is also used as the prefix for related environment, identity, Log Analytics, and alert resources."
+  description = "Name of the backup-integrity Container Apps Job. Required when enable_backup_integrity_check is true; it is also used as the prefix for related environment, identity, Log Analytics, and alert resources."
   type        = string
+  default     = null
+  nullable    = true
 }
 
 variable "backup_integrity_checks" {

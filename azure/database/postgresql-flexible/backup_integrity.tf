@@ -7,6 +7,9 @@ data "azurerm_resource_group" "backup_integrity" {
 }
 
 locals {
+  # This placeholder is used only to keep resource arguments type-valid until
+  # the enabled-job precondition can report a missing explicit name.
+  backup_integrity_resource_name  = coalesce(var.backup_integrity_name, "backup-integrity-missing")
   backup_integrity_key_vault_name = lower("${substr(replace(var.server_name, "-", ""), 0, 15)}bkp${substr(md5("${data.azurerm_client_config.current.subscription_id}/${var.server_name}"), 0, 6)}")
   backup_integrity_weekdays       = { 1 = "MON", 2 = "TUE", 3 = "WED", 4 = "THU", 5 = "FRI", 6 = "SAT", 7 = "SUN" }
   backup_integrity_reference_time = timeadd(timestamp(), "10m")
@@ -72,7 +75,7 @@ resource "terraform_data" "backup_integrity_schedule_bootstrap" {
 
 resource "azurerm_log_analytics_workspace" "backup_integrity" {
   count               = var.enable_backup_integrity_check ? 1 : 0
-  name                = "${var.backup_integrity_name}-logs"
+  name                = "${local.backup_integrity_resource_name}-logs"
   location            = var.location
   resource_group_name = var.resource_group_name
   sku                 = "PerGB2018"
@@ -82,7 +85,7 @@ resource "azurerm_log_analytics_workspace" "backup_integrity" {
 
 resource "azurerm_container_app_environment" "backup_integrity" {
   count                      = var.enable_backup_integrity_check ? 1 : 0
-  name                       = "${var.backup_integrity_name}-env"
+  name                       = "${local.backup_integrity_resource_name}-env"
   location                   = var.location
   resource_group_name        = var.resource_group_name
   log_analytics_workspace_id = var.backup_integrity_diagnostics == null ? azurerm_log_analytics_workspace.backup_integrity[0].id : null
@@ -144,7 +147,7 @@ resource "azurerm_role_definition" "backup_integrity" {
 # job's system-assigned identity remains responsible for PostgreSQL and Key Vault.
 resource "azurerm_user_assigned_identity" "backup_integrity_acr_pull" {
   count               = var.enable_backup_integrity_check && var.backup_integrity_container_registry != null ? 1 : 0
-  name                = "${var.backup_integrity_name}-acr-pull"
+  name                = "${local.backup_integrity_resource_name}-acr-pull"
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
@@ -159,12 +162,13 @@ resource "azurerm_role_assignment" "backup_integrity_acr_pull" {
 
 resource "azurerm_container_app_job" "backup_integrity" {
   count                        = var.enable_backup_integrity_check ? 1 : 0
-  name                         = var.backup_integrity_name
+  name                         = local.backup_integrity_resource_name
   location                     = var.location
   resource_group_name          = var.resource_group_name
   container_app_environment_id = azurerm_container_app_environment.backup_integrity[0].id
   replica_timeout_in_seconds   = var.backup_integrity_replica_timeout_seconds
   replica_retry_limit          = var.backup_integrity_replica_retry_limit
+  trigger_type                 = "Schedule"
   tags                         = var.tags
 
   identity {
@@ -247,8 +251,8 @@ resource "azurerm_container_app_job" "backup_integrity" {
 
   lifecycle {
     precondition {
-      condition     = var.backup_integrity_container_image != null && var.backup_integrity_container_registry != null
-      error_message = "Set backup_integrity_container_image and backup_integrity_container_registry when enable_backup_integrity_check is true."
+      condition     = var.backup_integrity_name != null && trimspace(var.backup_integrity_name) != "" && var.backup_integrity_container_image != null && var.backup_integrity_container_registry != null
+      error_message = "Set backup_integrity_name, backup_integrity_container_image, and backup_integrity_container_registry when enable_backup_integrity_check is true."
     }
   }
 
@@ -271,7 +275,7 @@ resource "azurerm_role_assignment" "backup_integrity_key_vault" {
 
 resource "azurerm_monitor_scheduled_query_rules_alert_v2" "backup_integrity_failed" {
   count                = var.enable_backup_integrity_check ? 1 : 0
-  name                 = "${var.backup_integrity_name}-failed"
+  name                 = "${local.backup_integrity_resource_name}-failed"
   resource_group_name  = var.resource_group_name
   location             = var.location
   scopes               = [azurerm_log_analytics_workspace.backup_integrity[0].id]
@@ -281,7 +285,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "backup_integrity_fail
   evaluation_frequency = "PT5M"
   window_duration      = "PT15M"
   criteria {
-    query                   = "ContainerAppConsoleLogs | where JobName == '${var.backup_integrity_name}' | where Log contains 'Backup integrity check FAILED'"
+    query                   = "ContainerAppConsoleLogs | where JobName == '${local.backup_integrity_resource_name}' | where Log contains 'Backup integrity check FAILED'"
     time_aggregation_method = "Count"
     threshold               = 0
     operator                = "GreaterThan"
