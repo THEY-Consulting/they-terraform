@@ -9,7 +9,7 @@ module "postgresql_flexible_server" {
   source = "../../../azure/database/postgresql-flexible"
 
   server_name           = local.project_name
-  backup_integrity_name = substr("${local.project_name}-backup", 0, 32)
+  backup_integrity_name = substr("${local.project_name}-backup", 0, 28)
   resource_group_name   = "they-dev"
   location              = local.location
   admin_username        = "superAdmin"

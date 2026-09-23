@@ -161,10 +161,15 @@ variable "enable_backup_integrity_check" {
 }
 
 variable "backup_integrity_name" {
-  description = "Name of the backup-integrity Container Apps Job. Required when enable_backup_integrity_check is true; it is also used as the prefix for related environment, identity, Log Analytics, and alert resources."
+  description = "Lowercase backup-integrity resource prefix, required when enabled. It is limited to 28 characters so the derived <name>-env managed-environment name fits Azure's 32-character limit."
   type        = string
   default     = null
   nullable    = true
+
+  validation {
+    condition     = var.backup_integrity_name == null || can(regex("^[a-z0-9]([a-z0-9-]{0,26}[a-z0-9])?$", var.backup_integrity_name))
+    error_message = "backup_integrity_name must be 1-28 lowercase letters, numbers, or hyphens, and cannot start or end with a hyphen."
+  }
 }
 
 variable "backup_integrity_checks" {
