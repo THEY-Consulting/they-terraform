@@ -350,7 +350,7 @@ module "sns" {
           "SNS:AddPermission",
           "SNS:Subscribe"
         ],
-        Resource = "arn:aws:sns:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:${local.topic_name}",
+        Resource = "arn:aws:sns:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:${local.topic_name}",
       }
     ]
   })
@@ -419,7 +419,7 @@ module "sqs" {
         AWS = data.aws_caller_identity.current.arn
       },
       Action   = ["SQS:*"],
-      Resource = "arn:aws:sqs:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:${local.queue_name}"
+      Resource = "arn:aws:sqs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:${local.queue_name}"
     }
   ]
   })

@@ -32,7 +32,7 @@ resource "null_resource" "remove_archive_policy" {
   # We need triggers to be able to access another resource within the local-exec on 'destroy'.
   triggers = {
     topic_arn   = aws_sns_topic.main.arn
-    region_name = data.aws_region.current.id
+    region_name = data.aws_region.current.region
   }
 
   # In order to destroy a topic, archive policy needs to be disabled first.
