@@ -3,7 +3,7 @@ output "arn" {
 }
 
 output "function_name" {
-  value = local.lambda_func.function_name
+  value = var.name
 }
 
 output "invoke_arn" {
