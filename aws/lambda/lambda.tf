@@ -23,6 +23,14 @@ data "archive_file" "function_zip" {
 resource "aws_lambda_function" "lambda_func" {
   count = var.dd_api_key == null ? 1 : 0
 
+  # Creating the role does not attach its policies. Lambda validates VPC access
+  # during CreateFunction, so those policies must be installed first.
+  depends_on = [
+    aws_iam_role_policy.cloudwatch_logs,
+    aws_iam_role_policy.custom_policies,
+    aws_iam_role_policy.vpc_access,
+  ]
+
   function_name    = var.name
   description      = var.description
   filename         = data.archive_file.function_zip.output_path
@@ -67,6 +75,12 @@ module "lambda-datadog" {
 
   source  = "DataDog/lambda-datadog/aws"
   version = "4.6.0"
+
+  depends_on = [
+    aws_iam_role_policy.cloudwatch_logs,
+    aws_iam_role_policy.custom_policies,
+    aws_iam_role_policy.vpc_access,
+  ]
 
   environment_variables = merge({
     "DD_API_KEY" : var.dd_api_key

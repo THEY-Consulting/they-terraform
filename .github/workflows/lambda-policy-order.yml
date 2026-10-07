@@ -1,0 +1,23 @@
+name: Lambda policy dependency graph
+
+on:
+  pull_request:
+    paths:
+      - 'aws/lambda/**'
+      - '.github/workflows/lambda-policy-order.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.6.4'
+          terraform_wrapper: false
+      - run: terraform -chdir=aws/lambda init -backend=false
+      - run: terraform -chdir=aws/lambda validate
+      - run: python3 -B aws/lambda/test_policy_order.py -v

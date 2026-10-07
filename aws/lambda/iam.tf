@@ -57,6 +57,7 @@ resource "aws_iam_role_policy" "vpc_access" {
       Action = [
         "ec2:CreateNetworkInterface",
         "ec2:DescribeNetworkInterfaces",
+        "ec2:DescribeSubnets",
         "ec2:DeleteNetworkInterface",
         "ec2:AssignPrivateIpAddresses",
         "ec2:UnassignPrivateIpAddresses"
