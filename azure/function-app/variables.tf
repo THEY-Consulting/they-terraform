@@ -40,6 +40,13 @@ variable "runtime" {
   }
 }
 
+variable "use_32_bit_worker" {
+  description = "Use a 32-bit worker process on Windows. Set to false for 64-bit. Ignored on Linux."
+  type        = bool
+  default     = true
+  nullable    = false
+}
+
 variable "source_dir" {
   description = "Directory containing the function code."
   type        = string
