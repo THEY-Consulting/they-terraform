@@ -41,7 +41,7 @@ variable "runtime" {
 }
 
 variable "use_32_bit_worker" {
-  description = "Whether the Windows Function App uses a 32-bit worker process. Set to false for 64-bit. Only applies to Windows."
+  description = "Use a 32-bit worker process on Windows. Set to false for 64-bit. Ignored on Linux."
   type        = bool
   default     = true
   nullable    = false
