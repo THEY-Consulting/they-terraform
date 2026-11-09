@@ -40,6 +40,13 @@ variable "runtime" {
   }
 }
 
+variable "use_32_bit_worker" {
+  description = "Whether the Windows Function App uses a 32-bit worker process. Set to false for 64-bit. Only applies to Windows."
+  type        = bool
+  default     = true
+  nullable    = false
+}
+
 variable "source_dir" {
   description = "Directory containing the function code."
   type        = string

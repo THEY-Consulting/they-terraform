@@ -48,6 +48,7 @@ resource "azurerm_windows_function_app" "function_app" {
   }
 
   site_config {
+    use_32_bit_worker        = var.use_32_bit_worker
     application_insights_key = var.insights.enabled ? azurerm_application_insights.app_insights.0.instrumentation_key : null
 
     dynamic "application_stack" {
