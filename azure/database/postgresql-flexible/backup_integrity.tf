@@ -154,6 +154,7 @@ module "backup_integrity_job" {
   location                              = var.location
   resource_group_name                   = var.resource_group_name
   container_app_environment_name        = "${local.backup_integrity_resource_name}-env"
+  workload_profile                      = var.backup_integrity_workload_profile
   enable_log_analytics                  = true
   enable_log_analytics_with_diagnostics = true
   log_analytics_workspace_name          = "${local.backup_integrity_resource_name}-logs"
@@ -178,10 +179,11 @@ module "backup_integrity_job" {
   }]
   jobs = {
     backup-integrity = {
-      name                = local.backup_integrity_resource_name
-      replica_timeout     = var.backup_integrity_replica_timeout_seconds
-      replica_retry_limit = var.backup_integrity_replica_retry_limit
-      inject_app_name     = false
+      name                  = local.backup_integrity_resource_name
+      workload_profile_name = var.backup_integrity_workload_profile == null ? null : var.backup_integrity_workload_profile.name
+      replica_timeout       = var.backup_integrity_replica_timeout_seconds
+      replica_retry_limit   = var.backup_integrity_replica_retry_limit
+      inject_app_name       = false
       schedule_trigger_config = {
         cron_expression = local.backup_integrity_cron
       }

@@ -236,6 +236,16 @@ variable "backup_integrity_container_registry" {
   nullable = true
 }
 
+variable "backup_integrity_workload_profile" {
+  description = "Optional workload profile for the backup-integrity environment and job. Set this to retain an existing environment profile when adopting the shared job module."
+  type = object({
+    name                  = string
+    workload_profile_type = string
+  })
+  default  = null
+  nullable = true
+}
+
 variable "backup_integrity_replica_timeout_seconds" {
   description = "Maximum job execution time, including restore and cleanup."
   type        = number
