@@ -42,7 +42,7 @@ resource "azurerm_subnet_route_table_association" "example" {
 }
 
 resource "azurerm_public_ip" "pip" {
-  count = var.public_ip ? 1 : 0
+  count = var.public_ip && var.existing_public_ip == null ? 1 : 0
 
   name                = "${var.name}-pip"
   resource_group_name = data.azurerm_resource_group.main.name
@@ -61,7 +61,7 @@ resource "azurerm_network_interface" "main" {
     name                          = "primary"
     subnet_id                     = azurerm_subnet.internal.id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = var.public_ip ? azurerm_public_ip.pip[0].id : null
+    public_ip_address_id          = var.existing_public_ip != null ? var.existing_public_ip.id : (var.public_ip ? azurerm_public_ip.pip[0].id : null)
   }
 
   tags = var.tags

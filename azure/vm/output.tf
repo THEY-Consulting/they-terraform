@@ -1,5 +1,5 @@
 output "public_ip" {
-  value = var.public_ip ? azurerm_public_ip.pip[0].ip_address : null
+  value = var.existing_public_ip != null ? var.existing_public_ip.ip_address : (var.public_ip ? azurerm_public_ip.pip[0].ip_address : null)
 }
 
 output "network_name" {
