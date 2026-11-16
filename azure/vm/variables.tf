@@ -96,9 +96,18 @@ variable "routes" {
 }
 
 variable "public_ip" {
-  description = "Enable a static public IP for the VM."
+  description = "Create a static public IP for the VM unless existing_public_ip is supplied."
   type        = bool
   default     = false
+}
+
+variable "existing_public_ip" {
+  description = "An independently managed public IP to attach to the VM. Takes precedence over public_ip; this module will not create or delete the supplied IP."
+  type = object({
+    id         = string
+    ip_address = string
+  })
+  default = null
 }
 
 variable "allow_ssh" {
