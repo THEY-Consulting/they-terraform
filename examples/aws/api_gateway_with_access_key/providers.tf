@@ -19,7 +19,7 @@ terraform {
     region         = "eu-central-1"
   }
 
-  required_version = "1.6.4"
+  required_version = "1.7.5"
 }
 
 // default provider that is used when no other provider

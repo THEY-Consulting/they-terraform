@@ -1,4 +1,4 @@
-run "module:sns example:sns apply" {
+run "apply_sns" {
   command = apply
 }
 

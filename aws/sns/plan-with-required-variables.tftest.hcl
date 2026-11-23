@@ -4,7 +4,7 @@ run "setup_tests" {
   }
 }
 
-run "module:sns plan with required variables" {
+run "plan_with_required_variables" {
   command = plan
 
   variables {
@@ -15,7 +15,7 @@ run "module:sns plan with required variables" {
   }
 }
 
-run "module:sns plan with contradicting name and is_fifo config" {
+run "reject_non_fifo_name_with_fifo_suffix" {
   command = plan
 
   variables {
@@ -28,7 +28,7 @@ run "module:sns plan with contradicting name and is_fifo config" {
   expect_failures = [resource.aws_sns_topic.main]
 }
 
-run "module:sns (FIFO) plan with required variables" {
+run "plan_fifo_with_required_variables" {
   command = plan
 
   variables {
@@ -39,7 +39,7 @@ run "module:sns (FIFO) plan with required variables" {
   }
 }
 
-run "module:sns (FIFO) plan with contradicting name and is_fifo config" {
+run "reject_fifo_name_without_fifo_suffix" {
   command = plan
 
   variables {

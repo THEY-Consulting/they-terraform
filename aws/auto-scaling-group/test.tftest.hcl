@@ -1,14 +1,28 @@
-run "module:auto-scaling-group plan with default destination port" {
+// Plan against an empty state without AWS credentials or API calls.
+provider "aws" {
+  region                      = "eu-central-1"
+  access_key                  = "test"
+  secret_key                  = "test"
+  skip_credentials_validation = true
+  skip_metadata_api_check     = true
+  skip_requesting_account_id  = true
+}
+
+variables {
+  name               = "test-asg-idle-timeout"
+  ami_id             = "ami-0ba27d9989b7d8c5d" # Amazon Linux 2023 arm64 for eu-central-1
+  instance_type      = "t4g.nano"
+  availability_zones = ["eu-central-1a", "eu-central-1b"]
+}
+
+run "plan_with_default_destination_port" {
   command = plan
 
   variables {
-    name               = "test-asg-default-port"
-    ami_id             = "ami-0ba27d9989b7d8c5d" # Amazon Linux 2023 arm64 for eu-central-1
-    instance_type      = "t4g.nano"
-    desired_capacity   = 1
-    min_size           = 1
-    max_size           = 1
-    availability_zones = ["eu-central-1a", "eu-central-1b"]
+    name             = "test-asg-default-port"
+    desired_capacity = 1
+    min_size         = 1
+    max_size         = 1
   }
 
   assert {
@@ -20,20 +34,23 @@ run "module:auto-scaling-group plan with default destination port" {
     condition     = var.asg_destination_port == 80
     error_message = "asg_destination_port variable should default to 80"
   }
+
+  assert {
+    condition     = aws_lb.lb[0].idle_timeout == 60
+    error_message = "Existing callers must retain the ALB's 60-second idle timeout."
+  }
 }
 
-run "module:auto-scaling-group plan with custom destination port 8080" {
+run "plan_with_custom_destination_port_8080" {
   command = plan
 
   variables {
     name                 = "test-asg-custom-port-8080"
-    ami_id               = "ami-0ba27d9989b7d8c5d" # Amazon Linux 2023 arm64 for eu-central-1
-    instance_type        = "t4g.nano"
     desired_capacity     = 1
     min_size             = 1
     max_size             = 1
-    availability_zones   = ["eu-central-1a", "eu-central-1b"]
     asg_destination_port = 8080
+    alb_idle_timeout     = 300
   }
 
   assert {
@@ -44,5 +61,10 @@ run "module:auto-scaling-group plan with custom destination port 8080" {
   assert {
     condition     = var.asg_destination_port == 8080
     error_message = "asg_destination_port variable should be 8080"
+  }
+
+  assert {
+    condition     = aws_lb.lb[0].idle_timeout == 300
+    error_message = "The configured ALB idle timeout must reach the load balancer."
   }
 }

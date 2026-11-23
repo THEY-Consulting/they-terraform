@@ -1,4 +1,4 @@
-run "module:sqs plan with only required variables" {
+run "plan_with_required_variables" {
   command = plan
 
   variables {
@@ -14,7 +14,7 @@ run "module:sqs plan with only required variables" {
   }
 }
 
-run "module:sqs plan with DLQ(dead letter queue)" {
+run "plan_with_dead_letter_queue" {
   command = plan
 
   variables {
@@ -35,7 +35,7 @@ run "module:sqs plan with DLQ(dead letter queue)" {
   }
 }
 
-run "module:sqs plan with message retention misconfiguration throws error" {
+run "reject_shorter_dead_letter_retention" {
   command = plan
 
   variables {
@@ -54,7 +54,7 @@ run "module:sqs plan with message retention misconfiguration throws error" {
   expect_failures = [resource.aws_sqs_queue.dlq]
 }
 
-run "module:sqs plan with contradicting name and is_fifo config throws error" {
+run "reject_non_fifo_name_with_fifo_suffix" {
   command = plan
 
   variables {
@@ -67,7 +67,7 @@ run "module:sqs plan with contradicting name and is_fifo config throws error" {
   expect_failures = [resource.aws_sqs_queue.main]
 }
 
-run "module:sqs (FIFO) plan with contradicting name and is_fifo config throws error" {
+run "reject_fifo_name_without_fifo_suffix" {
   command = plan
 
   variables {
@@ -80,7 +80,7 @@ run "module:sqs (FIFO) plan with contradicting name and is_fifo config throws er
   expect_failures = [resource.aws_sqs_queue.main]
 }
 
-run "module:sqs plan with automated redrive enabled" {
+run "plan_with_automated_redrive_enabled" {
   command = plan
 
   variables {
@@ -102,7 +102,7 @@ run "module:sqs plan with automated redrive enabled" {
   }
 }
 
-run "module:sqs plan with automated redrive disabled" {
+run "plan_with_automated_redrive_disabled" {
   command = plan
 
   variables {

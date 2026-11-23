@@ -1,3 +1,3 @@
-run "module:sns example:sns_fifo apply" {
+run "apply_sns_fifo" {
   command = apply
 }

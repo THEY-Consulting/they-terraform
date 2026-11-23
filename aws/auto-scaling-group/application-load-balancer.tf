@@ -5,6 +5,7 @@ resource "aws_lb" "lb" {
   security_groups    = [aws_security_group.sg.id]
   subnets            = aws_subnet.alb_public_subnets[*].id
   internal           = false # False for internet-facing ALBs.
+  idle_timeout       = var.alb_idle_timeout
 
   dynamic "access_logs" {
     for_each = var.access_logs != null ? [var.access_logs] : []

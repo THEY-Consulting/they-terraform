@@ -44,7 +44,7 @@ infrastructure components.
 
 ### Prerequisites
 
-- [Terraform](https://www.terraform.io/downloads.html) >= 1.6.4
+- [Terraform](https://www.terraform.io/downloads.html) >= 1.7.5
 
 Depending on the modules that you want to use, you need to have installed and
 configured the following command line tools:
@@ -762,6 +762,7 @@ module "auto-scaling-group" {
 | public_subnets                                                           | bool         | Specify true to indicate that instances launched into the subnets should be assigned a public IP address                                                                | no       | `false`                                                                   |
 | certificate_arn                                                          | string       | ARN of certificate used to setup HTTPs in Application Load Balancer                                                                                                     | no       | `null`                                                                    |
 | asg_destination_port                                                     | number       | Destination port where the default ALB listener (443/https) will route to                                                                                               | no       | `80`                                                                      |
+| alb_idle_timeout                                                         | number       | Application Load Balancer connection idle timeout in whole seconds, from 1 through 4000                                                                                | no       | `60`                                                                      |
 | trust_store_arn                                                          | string       | Trust store ARN of default ALB listener (443/https) used for mutual authentication via mTLS                                                                             | no       | `null`                                                                    |
 | tags                                                                     | map(string)  | Additional tags for the components of this module                                                                                                                       | no       | `{}`                                                                      |
 | health_check_path                                                        | string       | Destination for the health check request                                                                                                                                | no       | `"/"`                                                                     |
@@ -2427,13 +2428,17 @@ module "container_registry" {
 
 ### Prerequisites
 
-- [Terraform](https://www.terraform.io/downloads.html) version 1.6.4
+- [Terraform](https://www.terraform.io/downloads.html) version 1.7.5
 - [tfenv](https://github.com/tfutils/tfenv) optional, recommended
 - [nodejs](https://nodejs.org/en) version 18.X
 - [yarn](https://classic.yarnpkg.com/lang/en/docs/) `npm i -g yarn`
 - [aws cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 - [az cli](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
 - [direnv](https://direnv.net/)
+
+CI and local development use Terraform **1.7.5** from `.terraform-version` for
+all module and example tests. This version supports the Azure VM tests' provider
+mocking. Example configurations pin the same version.
 
 ### Environment Variables
 
