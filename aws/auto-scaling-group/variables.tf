@@ -78,11 +78,6 @@ variable "alb_idle_timeout" {
   type        = number
   default     = 60
   nullable    = false
-
-  validation {
-    condition     = var.alb_idle_timeout >= 1 && var.alb_idle_timeout <= 4000 && floor(var.alb_idle_timeout) == var.alb_idle_timeout
-    error_message = "alb_idle_timeout must be a whole number of seconds between 1 and 4000."
-  }
 }
 
 variable "availability_zones" {

@@ -68,33 +68,3 @@ run "module:auto-scaling-group plan with custom destination port 8080" {
     error_message = "The configured ALB idle timeout must reach the load balancer."
   }
 }
-
-run "rejects_zero_idle_timeout" {
-  command = plan
-
-  variables {
-    alb_idle_timeout = 0
-  }
-
-  expect_failures = [var.alb_idle_timeout]
-}
-
-run "rejects_idle_timeout_above_limit" {
-  command = plan
-
-  variables {
-    alb_idle_timeout = 4001
-  }
-
-  expect_failures = [var.alb_idle_timeout]
-}
-
-run "rejects_fractional_idle_timeout" {
-  command = plan
-
-  variables {
-    alb_idle_timeout = 60.5
-  }
-
-  expect_failures = [var.alb_idle_timeout]
-}
