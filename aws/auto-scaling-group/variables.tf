@@ -73,6 +73,18 @@ variable "loadbalancer_disabled" {
   default     = false
 }
 
+variable "alb_idle_timeout" {
+  description = "Connection idle timeout in seconds for the Application Load Balancer."
+  type        = number
+  default     = 60
+  nullable    = false
+
+  validation {
+    condition     = var.alb_idle_timeout >= 1 && var.alb_idle_timeout <= 4000 && floor(var.alb_idle_timeout) == var.alb_idle_timeout
+    error_message = "alb_idle_timeout must be a whole number of seconds between 1 and 4000."
+  }
+}
+
 variable "availability_zones" {
   description = "List of availability zones (AZs). A subnet is created for every AZ and the ASG instances are deployed across the different AZs."
   type        = list(string)
