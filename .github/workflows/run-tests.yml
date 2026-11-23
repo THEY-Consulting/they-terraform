@@ -28,7 +28,7 @@ jobs:
           TF_VERSION=$(grep -vP '^[\s]?#' .terraform-version)
           echo "TF_VERSION=$TF_VERSION" >> $GITHUB_ENV
 
-      - name: Setup Terraform for AWS module tests
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TF_VERSION }}
@@ -40,7 +40,7 @@ jobs:
           role-session-name: GitHubActionSession
           aws-region: eu-central-1
 
-      - name: Test AWS modules
+      - name: Test modules
         run: |
           cd aws
           cwd=$(pwd)
@@ -52,15 +52,7 @@ jobs:
             terraform test
             cd $cwd
           done
-      - name: Setup Terraform for Azure module tests
-        uses: hashicorp/setup-terraform@v3
-        with:
-          # Azure VM tests use provider mocking, introduced in Terraform 1.7.
-          terraform_version: '1.7.5'
-
-      - name: Test Azure modules
-        run: |
-          cd azure
+          cd ../azure
           cwd=$(pwd)
           dirs=$(find . -maxdepth 2 -name "tests" -o -name "*.tftest.hcl" | sed -r 's|/[^/]+$||' | sort -u)
           for d in $dirs; do
@@ -70,12 +62,6 @@ jobs:
             terraform test
             cd $cwd
           done
-
-      - name: Setup Terraform for examples
-        uses: hashicorp/setup-terraform@v3
-        with:
-          # Examples pin the repository's deployment version exactly.
-          terraform_version: ${{ env.TF_VERSION }}
 
       - name: Test examples
         run: |

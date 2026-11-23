@@ -14,9 +14,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set Terraform version
+        run: |
+          TF_VERSION=$(grep -vP '^[\s]?#' .terraform-version)
+          echo "TF_VERSION=$TF_VERSION" >> $GITHUB_ENV
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: '1.6.4'
+          terraform_version: ${{ env.TF_VERSION }}
           terraform_wrapper: false
       - run: terraform -chdir=aws/lambda init -backend=false
       - run: terraform -chdir=aws/lambda validate

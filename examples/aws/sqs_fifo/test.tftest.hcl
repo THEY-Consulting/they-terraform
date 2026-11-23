@@ -1,4 +1,4 @@
-run "module:sqs example:sqs apply" {
+run "apply_sqs_fifo" {
   command = apply
 }
 

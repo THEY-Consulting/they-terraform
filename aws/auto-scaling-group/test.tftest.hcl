@@ -15,7 +15,7 @@ variables {
   availability_zones = ["eu-central-1a", "eu-central-1b"]
 }
 
-run "module:auto-scaling-group plan with default destination port" {
+run "plan_with_default_destination_port" {
   command = plan
 
   variables {
@@ -41,7 +41,7 @@ run "module:auto-scaling-group plan with default destination port" {
   }
 }
 
-run "module:auto-scaling-group plan with custom destination port 8080" {
+run "plan_with_custom_destination_port_8080" {
   command = plan
 
   variables {

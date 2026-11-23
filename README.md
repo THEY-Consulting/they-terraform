@@ -44,7 +44,7 @@ infrastructure components.
 
 ### Prerequisites
 
-- [Terraform](https://www.terraform.io/downloads.html) >= 1.6.4
+- [Terraform](https://www.terraform.io/downloads.html) >= 1.7.5
 
 Depending on the modules that you want to use, you need to have installed and
 configured the following command line tools:
@@ -2428,7 +2428,7 @@ module "container_registry" {
 
 ### Prerequisites
 
-- [Terraform](https://www.terraform.io/downloads.html) version 1.6.4
+- [Terraform](https://www.terraform.io/downloads.html) version 1.7.5
 - [tfenv](https://github.com/tfutils/tfenv) optional, recommended
 - [nodejs](https://nodejs.org/en) version 18.X
 - [yarn](https://classic.yarnpkg.com/lang/en/docs/) `npm i -g yarn`
@@ -2436,12 +2436,9 @@ module "container_registry" {
 - [az cli](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
 - [direnv](https://direnv.net/)
 
-CI runs Azure module tests with Terraform **1.7.5** for the Azure VM tests'
-provider mocking. AWS module tests retain **1.6.4** from `.terraform-version`
-because their existing run names are incompatible with Terraform 1.7. CI also
-uses **1.6.4** for the example tests, matching their exact version pins. Use the
-same versions when running those tests locally. The deployment version and
-module consumers' Terraform requirements are unchanged.
+CI and local development use Terraform **1.7.5** from `.terraform-version` for
+all module and example tests. This version supports the Azure VM tests' provider
+mocking. Example configurations pin the same version.
 
 ### Environment Variables
 
