@@ -2436,6 +2436,13 @@ module "container_registry" {
 - [az cli](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
 - [direnv](https://direnv.net/)
 
+CI runs Azure module tests with Terraform **1.7.5** for the Azure VM tests'
+provider mocking. AWS module tests retain **1.6.4** from `.terraform-version`
+because their existing run names are incompatible with Terraform 1.7. CI also
+uses **1.6.4** for the example tests, matching their exact version pins. Use the
+same versions when running those tests locally. The deployment version and
+module consumers' Terraform requirements are unchanged.
+
 ### Environment Variables
 
 - Configure your environment variables (create and put them in `.envrc` in the
